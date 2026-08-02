@@ -262,6 +262,14 @@ export const NexaAssistantWidget: React.FC<NexaAssistantWidgetProps> = ({
                   >
                     <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
 
+                    {/* AI Governance Disclaimer Badge */}
+                    {msg.sender === 'nexa' && (
+                      <div className="mt-2.5 pt-2 border-t border-zinc-700/60 flex items-center gap-1.5 text-[10px] text-teal-300 font-medium">
+                        <ShieldAlert className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                        <span>Recomendação Auxiliar IA • Requer Chancela Humana Multidisciplinar</span>
+                      </div>
+                    )}
+
                     {/* Action buttons if provided */}
                     {msg.actions && msg.actions.length > 0 && (
                       <div className="mt-3 pt-2.5 border-t border-zinc-700/60 space-y-1.5">

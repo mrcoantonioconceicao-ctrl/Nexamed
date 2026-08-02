@@ -50,6 +50,13 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
             Controle seguro de administração de doses, checagem de psicotrópicos e monitoramento de estoque
           </p>
         </div>
+
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 font-extrabold text-xs flex items-center gap-1.5 shadow-2xs">
+            <Package className="w-4 h-4 text-teal-600 animate-pulse" />
+            <span>⚡ Baixa Automática de Estoque Ativa</span>
+          </span>
+        </div>
       </div>
 
       {/* Filter Bar */}

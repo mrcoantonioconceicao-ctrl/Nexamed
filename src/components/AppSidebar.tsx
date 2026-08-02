@@ -10,7 +10,9 @@ import {
   Sparkles, 
   ChevronRight,
   Lock,
-  HeartPulse
+  HeartPulse,
+  ShieldCheck,
+  Building2
 } from 'lucide-react';
 
 interface AppSidebarProps {
@@ -19,6 +21,7 @@ interface AppSidebarProps {
   pendingMedsCount: number;
   activeAlertsCount: number;
   openNexaChat: () => void;
+  onOpenLGPD?: () => void;
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({
@@ -27,6 +30,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   pendingMedsCount,
   activeAlertsCount,
   openNexaChat,
+  onOpenLGPD,
 }) => {
   const navItems = [
     {
@@ -67,6 +71,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       path: '/relatorios',
       label: 'Relatórios & Intercorrências',
       icon: BarChart3,
+    },
+    {
+      path: '/operacoes',
+      label: 'Operações Enterprise',
+      icon: Building2,
+      badge: 'v2.5',
+      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
     },
   ];
 
@@ -134,20 +145,30 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         </div>
       </div>
 
-      {/* Footer System Status */}
-      <div className="p-3 border-t border-zinc-200/80 bg-zinc-50/80 rounded-br-2xl">
-        <div className="flex items-center justify-between text-[11px] text-zinc-500 px-2 py-1">
+      {/* Footer System Status & LGPD */}
+      <div className="p-3 border-t border-zinc-200/80 bg-zinc-50/80 rounded-br-2xl space-y-1">
+        <div className="flex items-center justify-between text-[11px] text-zinc-500 px-2 py-0.5">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="font-semibold text-zinc-700">NexaMed Engine v2.5</span>
           </div>
-          <button
-            onClick={() => onNavigate('/auth')}
-            className="hover:text-teal-600 transition-colors p-1"
-            title="Segurança e Acesso"
-          >
-            <Lock className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onOpenLGPD}
+              className="hover:text-teal-700 text-zinc-500 transition-colors p-1 flex items-center gap-1 font-semibold text-[10px]"
+              title="LGPD & Política de Privacidade e Cookies"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+              <span>LGPD</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/auth')}
+              className="hover:text-teal-600 transition-colors p-1"
+              title="Segurança e Acesso"
+            >
+              <Lock className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </aside>

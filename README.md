@@ -36,6 +36,12 @@
 ### 📅 7. Escalas da Equipe Multidisciplinar
 - Organização dos turnos de trabalho (Manhã, Tarde, Noite, 12x36h) para Médicos, Enfermeiros, Psicólogos, Terapeutas e Cuidadores.
 
+### 🔒 8. Conformidade LGPD & Gestão de Cookies
+- **Banner de Consentimento:** Notificação interativa conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) com salvamento em `localStorage`.
+- **Direitos do Titular (Art. 18 LGPD):** Ferramenta de exportação e portabilidade de dados em JSON, solicitação de retificação e revogação de consentimento.
+- **Tratamento de Dados de Saúde (Art. 11 LGPD):** Transparência no uso de prontuários eletrônicos em conformidade com as diretrizes do CFM e ANVISA.
+- **Contato do DPO:** Encarregado pelo tratamento de dados pessoais diretamente acessível pelo painel.
+
 ---
 
 ## 🛠️ Tecnologias Utilizadas

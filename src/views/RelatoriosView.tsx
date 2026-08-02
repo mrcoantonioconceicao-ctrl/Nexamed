@@ -15,13 +15,15 @@ import {
   TrendingUp,
   X
 } from 'lucide-react';
-import { Resident, HandoverLog, ClinicalEvolution, MedicationMAR, OccurrenceItem } from '../types';
+import { Resident, HandoverLog, ClinicalEvolution, MedicationMAR, OccurrenceItem, QualityMetric } from '../types';
+import { ExecutiveReportModal } from '../components/ExecutiveReportModal';
 
 interface RelatoriosViewProps {
   residents: Resident[];
   handovers: HandoverLog[];
   evolutions: ClinicalEvolution[];
   medications: MedicationMAR[];
+  qualityMetrics?: QualityMetric[];
 }
 
 export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
@@ -29,6 +31,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
   handovers,
   evolutions,
   medications,
+  qualityMetrics = [],
 }) => {
   const [activeTab, setActiveTab] = useState<'intercorrencias' | 'plantao' | 'evolucoes' | 'medicacao'>('intercorrencias');
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +39,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
   const [selectedPriority, setSelectedPriority] = useState<string>('Todas');
   const [aiReportText, setAiReportText] = useState<string | null>(null);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [isExecModalOpen, setIsExecModalOpen] = useState(false);
 
   // Extract all occurrences from handovers
   const allOccurrences: (OccurrenceItem & { handoverShift: string; handoverDate: string; handoverAuthor: string })[] = [];
@@ -130,6 +134,13 @@ Relatório validado digitalmente pelo Responsável Técnico Enf. Dr. Fernando Al
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsExecModalOpen(true)}
+            className="py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-2"
+          >
+            <FileText className="w-4 h-4 text-white" />
+            <span>Relatório ONA 3 Executivo</span>
+          </button>
           <button
             onClick={handleGenerateAiReport}
             disabled={isGeneratingAi}
@@ -474,6 +485,14 @@ Relatório validado digitalmente pelo Responsável Técnico Enf. Dr. Fernando Al
           </div>
         </div>
       )}
+
+      {/* Modal Relatório Executivo ONA 3 */}
+      <ExecutiveReportModal
+        isOpen={isExecModalOpen}
+        onClose={() => setIsExecModalOpen(false)}
+        residents={residents}
+        qualityMetrics={qualityMetrics || []}
+      />
     </div>
   );
 };

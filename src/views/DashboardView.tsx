@@ -37,6 +37,7 @@ interface DashboardViewProps {
   onOpenNewEvolution: (residentId?: string) => void;
   onNavigate: (path: string) => void;
   onMarkAlertsRead: () => void;
+  onOpenIoTTelemetry?: (resident: Resident) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -49,6 +50,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenNewEvolution,
   onNavigate,
   onMarkAlertsRead,
+  onOpenIoTTelemetry
 }) => {
   const [alertSeverityFilter, setAlertSeverityFilter] = useState<'Todos' | 'Crítico' | 'Alto' | 'Médio'>('Todos');
   const [chartMode, setChartMode] = useState<'categoria' | 'diario'>('categoria');
@@ -463,13 +465,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </span>
                       </div>
                       <p className="text-[11px] text-zinc-500 truncate">{res.primaryDiagnosis}</p>
-                      <div className="flex items-center gap-2 mt-1 text-[10px]">
+                      <div className="flex items-center gap-2 mt-1.5 text-[10px]">
                         <span className="text-purple-700 font-semibold">{res.dependenceLevel}</span>
                         <span className="text-zinc-300">•</span>
-                        <span className={`font-bold ${
-                          res.riskScore === 'Crítico' ? 'text-rose-700' :
-                          res.riskScore === 'Alto' ? 'text-amber-700' : 'text-emerald-700'
-                        }`}>Risco {res.riskScore}</span>
+                        <span className={`font-bold px-1.5 py-0.2 rounded border ${
+                          res.news2?.riskLevel === 'Crítico' ? 'bg-rose-100 text-rose-800 border-rose-300' :
+                          res.news2?.riskLevel === 'Moderado' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        }`}>
+                          NEWS2: {res.news2?.totalScore ?? '0'} ({res.news2?.riskLevel ?? res.riskScore})
+                        </span>
+                        {onOpenIoTTelemetry && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenIoTTelemetry(res);
+                            }}
+                            className="ml-auto px-2 py-0.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded text-[10px] shadow-2xs transition-colors flex items-center gap-1"
+                            title="Simular Telemetria de Sinais Vitais IoT"
+                          >
+                            <Activity className="w-3 h-3" />
+                            IoT Vitais
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

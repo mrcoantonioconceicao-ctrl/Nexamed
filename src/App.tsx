@@ -6,7 +6,17 @@ import {
   INITIAL_MEDICATIONS, 
   INITIAL_ROSTER, 
   INITIAL_HANDOVERS, 
-  INITIAL_ALERTS 
+  INITIAL_ALERTS,
+  INITIAL_TIMELINE_360,
+  INITIAL_FINANCIAL_RECORDS,
+  INITIAL_INVENTORY,
+  INITIAL_LAB_RESULTS,
+  INITIAL_OCR_DOCS,
+  INITIAL_BPMN_WORKFLOWS,
+  INITIAL_QUALITY_METRICS,
+  INITIAL_FAMILY_NOTES,
+  INITIAL_STAFF_TRAININGS,
+  INITIAL_AUDIT_LOGS
 } from './data/mockData';
 import { 
   Resident, 
@@ -16,8 +26,19 @@ import {
   HandoverLog, 
   ClinicalAlert, 
   DoseStatus,
-  OccurrenceItem
+  OccurrenceItem,
+  Timeline360Event,
+  FinancialRecord,
+  InventoryItem,
+  LabResult,
+  OCRDocument,
+  BPMNWorkflowInstance,
+  QualityMetric,
+  FamilyNote,
+  StaffTraining,
+  AuditLogEntry
 } from './types';
+import { calculateNEWS2Risk } from './utils/news2Calculator';
 import { getCurrentUser, isAuthEnabled } from './config/auth-mode';
 
 import { NavbarHeader } from './components/NavbarHeader';
@@ -25,6 +46,11 @@ import { AppSidebar } from './components/AppSidebar';
 import { NexaAssistantWidget } from './components/NexaAssistantWidget';
 import { SOAPEditorModal } from './components/SOAPEditorModal';
 import { ResidentDetailModal } from './components/ResidentDetailModal';
+import { Resident360ViewModal } from './components/Resident360ViewModal';
+import { LGPDAndCookieManager } from './components/LGPDAndCookieManager';
+import { IoTVitalsTelemetryModal } from './components/IoTVitalsTelemetryModal';
+import { CommandPaletteModal } from './components/CommandPaletteModal';
+import { TelehealthModal } from './components/TelehealthModal';
 
 import { DashboardView } from './views/DashboardView';
 import { ResidentesView } from './views/ResidentesView';
@@ -33,6 +59,7 @@ import { MedicacaoView } from './views/MedicacaoView';
 import { EscalasView } from './views/EscalasView';
 import { PlantaoView } from './views/PlantaoView';
 import { RelatoriosView } from './views/RelatoriosView';
+import { EnterpriseOpsView } from './views/EnterpriseOpsView';
 import { AuthView } from './views/AuthView';
 
 export default function App() {
@@ -46,13 +73,110 @@ export default function App() {
   const [roster, setRoster] = useState<StaffRoster[]>(INITIAL_ROSTER);
   const [handovers, setHandovers] = useState<HandoverLog[]>(INITIAL_HANDOVERS);
   const [alerts, setAlerts] = useState<ClinicalAlert[]>(INITIAL_ALERTS);
+  const [timelineEvents, setTimelineEvents] = useState<Timeline360Event[]>(INITIAL_TIMELINE_360);
+  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>(INITIAL_FINANCIAL_RECORDS);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(INITIAL_INVENTORY);
+  const [labResults, setLabResults] = useState<LabResult[]>(INITIAL_LAB_RESULTS);
+  const [ocrDocuments, setOcrDocuments] = useState<OCRDocument[]>(INITIAL_OCR_DOCS);
+  const [bpmnWorkflows, setBpmnWorkflows] = useState<BPMNWorkflowInstance[]>(INITIAL_BPMN_WORKFLOWS);
+  const [qualityMetrics, setQualityMetrics] = useState<QualityMetric[]>(INITIAL_QUALITY_METRICS);
+  const [familyNotes, setFamilyNotes] = useState<FamilyNote[]>(INITIAL_FAMILY_NOTES);
+  const [staffTrainings, setStaffTrainings] = useState<StaffTraining[]>(INITIAL_STAFF_TRAININGS);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
 
   // Modal & Drawer States
   const [isNexaChatOpen, setIsNexaChatOpen] = useState(false);
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
   const [isSOAPModalOpen, setIsSOAPModalOpen] = useState(false);
+  const [isLGPDModalOpen, setIsLGPDModalOpen] = useState(false);
   const [initialResidentIdForSOAP, setInitialResidentIdForSOAP] = useState<string | undefined>();
   const [selectedResidentForDetail, setSelectedResidentForDetail] = useState<Resident | null>(null);
+  const [selectedResidentFor360, setSelectedResidentFor360] = useState<Resident | null>(null);
+  const [selectedResidentForIoT, setSelectedResidentForIoT] = useState<Resident | null>(null);
+  const [selectedResidentForTelehealth, setSelectedResidentForTelehealth] = useState<Resident | null>(null);
+
+  // Handle IoT Vitals update & NEWS2 automatic risk calculation
+  const handleUpdateVitals = (residentId: string, updatedVitals: any) => {
+    // Extract numerical vitals
+    const systolicBP = typeof updatedVitals.systolicBP === 'number' 
+      ? updatedVitals.systolicBP 
+      : parseInt((updatedVitals.bp || '120/80').split('/')[0], 10) || 120;
+
+    const diastolicBP = typeof updatedVitals.diastolicBP === 'number'
+      ? updatedVitals.diastolicBP
+      : parseInt((updatedVitals.bp || '120/80').split('/')[1], 10) || 80;
+
+    const heartRate = Number(updatedVitals.heartRate || updatedVitals.hr || 75);
+    const temp = Number(updatedVitals.temp || 36.5);
+    const spO2 = Number(updatedVitals.spO2 || updatedVitals.spo2 || 98);
+    const respRate = Number(updatedVitals.respRate || 16);
+    const consciousness = updatedVitals.consciousness || 'Alerta';
+    const supplementalO2 = Boolean(updatedVitals.supplementalO2);
+
+    // Calculate NEWS2 using dedicated utility
+    const news2Calc = calculateNEWS2Risk({
+      systolicBP,
+      diastolicBP,
+      heartRate,
+      temp,
+      spO2,
+      respRate,
+      consciousness,
+      supplementalO2
+    });
+
+    setResidents(prev => prev.map(res => {
+      if (res.id !== residentId) return res;
+      return {
+        ...res,
+        vitals: {
+          bp: `${systolicBP}/${diastolicBP}`,
+          hr: heartRate,
+          temp: temp,
+          spo2: spO2,
+          respRate: respRate,
+          lastAfericao: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        },
+        riskScore: news2Calc.riskLevel === 'Crítico' ? 'Alto' : news2Calc.riskLevel === 'Alto' ? 'Alto' : news2Calc.riskLevel === 'Moderado' ? 'Médio' : 'Baixo',
+        news2: {
+          totalScore: news2Calc.totalScore,
+          riskLevel: news2Calc.riskLevel,
+          actionRequired: news2Calc.recommendedAction,
+          lastCalculated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      };
+    }));
+
+    // Generate clinical alert if NEWS2 is high or critical
+    if (news2Calc.riskLevel === 'Alto' || news2Calc.riskLevel === 'Crítico') {
+      const resName = residents.find(r => r.id === residentId)?.name || 'Residente';
+      const newAlert: ClinicalAlert = {
+        id: `alt-news2-${Date.now()}`,
+        residentId,
+        residentName: resName,
+        type: 'Sinal Vital Alterado',
+        severity: news2Calc.riskLevel === 'Crítico' ? 'Crítico' : 'Alto',
+        message: `Escore NEWS2 Elevado (${news2Calc.totalScore} pontos - ${news2Calc.riskLevel}): ${news2Calc.recommendedAction}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        read: false
+      };
+      setAlerts(prev => [newAlert, ...prev]);
+    }
+
+    // Append to Audit Logs
+    const newAuditLog: AuditLogEntry = {
+      id: `audit-${Date.now()}`,
+      userId: 'usr-current',
+      userName: 'Enf. Mariana Castro',
+      userRole: 'Enfermeiro RT',
+      action: 'Edição',
+      resource: `Telemetria IoT Beira-Leito (NEWS2 = ${news2Calc.totalScore} - ${news2Calc.riskLevel})`,
+      ipAddress: '192.168.1.104',
+      timestamp: new Date().toLocaleString('pt-BR'),
+      reason: 'Atualização Automática de Risco NEWS2 em Tempo Real'
+    };
+    setAuditLogs(prev => [newAuditLog, ...prev]);
+  };
 
   // Check auth requirement on mount or path change
   useEffect(() => {
@@ -69,25 +193,95 @@ export default function App() {
     return () => window.removeEventListener('toggle-command-bar', handleToggleCommandBar);
   }, []);
 
-  // Dose Check-off Handler
+  // Dose Check-off Handler with Automatic Stock Consumption (Baixa Automática de Medicação)
   const handleUpdateDoseStatus = (medicationId: string, doseId: string, newStatus: DoseStatus) => {
+    let targetMedName = '';
+    let targetResidentId = '';
+    let targetResidentName = '';
+    let isStockDeducted = false;
+
     setMedications(prevMeds =>
       prevMeds.map(med => {
         if (med.id !== medicationId) return med;
+        
+        targetMedName = med.medicationName;
+        targetResidentId = med.residentId;
+        targetResidentName = med.residentName;
+
+        const currentDose = med.scheduledDoses.find(d => d.id === doseId);
+        const wasMinistrado = currentDose?.status === 'Ministrado';
+        const isNowMinistrado = newStatus === 'Ministrado';
+
+        let newStock = med.stockDosesRemaining;
+        if (!wasMinistrado && isNowMinistrado) {
+          newStock = Math.max(0, med.stockDosesRemaining - 1);
+          isStockDeducted = true;
+        } else if (wasMinistrado && !isNowMinistrado) {
+          newStock = med.stockDosesRemaining + 1;
+        }
+
         return {
           ...med,
+          stockDosesRemaining: newStock,
           scheduledDoses: med.scheduledDoses.map(dose => {
             if (dose.id !== doseId) return dose;
             return {
               ...dose,
               status: newStatus,
-              administeredBy: newStatus === 'Ministrado' ? 'Dr. Fernando Alencar' : undefined,
+              administeredBy: newStatus === 'Ministrado' ? 'Enf. Mariana Castro' : undefined,
               administeredAt: newStatus === 'Ministrado' ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined,
             };
           }),
         };
       })
     );
+
+    // Automatic Stock Deduction from Pharmacy Inventory (Baixa no Estoque da Farmácia)
+    if (isStockDeducted && targetMedName) {
+      setInventoryItems(prevItems => {
+        const keyword = targetMedName.split(' ')[0].toLowerCase(); // e.g. "Quetiapina", "Risperidona"
+        let matched = false;
+        
+        return prevItems.map(item => {
+          if (!matched && item.name.toLowerCase().includes(keyword)) {
+            matched = true;
+            return {
+              ...item,
+              stockCurrent: Math.max(0, item.stockCurrent - 1)
+            };
+          }
+          return item;
+        });
+      });
+
+      // Audit Log for automatic stock consumption
+      const newAuditLog: AuditLogEntry = {
+        id: `audit-stock-${Date.now()}`,
+        userId: 'usr-enf-1',
+        userName: 'Enf. Mariana Castro',
+        userRole: 'Enfermeiro RT',
+        action: 'Edição',
+        resource: `Baixa Automática Estoque: ${targetMedName} (Residente: ${targetResidentName})`,
+        ipAddress: '192.168.1.104',
+        timestamp: new Date().toLocaleString('pt-BR'),
+        reason: 'Consumo de Dose Registrado no Kardex Eletrônico (MAR)'
+      };
+      setAuditLogs(prev => [newAuditLog, ...prev]);
+
+      // Timeline 360 Event
+      const newTimelineEvt: Timeline360Event = {
+        id: `tl-med-${Date.now()}`,
+        residentId: targetResidentId,
+        type: 'Medicação MAR',
+        title: `Medicação Ministrada com Baixa Automática`,
+        description: `Dose de ${targetMedName} administrada por Enf. Mariana Castro. Baixa automática realizada no estoque da Farmácia Central.`,
+        authorName: 'Enf. Mariana Castro',
+        authorRole: 'Enfermeira RT',
+        timestamp: `${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        severity: 'Normal'
+      };
+      setTimelineEvents(prev => [newTimelineEvt, ...prev]);
+    }
   };
 
   // Add new SOAP Evolution
@@ -140,10 +334,10 @@ export default function App() {
   // Active alerts count
   const activeAlertsCount = alerts.filter(a => !a.read).length;
 
-  // Open resident modal
+  // Open resident modal (360 or standard detail)
   const handleOpenResident = (residentId: string) => {
     const found = residents.find(r => r.id === residentId);
-    if (found) setSelectedResidentForDetail(found);
+    if (found) setSelectedResidentFor360(found);
   };
 
   // Open new evolution modal with optional resident preset
@@ -174,6 +368,7 @@ export default function App() {
             pendingMedsCount={pendingMedsCount}
             activeAlertsCount={activeAlertsCount}
             openNexaChat={() => setIsNexaChatOpen(true)}
+            onOpenLGPD={() => setIsLGPDModalOpen(true)}
           />
         )}
 
@@ -190,6 +385,7 @@ export default function App() {
               onOpenNewEvolution={handleOpenNewEvolution}
               onNavigate={setCurrentPath}
               onMarkAlertsRead={handleMarkAlertsRead}
+              onOpenIoTTelemetry={(res) => setSelectedResidentForIoT(res)}
             />
           )}
 
@@ -237,6 +433,28 @@ export default function App() {
               handovers={handovers}
               evolutions={evolutions}
               medications={medications}
+              qualityMetrics={qualityMetrics}
+            />
+          )}
+
+          {currentPath === '/operacoes' && (
+            <EnterpriseOpsView
+              residents={residents}
+              financialRecords={financialRecords}
+              inventoryItems={inventoryItems}
+              labResults={labResults}
+              ocrDocuments={ocrDocuments}
+              bpmnWorkflows={bpmnWorkflows}
+              qualityMetrics={qualityMetrics}
+              familyNotes={familyNotes}
+              staffTrainings={staffTrainings}
+              auditLogs={auditLogs}
+              onAddFamilyNoteResponse={(noteId, response) => {
+                setFamilyNotes(prev => prev.map(n => n.id === noteId ? { ...n, staffResponse: response } : n));
+              }}
+              onVerifyOCRDocument={(docId) => {
+                setOcrDocuments(prev => prev.map(d => d.id === docId ? { ...d, verifiedByStaff: true } : d));
+              }}
             />
           )}
 
@@ -300,6 +518,79 @@ export default function App() {
           handleOpenNewEvolution(resId);
         }}
         onUpdateDoseStatus={handleUpdateDoseStatus}
+      />
+
+      {/* Resident 360 Enterprise Modal */}
+      <Resident360ViewModal
+        resident={selectedResidentFor360}
+        timelineEvents={timelineEvents}
+        evolutions={evolutions}
+        medications={medications}
+        onClose={() => setSelectedResidentFor360(null)}
+        onOpenSOAP={(resId) => {
+          setSelectedResidentFor360(null);
+          handleOpenNewEvolution(resId);
+        }}
+      />
+
+      {/* LGPD & Cookie Privacy Management */}
+      <LGPDAndCookieManager
+        isOpenModal={isLGPDModalOpen}
+        onCloseModal={() => setIsLGPDModalOpen(false)}
+      />
+
+      {/* IoT Telemetry Vitals Modal */}
+      <IoTVitalsTelemetryModal
+        isOpen={selectedResidentForIoT !== null}
+        onClose={() => setSelectedResidentForIoT(null)}
+        resident={selectedResidentForIoT}
+        onUpdateVitals={handleUpdateVitals}
+      />
+
+      {/* Global Command Palette (⌘K) Modal */}
+      <CommandPaletteModal
+        isOpen={isCommandBarOpen}
+        onClose={() => setIsCommandBarOpen(false)}
+        residents={residents}
+        alerts={alerts}
+        onNavigate={setCurrentPath}
+        onOpenResident360={(resId) => {
+          const res = residents.find(r => r.id === resId);
+          if (res) setSelectedResidentFor360(res);
+        }}
+        onOpenIoTTelemetry={(res) => setSelectedResidentForIoT(res)}
+        onOpenNewEvolution={handleOpenNewEvolution}
+        onOpenTelehealth={(res) => setSelectedResidentForTelehealth(res)}
+      />
+
+      {/* Telehealth Consultation Modal */}
+      <TelehealthModal
+        isOpen={selectedResidentForTelehealth !== null}
+        onClose={() => setSelectedResidentForTelehealth(null)}
+        resident={selectedResidentForTelehealth}
+        onSaveSOAPNote={(residentId, soapData) => {
+          const newEvo: ClinicalEvolution = {
+            id: `evo-telemed-${Date.now()}`,
+            residentId,
+            residentName: selectedResidentForTelehealth?.name || 'Residente',
+            room: selectedResidentForTelehealth?.room || '101',
+            author: 'Dr. Fernando Alencar',
+            role: 'Psiquiatra',
+            date: new Date().toLocaleDateString('pt-BR'),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            soap: soapData,
+            tags: ['Telemedicina', 'Psiquiatria'],
+            status: 'Finalizado',
+            vitals: {
+              bp: selectedResidentForTelehealth?.vitals?.bp || '120/80',
+              hr: selectedResidentForTelehealth?.vitals?.hr || 75,
+              temp: selectedResidentForTelehealth?.vitals?.temp || 36.5,
+              spo2: selectedResidentForTelehealth?.vitals?.spo2 || 98,
+              respRate: selectedResidentForTelehealth?.vitals?.respRate || 16
+            }
+          };
+          handleSaveEvolution(newEvo);
+        }}
       />
     </div>
   );

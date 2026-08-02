@@ -1,4 +1,21 @@
-import { Resident, ClinicalEvolution, MedicationMAR, StaffRoster, HandoverLog, ClinicalAlert } from '../types';
+import { 
+  Resident, 
+  ClinicalEvolution, 
+  MedicationMAR, 
+  StaffRoster, 
+  HandoverLog, 
+  ClinicalAlert,
+  Timeline360Event,
+  FinancialRecord,
+  InventoryItem,
+  LabResult,
+  OCRDocument,
+  BPMNWorkflowInstance,
+  QualityMetric,
+  FamilyNote,
+  StaffTraining,
+  AuditLogEntry
+} from '../types';
 
 export const INITIAL_RESIDENTS: Resident[] = [
   {
@@ -38,6 +55,42 @@ export const INITIAL_RESIDENTS: Resident[] = [
     },
     notesCount: 14,
     medsPendingCount: 1,
+    news2: {
+      totalScore: 5,
+      riskLevel: 'Moderado',
+      respiratoryRateScore: 1,
+      oxygenSatScore: 0,
+      supplementalOxygenScore: 0,
+      temperatureScore: 1,
+      systolicBPScore: 2,
+      heartRateScore: 1,
+      consciousnessScore: 0,
+      lastCalculated: '01/08/2026 14:30',
+    },
+    aiPredictions: [
+      {
+        id: 'pred-1',
+        residentId: 'res-1',
+        type: 'Crise Psiquiátrica',
+        riskPercentage: 68,
+        confidenceLevel: 'Alta',
+        keyVariables: ['Insônia nas últimas 48h', 'Recusa parcial de medicação às 22h', 'Oscilação em tom de voz'],
+        explanation: 'Algoritmo identificou padrão de privação de sono combinado a recusa de medicação, elevando probabilidade de episódios maníacos nos próximos 3 dias.',
+        suggestedAction: 'Avaliação psiquiátrica em 24h, reforço de oficina relaxante e checagem dupla na medicação noturna.',
+        timestamp: '01/08/2026 11:00',
+      },
+      {
+        id: 'pred-2',
+        residentId: 'res-1',
+        type: 'Queda',
+        riskPercentage: 42,
+        confidenceLevel: 'Média',
+        keyVariables: ['Hipotensão ortostática', 'Uso de Quetiapina à noite'],
+        explanation: 'Risco moderado no trajeto ao banheiro no período noturno devido à sonolência residual.',
+        suggestedAction: 'Manter luz noturna guia no quarto e apoio físico para locomoção após as 22h.',
+        timestamp: '01/08/2026 11:00',
+      }
+    ],
   },
   {
     id: 'res-2',
@@ -76,6 +129,31 @@ export const INITIAL_RESIDENTS: Resident[] = [
     },
     notesCount: 9,
     medsPendingCount: 0,
+    news2: {
+      totalScore: 1,
+      riskLevel: 'Baixo',
+      respiratoryRateScore: 0,
+      oxygenSatScore: 0,
+      supplementalOxygenScore: 0,
+      temperatureScore: 0,
+      systolicBPScore: 1,
+      heartRateScore: 0,
+      consciousnessScore: 0,
+      lastCalculated: '01/08/2026 10:00',
+    },
+    aiPredictions: [
+      {
+        id: 'pred-3',
+        residentId: 'res-2',
+        type: 'Não Adesão MAR',
+        riskPercentage: 12,
+        confidenceLevel: 'Baixa',
+        keyVariables: ['Boa cooperação', 'Acompanhamento ativo da família'],
+        explanation: 'Excelente histórico de adesão medicamentosa nos últimos 60 dias.',
+        suggestedAction: 'Manter reforço positivo e estímulo à autonomia.',
+        timestamp: '01/08/2026 09:00',
+      }
+    ],
   },
   {
     id: 'res-3',
@@ -114,6 +192,42 @@ export const INITIAL_RESIDENTS: Resident[] = [
     },
     notesCount: 22,
     medsPendingCount: 2,
+    news2: {
+      totalScore: 7,
+      riskLevel: 'Crítico',
+      respiratoryRateScore: 2,
+      oxygenSatScore: 2,
+      supplementalOxygenScore: 0,
+      temperatureScore: 1,
+      systolicBPScore: 1,
+      heartRateScore: 1,
+      consciousnessScore: 0,
+      lastCalculated: '01/08/2026 12:15',
+    },
+    aiPredictions: [
+      {
+        id: 'pred-4',
+        residentId: 'res-3',
+        type: 'Internação',
+        riskPercentage: 81,
+        confidenceLevel: 'Alta',
+        keyVariables: ['Frequência respiratória alterada (24 irpm)', 'Saturação O2 em 93%', 'Atraso em medicação neuroleptica'],
+        explanation: 'Início provável de quadro infeccioso respiratório ou descompensação clínica. Elevado risco de hospitalização nas próximas 48h.',
+        suggestedAction: 'Solicitação imediata de Hemograma + PCR, ausculta pulmonar pelo médico plantonista e suplementação de oxigênio se SpO2 < 92%.',
+        timestamp: '01/08/2026 12:30',
+      },
+      {
+        id: 'pred-5',
+        residentId: 'res-3',
+        type: 'Queda',
+        riskPercentage: 74,
+        confidenceLevel: 'Alta',
+        keyVariables: ['Grau III de dependência', 'Agitação motora episódica ao entardecer'],
+        explanation: 'Síndrome do pôr-do-sol associada à desorientação espacial eleva risco de queda no leito.',
+        suggestedAction: 'Elevar grades acolchoadas da cama e manter campainha de emergência ao alcance da cuidadora.',
+        timestamp: '01/08/2026 12:30',
+      }
+    ],
   },
   {
     id: 'res-4',
@@ -402,3 +516,341 @@ export const INITIAL_ALERTS: ClinicalAlert[] = [
     read: true,
   }
 ];
+
+export const INITIAL_TIMELINE_360: Timeline360Event[] = [
+  {
+    id: 'time-1',
+    residentId: 'res-1',
+    timestamp: '01/08/2026 14:30',
+    type: 'Evolução SOAP',
+    title: 'Evolução Psiquiátrica de Rotina',
+    description: 'Residente tranquila, relatando boa adaptação ao grupo de arteterapia. Sem sinais de hipotimia ou agitação no momento.',
+    authorName: 'Dr. Fernando Alencar',
+    authorRole: 'Psiquiatra',
+    severity: 'Normal',
+  },
+  {
+    id: 'time-2',
+    residentId: 'res-1',
+    timestamp: '01/08/2026 08:00',
+    type: 'Medicação MAR',
+    title: 'Carbonato de Lítio 300mg Ministrado',
+    description: 'Dose matinal ministrada sem intercorrências. Boa aceitação da residente.',
+    authorName: 'Enf. Mariana Duarte',
+    authorRole: 'Enfermeiro RT',
+    severity: 'Normal',
+  },
+  {
+    id: 'time-3',
+    residentId: 'res-3',
+    timestamp: '01/08/2026 12:15',
+    type: 'Exame Laboratorial',
+    title: 'Resultado de Hemograma e PCR Liberado',
+    description: 'Leucocitose leve com neutrofia (11.800/mm³) e PCR em 14 mg/L. Sinalizador de inflamação/infecção incipiente.',
+    authorName: 'Lab Diagnósticos Central',
+    authorRole: 'Laboratório Integrado',
+    severity: 'Urgente',
+  },
+  {
+    id: 'time-4',
+    residentId: 'res-3',
+    timestamp: '01/08/2026 10:15',
+    type: 'Intercorrência',
+    title: 'Recusa de Medicação e Tosse ao Deglutir',
+    description: 'Dra. Tereza engasgou levemente com a água ao tentar tomar a Memantina. Solicitada avaliação da fonoaudiologia.',
+    authorName: 'Téc. Enfermagem Carla',
+    authorRole: 'Técnico de Enfermagem',
+    severity: 'Crítico',
+  },
+  {
+    id: 'time-5',
+    residentId: 'res-2',
+    timestamp: '31/07/2026 16:00',
+    type: 'Visita Familiar',
+    title: 'Visita de Acompanhamento da Esposa',
+    description: 'Sra. Luciana esteve na unidade. Trazidos pertences pessoais e fruteira. Residente comunicativo e orientado.',
+    authorName: 'Assistente Social Ana',
+    authorRole: 'Assistente Social',
+    severity: 'Normal',
+  }
+];
+
+export const INITIAL_FINANCIAL_RECORDS: FinancialRecord[] = [
+  {
+    id: 'fin-1',
+    residentId: 'res-1',
+    residentName: 'Sra. Helena Vasconcelos',
+    type: 'Mensalidade',
+    amount: 7800.00,
+    dueDate: '05/08/2026',
+    status: 'Pago',
+    paymentMethod: 'PIX',
+    costCenter: 'Unidade Jardim Paulista',
+  },
+  {
+    id: 'fin-2',
+    residentId: 'res-2',
+    residentName: 'Sr. Carlos Eduardo Mendonça',
+    type: 'Convênio',
+    amount: 8500.00,
+    dueDate: '10/08/2026',
+    status: 'Pendente',
+    paymentMethod: 'SUS/Guia',
+    costCenter: 'Unidade Jardim Paulista',
+  },
+  {
+    id: 'fin-3',
+    residentId: 'res-3',
+    residentName: 'Dra. Tereza de Jesus Moreira',
+    type: 'Mensalidade',
+    amount: 9200.00,
+    dueDate: '01/08/2026',
+    status: 'Atrasado',
+    paymentMethod: 'Boleto',
+    costCenter: 'Unidade Jardim Paulista',
+  },
+  {
+    id: 'fin-4',
+    type: 'Insumos Médicos',
+    amount: 3450.00,
+    dueDate: '15/08/2026',
+    status: 'Pendente',
+    paymentMethod: 'Transferência',
+    costCenter: 'Farmácia Central',
+  }
+];
+
+export const INITIAL_INVENTORY: InventoryItem[] = [
+  {
+    id: 'inv-1',
+    code: 'MED-001',
+    name: 'Quetiapina 25mg Comprimidos',
+    category: 'Medicamento',
+    stockCurrent: 140,
+    stockMinimum: 50,
+    unit: 'Comprimido',
+    batchNumber: 'L88231',
+    expirationDate: '12/2027',
+    estimatedConsumptionDays: 28,
+    suggestedPurchaseQty: 100,
+  },
+  {
+    id: 'inv-2',
+    code: 'SUP-002',
+    name: 'Espessante Alimentar Instantâneo 225g',
+    category: 'Material Médico',
+    stockCurrent: 3,
+    stockMinimum: 10,
+    unit: 'Lata',
+    batchNumber: 'L10294',
+    expirationDate: '09/2026',
+    estimatedConsumptionDays: 4,
+    suggestedPurchaseQty: 15,
+  },
+  {
+    id: 'inv-3',
+    code: 'EPI-003',
+    name: 'Luvas de Procedimento Nitrílicas Tam. M',
+    category: 'EPI',
+    stockCurrent: 450,
+    stockMinimum: 200,
+    unit: 'Unidade',
+    batchNumber: 'L99482',
+    expirationDate: '01/2029',
+    estimatedConsumptionDays: 15,
+    suggestedPurchaseQty: 500,
+  },
+  {
+    id: 'inv-4',
+    code: 'FRA-004',
+    name: 'Fralda Geriátrica Noturna Tam. G',
+    category: 'Fralda',
+    stockCurrent: 80,
+    stockMinimum: 120,
+    unit: 'Unidade',
+    batchNumber: 'L44312',
+    expirationDate: '05/2028',
+    estimatedConsumptionDays: 6,
+    suggestedPurchaseQty: 200,
+  }
+];
+
+export const INITIAL_LAB_RESULTS: LabResult[] = [
+  {
+    id: 'lab-1',
+    residentId: 'res-3',
+    examName: 'Hemograma Completo + PCR Ultrassensível',
+    date: '01/08/2026',
+    status: 'Alterado',
+    laboratoryName: 'Laboratório Hermes Pardini',
+    results: [
+      { parameter: 'Hemácias', value: '4.1 M/µL', referenceRange: '4.0 - 5.2 M/µL', isAbnormal: false },
+      { parameter: 'Hemoglobina', value: '11.8 g/dL', referenceRange: '12.0 - 15.5 g/dL', isAbnormal: true },
+      { parameter: 'Leucócitos Totais', value: '11.800 /mm³', referenceRange: '4.000 - 10.000 /mm³', isAbnormal: true },
+      { parameter: 'Proteína C-Reativa (PCR)', value: '14.2 mg/L', referenceRange: '< 5.0 mg/L', isAbnormal: true }
+    ]
+  },
+  {
+    id: 'lab-2',
+    residentId: 'res-1',
+    examName: 'Litemia + Função Renal (Ureia e Creatinina)',
+    date: '25/07/2026',
+    status: 'Normal',
+    laboratoryName: 'Fleury Medicina Diagnóstica',
+    results: [
+      { parameter: 'Lítio Sérico', value: '0.8 mEq/L', referenceRange: '0.6 - 1.2 mEq/L', isAbnormal: false },
+      { parameter: 'Creatinina', value: '0.9 mg/dL', referenceRange: '0.6 - 1.1 mg/dL', isAbnormal: false },
+      { parameter: 'Ureia', value: '32 mg/dL', referenceRange: '15 - 45 mg/dL', isAbnormal: false }
+    ]
+  }
+];
+
+export const INITIAL_OCR_DOCS: OCRDocument[] = [
+  {
+    id: 'ocr-1',
+    residentId: 'res-1',
+    type: 'Receita Médica',
+    fileName: 'receita_litio_quetiapina_helena.pdf',
+    extractedText: 'Receituário C1. Prescrevo para Helena Vasconcelos: 1. Carbonato de Lítio 300mg - Tomar 1 cp VO de 12/12h. 2. Quetiapina 25mg - Tomar 1 cp VO à noite.',
+    structuredData: {
+      medicationsFound: ['Carbonato de Lítio 300mg', 'Quetiapina 25mg'],
+      doctorCrm: 'CRM/SP 142.890',
+      dateFound: '15/07/2026'
+    },
+    processedAt: '15/07/2026 14:20',
+    verifiedByStaff: true
+  }
+];
+
+export const INITIAL_BPMN_WORKFLOWS: BPMNWorkflowInstance[] = [
+  {
+    id: 'bpmn-1',
+    processName: 'Protocolo de Queda',
+    residentId: 'res-3',
+    residentName: 'Dra. Tereza de Jesus Moreira',
+    currentState: 'Avaliação Médica de Urgência',
+    stepsCompleted: ['Abertura de Intercorrência', 'Primeiros Socorros Enfermagem', 'Aferição de Sinais Vitais'],
+    pendingStep: 'Ausculta Pulmonar & Exames de Imagem',
+    assignedRole: 'Psiquiatra',
+    startedAt: '01/08/2026 10:20',
+    updatedAt: '01/08/2026 11:00',
+    status: 'Em Andamento',
+  }
+];
+
+export const INITIAL_QUALITY_METRICS: QualityMetric[] = [
+  {
+    id: 'qual-1',
+    indicator: 'Taxa de Queda (por 1000 leitos/dia)',
+    value: 0.8,
+    target: 1.2,
+    status: 'Meta Atingida',
+    period: 'Julho/2026',
+  },
+  {
+    id: 'qual-2',
+    indicator: 'Adesão MAR (%)',
+    value: 98.4,
+    target: 95.0,
+    status: 'Meta Atingida',
+    period: 'Julho/2026',
+  },
+  {
+    id: 'qual-3',
+    indicator: 'Tempo Médio Atendimento Intercorrências',
+    value: 8.5, // minutos
+    target: 10.0,
+    status: 'Meta Atingida',
+    period: 'Julho/2026',
+  }
+];
+
+export const INITIAL_FAMILY_NOTES: FamilyNote[] = [
+  {
+    id: 'fam-1',
+    residentId: 'res-1',
+    familyName: 'Roberto Vasconcelos',
+    kinship: 'Filho',
+    date: '01/08/2026 09:30',
+    message: 'Bom dia equipe! Como foi a noite da minha mãe? Gostaria de agendar a visita presencial para o próximo sábado às 15h.',
+    status: 'Aprovado',
+    staffResponse: 'Olá Roberto! A Sra. Helena dormiu tranquilamente. Visita confirmada para sábado às 15h no Jardim da Unidade.',
+  }
+];
+
+export const INITIAL_STAFF_TRAININGS: StaffTraining[] = [
+  {
+    id: 'train-1',
+    staffName: 'Enf. Mariana Castro',
+    role: 'Enfermeiro RT',
+    topic: 'NR32 Biossegurança',
+    completedDate: '10/01/2026',
+    expirationDate: '10/01/2027',
+    status: 'Válido'
+  },
+  {
+    id: 'train-2',
+    staffName: 'Dr. Fernando Alencar',
+    role: 'Psiquiatra',
+    topic: 'BLS / Suporte Básico de Vida',
+    completedDate: '15/03/2025',
+    expirationDate: '15/03/2026',
+    status: 'Vencido'
+  },
+  {
+    id: 'train-3',
+    staffName: 'Tec. Carlos Alberto',
+    role: 'Cuidador',
+    topic: 'Manejamento de Crise Psiquiátrica',
+    completedDate: '20/07/2026',
+    expirationDate: '20/08/2026',
+    status: 'A Vencer'
+  },
+  {
+    id: 'train-4',
+    staffName: 'Dra. Camila Meireles',
+    role: 'Psicólogo',
+    topic: 'LGPD e Prontuários',
+    completedDate: '01/06/2026',
+    expirationDate: '01/06/2027',
+    status: 'Válido'
+  }
+];
+
+export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
+  {
+    id: 'audit-1',
+    userId: 'usr-101',
+    userName: 'Enf. Mariana Castro',
+    userRole: 'Enfermeiro RT',
+    action: 'Acesso',
+    resource: 'Prontuário de Helena Vasconcelos',
+    ipAddress: '187.32.110.45',
+    timestamp: '02/08/2026 08:15:22',
+    reason: 'Passagem de Plantão e Validação de MAR'
+  },
+  {
+    id: 'audit-2',
+    userId: 'usr-102',
+    userName: 'Dr. Fernando Alencar',
+    userRole: 'Psiquiatra',
+    action: 'Assinatura',
+    resource: 'Evolução SOAP evo-101',
+    ipAddress: '201.88.14.92',
+    timestamp: '02/08/2026 09:30:11',
+    reason: 'Assinatura Digital de Prescrição Médica'
+  },
+  {
+    id: 'audit-3',
+    userId: 'usr-103',
+    userName: 'Dra. Camila Meireles',
+    userRole: 'DPO / Psicóloga',
+    action: 'Exportação LGPD',
+    resource: 'Ficha Portabilidade Titular (Art. 18)',
+    ipAddress: '177.10.220.18',
+    timestamp: '02/08/2026 10:05:00',
+    reason: 'Solicitação Formal do Responsável Legal'
+  }
+];
+
+
