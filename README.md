@@ -99,15 +99,27 @@ cd nexamed-plataforma
 npm install
 ```
 
-### 3. Configurar as variáveis de ambiente
+### 3. Configurar as variáveis de ambiente e segurança do Firebase
 Crie um arquivo `.env` na raiz do projeto baseado no `.env.example`:
 ```bash
 cp .env.example .env
 ```
-Adicione sua chave da API Gemini no arquivo `.env`:
+Adicione as credenciais e chaves do sistema no arquivo `.env`:
 ```env
+# Gemini API Key (Backend)
 GEMINI_API_KEY=sua_chave_gemini_aqui
+
+# Firebase Configuration (Variáveis de Ambiente / GitHub Secrets)
+VITE_FIREBASE_PROJECT_ID=peta-sanctuary-898sv
+VITE_FIREBASE_APP_ID=seu_app_id
+VITE_FIREBASE_API_KEY=sua_chave_firebase_api
+VITE_FIREBASE_AUTH_DOMAIN=peta-sanctuary-898sv.firebaseapp.com
+VITE_FIREBASE_FIRESTORE_DATABASE_ID=ai-studio-nexamed-422bddbb-d440-4749-9e00-30c11a5ae67c
+VITE_FIREBASE_STORAGE_BUCKET=peta-sanctuary-898sv.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id
 ```
+
+> 🔒 **Nota de Segurança:** O arquivo `firebase-applet-config.json` e arquivos `.env` foram adicionados ao `.gitignore` para impedir que credenciais sensíveis sejam commitadas no GitHub. O código da aplicação (`src/lib/firebase.ts`) lê as configurações via variáveis de ambiente de forma segura e com fallback para o ambiente de desenvolvimento local.
 
 ### 4. Iniciar o servidor de desenvolvimento
 ```bash

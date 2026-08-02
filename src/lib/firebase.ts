@@ -4,16 +4,26 @@ import {
   collection, 
   doc, 
   setDoc, 
-  onSnapshot, 
-  getDocs 
+  onSnapshot 
 } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+import localAppletConfig from '../../firebase-applet-config.json';
 import { ClinicalEvolution, Resident, HandoverLog, MedicationMAR } from '../types';
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+// Suporta tanto variáveis de ambiente (para GitHub Actions / Vercel / Deploy seguro) quanto a config local
+const config = {
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || localAppletConfig?.projectId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || localAppletConfig?.appId,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || localAppletConfig?.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || localAppletConfig?.authDomain,
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || localAppletConfig?.firestoreDatabaseId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || localAppletConfig?.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || localAppletConfig?.messagingSenderId,
+};
 
-export const db = firebaseConfig.firestoreDatabaseId
-  ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+const app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
+
+export const db = config.firestoreDatabaseId
+  ? getFirestore(app, config.firestoreDatabaseId)
   : getFirestore(app);
 
 // Collection References
