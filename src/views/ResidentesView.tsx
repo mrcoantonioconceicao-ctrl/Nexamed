@@ -12,6 +12,7 @@ import {
   X
 } from 'lucide-react';
 import { Resident, DependenceLevel, ResidentStatus, RiskScore } from '../types';
+import { splitCSVTokens } from '../utils/textParser';
 
 interface ResidentesViewProps {
   residents: Resident[];
@@ -69,7 +70,7 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
       primaryDiagnosis,
       status: 'Ativo',
       admissionsDate: new Date().toLocaleDateString('pt-BR'),
-      allergies: allergiesStr ? allergiesStr.split(',').map(s => s.trim()) : [],
+      allergies: splitCSVTokens(allergiesStr),
       emergencyContact: {
         name: emergencyName || 'Familiar Responsável',
         relationship: 'Familiar',

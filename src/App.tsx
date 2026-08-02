@@ -39,6 +39,7 @@ import {
   AuditLogEntry
 } from './types';
 import { calculateNEWS2Risk } from './utils/news2Calculator';
+import { parseBloodPressure, extractFirstKeyword } from './utils/textParser';
 import { getCurrentUser, isAuthEnabled } from './config/auth-mode';
 import { 
   subscribeEvolutions, 
@@ -153,14 +154,15 @@ export default function App() {
 
   // Handle IoT Vitals update & NEWS2 automatic risk calculation
   const handleUpdateVitals = (residentId: string, updatedVitals: any) => {
-    // Extract numerical vitals
+    // Extract numerical vitals safely without raw regex/splits
+    const parsedBP = parseBloodPressure(updatedVitals.bp);
     const systolicBP = typeof updatedVitals.systolicBP === 'number' 
       ? updatedVitals.systolicBP 
-      : parseInt((updatedVitals.bp || '120/80').split('/')[0], 10) || 120;
+      : parsedBP.systolic;
 
     const diastolicBP = typeof updatedVitals.diastolicBP === 'number'
       ? updatedVitals.diastolicBP
-      : parseInt((updatedVitals.bp || '120/80').split('/')[1], 10) || 80;
+      : parsedBP.diastolic;
 
     const heartRate = Number(updatedVitals.heartRate || updatedVitals.hr || 75);
     const temp = Number(updatedVitals.temp || 36.5);
@@ -297,7 +299,7 @@ export default function App() {
     // Automatic Stock Deduction from Pharmacy Inventory (Baixa no Estoque da Farmácia)
     if (isStockDeducted && targetMedName) {
       setInventoryItems(prevItems => {
-        const keyword = targetMedName.split(' ')[0].toLowerCase(); // e.g. "Quetiapina", "Risperidona"
+        const keyword = extractFirstKeyword(targetMedName); // e.g. "quetiapina", "risperidona"
         let matched = false;
         
         return prevItems.map(item => {

@@ -13,6 +13,7 @@ import {
   Layers
 } from 'lucide-react';
 import { setCurrentUser, UserSession } from '../config/auth-mode';
+import { parseEmailDisplayName } from '../utils/textParser';
 
 interface AuthViewProps {
   onLoginSuccess: (user: UserSession) => void;
@@ -66,8 +67,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     const session: UserSession = {
       id: `usr-${Date.now()}`,
-      name: userName || email.split('@')[0].replace('.', ' ').toUpperCase(),
-      email,
+      name: userName ? userName.trim() : parseEmailDisplayName(email),
+      email: email.trim(),
       role: selectedRole,
       avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=120&auto=format&fit=crop&q=80',
       unit: selectedUnit,
