@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Save, Heart, Activity, Thermometer, Stethoscope } from 'lucide-react';
+import { X, Sparkles, Save, Heart, Activity, Thermometer, Stethoscope, Clock } from 'lucide-react';
 import { Resident, ClinicalRole, ClinicalEvolution } from '../types';
 
 interface SOAPEditorModalProps {
@@ -252,6 +252,26 @@ export const SOAPEditorModal: React.FC<SOAPEditorModalProps> = ({
 
           {/* SOAP Four Quadrants */}
           <div className="space-y-3">
+            <div className="flex items-center justify-between bg-amber-50/80 p-2.5 rounded-xl border border-amber-200 text-xs">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-700 shrink-0" />
+                <span className="font-bold text-amber-950">Protocolo 12/12h (08h & 20h):</span>
+                <span className="text-amber-800 hidden sm:inline">Anexar verificação de medicação à evolução</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const checkObj = "• Aprazamento 12/12h: Doses das 08:00h e 20:00h checadas no MAR sem intercorrências.";
+                  const checkPlan = "• Manter protocolo rigoroso de medicação de 12 em 12 horas (08:00 e 20:00).";
+                  setObjective(prev => prev ? `${prev}\n${checkObj}` : checkObj);
+                  setPlan(prev => prev ? `${prev}\n${checkPlan}` : checkPlan);
+                }}
+                className="py-1 px-3 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-[11px] rounded-lg shadow-2xs transition-colors shrink-0"
+              >
+                + Inserir Checagem 12/12h
+              </button>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-teal-700 mb-1">
                 S - Subjetivo (Queixas, falas do residente/família) *

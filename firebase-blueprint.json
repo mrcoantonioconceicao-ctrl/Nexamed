@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "evolutions": {
+      "title": "Evoluções Clínicas",
+      "description": "Registros de evoluções SOAP dos residentes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "residentId": { "type": "string" },
+        "residentName": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "author": { "type": "string" },
+        "role": { "type": "string" },
+        "soap": { "type": "object" },
+        "tags": { "type": "array" },
+        "status": { "type": "string" },
+        "vitals": { "type": "object" }
+      },
+      "required": ["id", "residentId", "residentName", "date", "soap"]
+    },
+    "residents": {
+      "title": "Residentes",
+      "description": "Prontuários e dados dos residentes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "room": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "handovers": {
+      "title": "Trocas de Plantão",
+      "description": "Registros de passagem de plantão",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["id", "date"]
+    },
+    "medications": {
+      "title": "Medicamentos MAR",
+      "description": "Cartão de medicação do residente",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "residentId": { "type": "string" }
+      },
+      "required": ["id", "residentId"]
+    }
+  }
+}

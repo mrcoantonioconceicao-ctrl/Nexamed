@@ -237,6 +237,10 @@ Responda SEMPRE em formato JSON estrito:
 Residente: ${residentName || 'Residente'}
 Anotações brutas do profissional: "${bulletPoints}"
 
+REGRA PROTOCOLAR INSTITUCIONAL IMPORTANTÍSSIMA: Todos os residentes tomam suas medicações de 12 em 12 horas (Horários Padronizados: 08:00h e 20:00h). Inclua sempre de forma clara:
+- No campo 'objective': A menção de administração/checagem do esquema medicamentoso das 08:00h ou 20:00h (protocolo 12/12h).
+- No campo 'plan': A manutenção rigorosa do aprazamento medicamentoso de 12/12h (às 08:00 e 20:00).
+
 Responda ESTRITAMENTE em formato JSON com as 4 chaves:
 {
   "subjective": "...",

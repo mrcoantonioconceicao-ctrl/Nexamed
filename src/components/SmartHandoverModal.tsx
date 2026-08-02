@@ -34,7 +34,7 @@ import {
   AuditLogEntry,
   Timeline360Event 
 } from '../types';
-import { getCurrentUser } from '../config/auth-mode';
+import { getCurrentUser, UserSession } from '../config/auth-mode';
 
 export interface PendingAuditItem {
   id: string;
@@ -84,12 +84,15 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const currentUser = getCurrentUser() || {
+  const currentUser: UserSession = getCurrentUser() || {
     id: 'usr-1',
     name: 'Enf. Bruno Costa',
     role: 'Enfermeiro Responsável Técnico (RT)',
     email: 'bruno.costa@nexamed.com.br',
-    unit: 'Unidade Jardim Paulista'
+    unit: 'Unidade Jardim Paulista - SRT I',
+    shift: 'Manhã',
+    team: 'Equipe A - Plantão Diurno',
+    avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=120&auto=format&fit=crop&q=80'
   };
 
   // Inbound Shift Handover State
@@ -107,6 +110,13 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
   const [justifyNotes, setJustifyNotes] = useState('');
   const [aiReviewSummary, setAiReviewSummary] = useState<string | null>(null);
   const [isAiReviewing, setIsAiReviewing] = useState(false);
+
+  // Sync shiftName with currentUser.shift
+  useEffect(() => {
+    if (currentUser?.shift && ['Manhã', 'Tarde', 'Noite'].includes(currentUser.shift)) {
+      setShiftName(currentUser.shift as 'Manhã' | 'Tarde' | 'Noite');
+    }
+  }, [isOpen, currentUser?.shift]);
 
   // Run Automatic Audit on Open or Data Change
   useEffect(() => {
@@ -153,7 +163,7 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
           room: res.room,
           category: 'MAR Pendente',
           priority: 'Crítica',
-          description: `Existem ${pendingDosesCount} dose(s) de medicação aguardando checagem/ministração no Kardex Eletrônico (MAR).`,
+          description: `Existem ${pendingDosesCount} dose(s) do protocolo de 12/12h (horários fixos: 08:00h e 20:00h) aguardando checagem/ministração no Kardex Eletrônico (MAR).`,
           actionType: 'open_mar',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         });
@@ -284,23 +294,31 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
 
         {/* User Identity Banner */}
         <div className="px-6 py-3 bg-teal-50/70 border-b border-teal-100 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 font-bold text-teal-950">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1.5 font-bold text-teal-950">
               <User className="w-4 h-4 text-teal-600" />
               <span>{currentUser.name}</span>
             </div>
-            <span className="text-teal-400 font-bold">•</span>
+            <span className="text-teal-300 font-bold">•</span>
             <span className="text-teal-800 font-semibold">{currentUser.role}</span>
-            <span className="text-teal-400 font-bold">•</span>
+            <span className="text-teal-300 font-bold">•</span>
             <span className="text-teal-800 font-medium">{currentUser.unit}</span>
+            {currentUser.team && (
+              <>
+                <span className="text-teal-300 font-bold">•</span>
+                <span className="text-teal-900 font-bold bg-teal-100/90 px-2 py-0.5 rounded-md text-[11px] border border-teal-200">
+                  {currentUser.team}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="font-bold text-zinc-600">Turno Atual:</span>
+            <span className="font-bold text-zinc-600">Turno Ativo:</span>
             <select
               value={shiftName}
               onChange={(e) => setShiftName(e.target.value as any)}
-              className="bg-white border border-teal-200 rounded-lg px-2 py-1 font-bold text-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
+              className="bg-white border border-teal-200 rounded-lg px-2.5 py-1 font-bold text-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
             >
               <option value="Manhã">Manhã (07h às 13h)</option>
               <option value="Tarde">Tarde (13h às 19h)</option>

@@ -261,6 +261,14 @@ export const ResidentDetailModal: React.FC<ResidentDetailModalProps> = ({
 
           {activeTab === 'meds' && (
             <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-950 font-bold">
+                <div className="flex items-center gap-2">
+                  <span className="p-1 bg-amber-200/80 rounded-md text-amber-900 text-[10px]">12/12h</span>
+                  <span>Aprazamento Padronizado: Todos os residentes tomam medicação às 08:00h e 20:00h.</span>
+                </div>
+                <span className="text-[10px] text-amber-800 font-medium">Intervalo Fixo: 12 Horas</span>
+              </div>
+
               <h3 className="text-xs font-bold text-zinc-900 uppercase tracking-wider mb-2">
                 Grade de Aprazamento de Medicamentos (MAR)
               </h3>

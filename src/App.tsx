@@ -40,6 +40,16 @@ import {
 } from './types';
 import { calculateNEWS2Risk } from './utils/news2Calculator';
 import { getCurrentUser, isAuthEnabled } from './config/auth-mode';
+import { 
+  subscribeEvolutions, 
+  saveEvolutionToDb, 
+  subscribeResidents, 
+  saveResidentToDb, 
+  subscribeHandovers, 
+  saveHandoverToDb, 
+  subscribeMedications, 
+  saveMedicationToDb 
+} from './lib/firebase';
 
 import { NavbarHeader } from './components/NavbarHeader';
 import { AppSidebar } from './components/AppSidebar';
@@ -74,6 +84,21 @@ export default function App() {
   const [roster, setRoster] = useState<StaffRoster[]>(INITIAL_ROSTER);
   const [handovers, setHandovers] = useState<HandoverLog[]>(INITIAL_HANDOVERS);
   const [alerts, setAlerts] = useState<ClinicalAlert[]>(INITIAL_ALERTS);
+
+  // Firestore Real-time Persistence Effect
+  useEffect(() => {
+    const unsubEvo = subscribeEvolutions(setEvolutions, INITIAL_EVOLUTIONS);
+    const unsubRes = subscribeResidents(setResidents, INITIAL_RESIDENTS);
+    const unsubHan = subscribeHandovers(setHandovers, INITIAL_HANDOVERS);
+    const unsubMed = subscribeMedications(setMedications, INITIAL_MEDICATIONS);
+
+    return () => {
+      unsubEvo();
+      unsubRes();
+      unsubHan();
+      unsubMed();
+    };
+  }, []);
   const [timelineEvents, setTimelineEvents] = useState<Timeline360Event[]>(INITIAL_TIMELINE_360);
   const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>(INITIAL_FINANCIAL_RECORDS);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(INITIAL_INVENTORY);
@@ -251,7 +276,7 @@ export default function App() {
           newStock = med.stockDosesRemaining + 1;
         }
 
-        return {
+        const updatedMed = {
           ...med,
           stockDosesRemaining: newStock,
           scheduledDoses: med.scheduledDoses.map(dose => {
@@ -264,6 +289,8 @@ export default function App() {
             };
           }),
         };
+        saveMedicationToDb(updatedMed);
+        return updatedMed;
       })
     );
 
@@ -318,11 +345,13 @@ export default function App() {
   // Add new SOAP Evolution
   const handleSaveEvolution = (newEvo: ClinicalEvolution) => {
     setEvolutions(prev => [newEvo, ...prev]);
+    saveEvolutionToDb(newEvo);
   };
 
   // Add new Resident
   const handleAddResident = (newResident: Resident) => {
     setResidents(prev => [newResident, ...prev]);
+    saveResidentToDb(newResident);
   };
 
   // Add Occurrence
@@ -334,6 +363,7 @@ export default function App() {
         ...latest,
         occurrences: [occ, ...latest.occurrences],
       };
+      saveHandoverToDb(updatedLatest);
       return [updatedLatest, ...prev.slice(1)];
     });
   };
@@ -349,10 +379,12 @@ export default function App() {
       prev.map(h => {
         if (h.id !== handoverId) return h;
         if (h.acknowledgedBy.includes(staffName)) return h;
-        return {
+        const updated = {
           ...h,
           acknowledgedBy: [...h.acknowledgedBy, staffName],
         };
+        saveHandoverToDb(updated);
+        return updated;
       })
     );
   };
@@ -651,6 +683,7 @@ export default function App() {
         }}
         onCompleteOutboundHandover={(newHandoverLog) => {
           setHandovers(prev => [newHandoverLog, ...prev]);
+          saveHandoverToDb(newHandoverLog);
           setIsSmartHandoverOpen(false);
         }}
         onResolvePendingDirectly={handleResolvePendingDirectly}

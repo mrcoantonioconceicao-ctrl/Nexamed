@@ -5,6 +5,8 @@ export interface UserSession {
   role: string;
   avatar: string;
   unit: string;
+  shift?: string;
+  team?: string;
 }
 
 export const DEFAULT_DEMO_USER: UserSession = {
@@ -13,7 +15,9 @@ export const DEFAULT_DEMO_USER: UserSession = {
   email: 'fernando.alencar@nexamed.com.br',
   role: 'Médico Psiquiatra / Coordenador Clínico',
   avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=120&auto=format&fit=crop&q=80',
-  unit: 'Unidade Jardim Paulista',
+  unit: 'Unidade Jardim Paulista - SRT I',
+  shift: 'Manhã',
+  team: 'Equipe Multidisciplinar A'
 };
 
 export function isAuthEnabled(): boolean {

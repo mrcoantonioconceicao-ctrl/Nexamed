@@ -59,6 +59,27 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
         </div>
       </div>
 
+      {/* Institutional 12h/12h Protocol Alert Banner */}
+      <div className="p-4 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-amber-500/10 text-amber-800 rounded-xl border border-amber-300 shrink-0">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-xs font-extrabold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+              <span>Protocolo Institucional de Aprazamento de 12 em 12 Horas</span>
+              <span className="bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full text-[10px] font-black">PADRÃO UNIFICADO</span>
+            </h2>
+            <p className="text-xs text-amber-900 font-medium mt-0.5">
+              Todos os residentes das Residências Terapêuticas seguem o esquema rigoroso de <strong>12/12h (Horários Padronizados: 08:00h e 20:00h)</strong>.
+            </p>
+          </div>
+        </div>
+        <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold text-amber-900 bg-white/80 px-3 py-1.5 rounded-xl border border-amber-200 shadow-2xs shrink-0">
+          <span>⏰ 08:00 (Diurno) & 20:00 (Noturno)</span>
+        </div>
+      </div>
+
       {/* Filter Bar */}
       <div className="p-4 bg-white border border-zinc-200/90 rounded-2xl shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="relative w-full md:w-80">
