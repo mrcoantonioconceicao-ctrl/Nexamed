@@ -22,6 +22,8 @@ interface NavbarHeaderProps {
   onNavigate: (path: string) => void;
   activePath: string;
   onMarkAlertsRead: () => void;
+  onOpenOutboundHandover?: () => void;
+  onOpenInboundHandover?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -30,6 +32,8 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onOpenAssistant,
   onNavigate,
   onMarkAlertsRead,
+  onOpenOutboundHandover,
+  onOpenInboundHandover,
 }) => {
   const currentUser = getCurrentUser();
   const demoMode = !isAuthEnabled();
@@ -92,6 +96,18 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center space-x-2.5 sm:space-x-3">
+        {/* Smart Handover Quick Trigger Button */}
+        {onOpenOutboundHandover && (
+          <button
+            onClick={onOpenOutboundHandover}
+            className="hidden lg:flex items-center gap-1.5 py-2 px-3 bg-teal-50 hover:bg-teal-100 text-teal-800 font-extrabold text-xs rounded-xl border border-teal-200 transition-all shadow-2xs"
+            title="Troca Inteligente de Plantão & Auditoria de Pendências"
+          >
+            <Activity className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+            <span>Troca de Plantão</span>
+          </button>
+        )}
+
         {/* Assistente Nexa AI Chatbot Button */}
         <button
           onClick={onOpenAssistant}
@@ -219,6 +235,18 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                 <p className="text-[10px] text-teal-700 font-bold mt-1">{currentUser?.role}</p>
               </div>
               <div className="py-1">
+                {onOpenOutboundHandover && (
+                  <button
+                    onClick={() => {
+                      onOpenOutboundHandover();
+                      setShowUserDropdown(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 text-xs text-teal-800 hover:bg-teal-50 rounded-lg flex items-center gap-2 font-bold"
+                  >
+                    <Activity className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Troca de Plantão / Auditoria</span>
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     onNavigate('/auth');
@@ -229,24 +257,21 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                   <User className="w-3.5 h-3.5 text-teal-600" />
                   <span>Alternar Usuário / Login</span>
                 </button>
-                <button
-                  onClick={() => {
-                    onNavigate('/dashboard');
-                    setShowUserDropdown(false);
-                  }}
-                  className="w-full text-left px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-100 rounded-lg flex items-center gap-2 font-medium"
-                >
-                  <Layers className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Unidades Residenciais</span>
-                </button>
               </div>
               <div className="pt-1">
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    setShowUserDropdown(false);
+                    if (onOpenOutboundHandover) {
+                      onOpenOutboundHandover();
+                    } else {
+                      handleLogout();
+                    }
+                  }}
                   className="w-full text-left px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 font-bold"
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Encerrar Sessão</span>
+                  <span>Encerrar Plantão e Sair</span>
                 </button>
               </div>
             </div>

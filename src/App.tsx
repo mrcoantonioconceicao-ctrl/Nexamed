@@ -51,6 +51,7 @@ import { LGPDAndCookieManager } from './components/LGPDAndCookieManager';
 import { IoTVitalsTelemetryModal } from './components/IoTVitalsTelemetryModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TelehealthModal } from './components/TelehealthModal';
+import { SmartHandoverModal, PendingAuditItem } from './components/SmartHandoverModal';
 
 import { DashboardView } from './views/DashboardView';
 import { ResidentesView } from './views/ResidentesView';
@@ -94,6 +95,36 @@ export default function App() {
   const [selectedResidentFor360, setSelectedResidentFor360] = useState<Resident | null>(null);
   const [selectedResidentForIoT, setSelectedResidentForIoT] = useState<Resident | null>(null);
   const [selectedResidentForTelehealth, setSelectedResidentForTelehealth] = useState<Resident | null>(null);
+
+  // Smart Handover State
+  const [isSmartHandoverOpen, setIsSmartHandoverOpen] = useState(false);
+  const [smartHandoverMode, setSmartHandoverMode] = useState<'ASSUMIR_PLANTAO' | 'ENCERRAR_PLANTAO'>('ASSUMIR_PLANTAO');
+
+  const handleOpenInboundHandover = () => {
+    setSmartHandoverMode('ASSUMIR_PLANTAO');
+    setIsSmartHandoverOpen(true);
+  };
+
+  const handleOpenOutboundHandover = () => {
+    setSmartHandoverMode('ENCERRAR_PLANTAO');
+    setIsSmartHandoverOpen(true);
+  };
+
+  const handleResolvePendingDirectly = (item: PendingAuditItem) => {
+    setIsSmartHandoverOpen(false);
+    if (item.actionType === 'open_soap') {
+      setInitialResidentIdForSOAP(item.residentId);
+      setIsSOAPModalOpen(true);
+    } else if (item.actionType === 'open_mar') {
+      setCurrentPath('/medicacao');
+    } else if (item.actionType === 'open_vitals') {
+      const res = residents.find(r => r.id === item.residentId);
+      if (res) setSelectedResidentForIoT(res);
+    } else if (item.actionType === 'open_detail') {
+      const res = residents.find(r => r.id === item.residentId);
+      if (res) setSelectedResidentForDetail(res);
+    }
+  };
 
   // Handle IoT Vitals update & NEWS2 automatic risk calculation
   const handleUpdateVitals = (residentId: string, updatedVitals: any) => {
@@ -356,6 +387,8 @@ export default function App() {
         onNavigate={setCurrentPath}
         activePath={currentPath}
         onMarkAlertsRead={handleMarkAlertsRead}
+        onOpenInboundHandover={handleOpenInboundHandover}
+        onOpenOutboundHandover={handleOpenOutboundHandover}
       />
 
       {/* Main Body Shell */}
@@ -422,8 +455,14 @@ export default function App() {
           {currentPath === '/plantao' && (
             <PlantaoView
               handovers={handovers}
+              residents={residents}
+              evolutions={evolutions}
+              medications={medications}
+              alerts={alerts}
               onAddOccurrence={handleAddOccurrence}
               onAcknowledgeHandover={handleAcknowledgeHandover}
+              onOpenInboundHandover={handleOpenInboundHandover}
+              onOpenOutboundHandover={handleOpenOutboundHandover}
             />
           )}
 
@@ -460,7 +499,10 @@ export default function App() {
 
           {currentPath === '/auth' && (
             <AuthView
-              onLoginSuccess={() => setCurrentPath('/dashboard')}
+              onLoginSuccess={() => {
+                setCurrentPath('/dashboard');
+                handleOpenInboundHandover();
+              }}
             />
           )}
         </main>
@@ -591,6 +633,27 @@ export default function App() {
           };
           handleSaveEvolution(newEvo);
         }}
+      />
+
+      {/* Smart Handover Modal (Troca Inteligente de Plantão) */}
+      <SmartHandoverModal
+        isOpen={isSmartHandoverOpen}
+        mode={smartHandoverMode}
+        onClose={() => setIsSmartHandoverOpen(false)}
+        residents={residents}
+        evolutions={evolutions}
+        medications={medications}
+        alerts={alerts}
+        handovers={handovers}
+        onCompleteInboundHandover={({ shiftName, signaturePin }) => {
+          setIsSmartHandoverOpen(false);
+          // Add audit entry or notification
+        }}
+        onCompleteOutboundHandover={(newHandoverLog) => {
+          setHandovers(prev => [newHandoverLog, ...prev]);
+          setIsSmartHandoverOpen(false);
+        }}
+        onResolvePendingDirectly={handleResolvePendingDirectly}
       />
     </div>
   );
