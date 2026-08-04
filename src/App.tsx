@@ -374,9 +374,14 @@ export default function App() {
   };
 
   // Add new Resident
-  const handleAddResident = (newResident: Resident) => {
+  const handleAddResident = (newResident: Resident, newMeds?: MedicationMAR[]) => {
     setResidents(prev => [newResident, ...prev]);
     saveResidentToDb(newResident);
+
+    if (newMeds && newMeds.length > 0) {
+      setMedications(prev => [...newMeds, ...prev]);
+      newMeds.forEach(m => saveMedicationToDb(m));
+    }
   };
 
   // Add Occurrence
