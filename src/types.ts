@@ -253,7 +253,7 @@ export interface ClinicalEvolution {
 }
 
 export type MedRoute = 'VO' | 'IV' | 'IM' | 'SC' | 'Tópico' | 'Inalatório';
-export type DoseStatus = 'Pendente' | 'Ministrado' | 'Recusado' | 'Atrasado' | 'Suspenso';
+export type DoseStatus = 'Pendente' | 'Ministrado' | 'Parcial' | 'Recusado' | 'Atrasado' | 'Suspenso';
 
 export interface ScheduledDose {
   id: string;

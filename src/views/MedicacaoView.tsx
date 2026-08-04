@@ -15,11 +15,13 @@ import { MedicationMAR, DoseStatus } from '../types';
 interface MedicacaoViewProps {
   medications: MedicationMAR[];
   onUpdateDoseStatus: (medicationId: string, doseId: string, status: DoseStatus) => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
   medications,
   onUpdateDoseStatus,
+  onNavigate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pendente' | 'Ministrado' | 'Atrasado'>('Todos');
@@ -52,9 +54,17 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('/evolucao-medicacao')}
+              className="px-3.5 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-black text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
+            >
+              <span>📋 Checagem por Residente (12/12h)</span>
+            </button>
+          )}
           <span className="px-3 py-1.5 rounded-xl bg-teal-50 text-teal-800 border border-teal-200 font-extrabold text-xs flex items-center gap-1.5 shadow-2xs">
             <Package className="w-4 h-4 text-teal-600 animate-pulse" />
-            <span>⚡ Baixa Automática de Estoque Ativa</span>
+            <span className="hidden sm:inline">⚡ Baixa Automática</span>
           </span>
         </div>
       </div>

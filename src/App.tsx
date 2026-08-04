@@ -73,6 +73,8 @@ import { EscalasView } from './views/EscalasView';
 import { PlantaoView } from './views/PlantaoView';
 import { RelatoriosView } from './views/RelatoriosView';
 import { EnterpriseOpsView } from './views/EnterpriseOpsView';
+import { EvolucaoMedicacaoView } from './views/EvolucaoMedicacaoView';
+import { ResidencialGuiaView } from './views/ResidencialGuiaView';
 import { AuthView } from './views/AuthView';
 
 export default function App() {
@@ -253,7 +255,7 @@ export default function App() {
   }, []);
 
   // Dose Check-off Handler with Automatic Stock Consumption (Baixa Automática de Medicação)
-  const handleUpdateDoseStatus = (medicationId: string, doseId: string, newStatus: DoseStatus) => {
+  const handleUpdateDoseStatus = (medicationId: string, doseId: string, newStatus: DoseStatus, notes?: string) => {
     let targetMedName = '';
     let targetResidentId = '';
     let targetResidentName = '';
@@ -279,6 +281,8 @@ export default function App() {
           newStock = med.stockDosesRemaining + 1;
         }
 
+        const isCheckedStatus = newStatus === 'Ministrado' || newStatus === 'Parcial' || newStatus === 'Recusado';
+
         const updatedMed = {
           ...med,
           stockDosesRemaining: newStock,
@@ -287,8 +291,9 @@ export default function App() {
             return {
               ...dose,
               status: newStatus,
-              administeredBy: newStatus === 'Ministrado' ? 'Enf. Mariana Castro' : undefined,
-              administeredAt: newStatus === 'Ministrado' ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined,
+              notes: notes !== undefined ? notes : dose.notes,
+              administeredBy: isCheckedStatus ? 'Enf. Mariana Castro' : undefined,
+              administeredAt: isCheckedStatus ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : undefined,
             };
           }),
         };
@@ -296,6 +301,23 @@ export default function App() {
         return updatedMed;
       })
     );
+
+    // If Parcial or Recusado, log timeline event & audit log
+    if (newStatus === 'Parcial' || newStatus === 'Recusado') {
+      const statusTitle = newStatus === 'Recusado' ? '🚨 Recusa de Medicação Registrada' : '⚠️ Dose Parcial de Medicação';
+      const newTimelineEvt: Timeline360Event = {
+        id: `tl-med-${Date.now()}`,
+        residentId: targetResidentId,
+        type: 'Medicação MAR',
+        title: statusTitle,
+        description: `Dose de ${targetMedName} (${newStatus}). ${notes ? 'Justificativa: ' + notes : ''}`,
+        authorName: 'Enf. Mariana Castro',
+        authorRole: 'Enfermeira RT',
+        timestamp: `${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        severity: newStatus === 'Recusado' ? 'Atenção' : 'Normal'
+      };
+      setTimelineEvents(prev => [newTimelineEvt, ...prev]);
+    }
 
     // Automatic Stock Deduction from Pharmacy Inventory (Baixa no Estoque da Farmácia)
     if (isStockDeducted && targetMedName) {
@@ -482,6 +504,21 @@ export default function App() {
             <ProntuariosView
               evolutions={evolutions}
               onOpenNewEvolution={() => handleOpenNewEvolution()}
+              onNavigate={setCurrentPath}
+            />
+          )}
+
+          {currentPath === '/evolucao-medicacao' && (
+            <EvolucaoMedicacaoView
+              residents={residents}
+              medications={medications}
+              onUpdateDoseStatus={handleUpdateDoseStatus}
+              onSaveEvolution={handleSaveEvolution}
+              onOpenNewEvolutionModal={(resId) => handleOpenNewEvolution(resId)}
+              onOpenResident360={(resId) => {
+                const res = residents.find(r => r.id === resId);
+                if (res) setSelectedResidentFor360(res);
+              }}
             />
           )}
 
@@ -489,6 +526,7 @@ export default function App() {
             <MedicacaoView
               medications={medications}
               onUpdateDoseStatus={handleUpdateDoseStatus}
+              onNavigate={setCurrentPath}
             />
           )}
 
@@ -521,6 +559,10 @@ export default function App() {
               medications={medications}
               qualityMetrics={qualityMetrics}
             />
+          )}
+
+          {currentPath === '/guia-residencial' && (
+            <ResidencialGuiaView />
           )}
 
           {currentPath === '/operacoes' && (

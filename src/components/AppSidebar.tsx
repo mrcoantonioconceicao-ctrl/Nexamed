@@ -12,7 +12,8 @@ import {
   Lock,
   HeartPulse,
   ShieldCheck,
-  Building2
+  Building2,
+  BookOpen
 } from 'lucide-react';
 
 interface AppSidebarProps {
@@ -51,6 +52,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: FileText,
     },
     {
+      path: '/evolucao-medicacao',
+      label: 'Evolução Medicação (12/12h)',
+      icon: HeartPulse,
+      badge: 'Checagem',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    },
+    {
       path: '/medicacao',
       label: 'Medicação (MAR)',
       icon: Pill,
@@ -78,6 +86,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: Building2,
       badge: 'v2.5',
       badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+    },
+    {
+      path: '/guia-residencial',
+      label: 'Guia Residencial Terapêutico',
+      icon: BookOpen,
+      badge: 'Manual',
+      badgeColor: 'bg-purple-50 text-purple-800 border-purple-200',
     },
   ];
 

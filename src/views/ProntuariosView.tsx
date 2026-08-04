@@ -15,11 +15,13 @@ import { ClinicalEvolution, ClinicalRole } from '../types';
 interface ProntuariosViewProps {
   evolutions: ClinicalEvolution[];
   onOpenNewEvolution: () => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const ProntuariosView: React.FC<ProntuariosViewProps> = ({
   evolutions,
   onOpenNewEvolution,
+  onNavigate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('Todas');
@@ -52,13 +54,25 @@ export const ProntuariosView: React.FC<ProntuariosViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={onOpenNewEvolution}
-          className="py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Lançar Nova Evolução SOAP</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('/evolucao-medicacao')}
+              className="py-2.5 px-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 font-extrabold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
+            >
+              <Stethoscope className="w-4 h-4 text-emerald-600" />
+              <span>Checagem Medicação 12/12h</span>
+            </button>
+          )}
+
+          <button
+            onClick={onOpenNewEvolution}
+            className="py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Lançar Nova Evolução SOAP</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Role Filters */}
