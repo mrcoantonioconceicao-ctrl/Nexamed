@@ -40,6 +40,7 @@ import {
 } from './types';
 import { calculateNEWS2Risk } from './utils/news2Calculator';
 import { parseBloodPressure, extractFirstKeyword } from './utils/textParser';
+import { useCriticalAlertNotifications } from './hooks/useCriticalAlertNotifications';
 import { getCurrentUser, isAuthEnabled } from './config/auth-mode';
 import { 
   subscribeEvolutions, 
@@ -405,6 +406,14 @@ export default function App() {
     if (found) setSelectedResidentFor360(found);
   };
 
+  // Real-time Service Worker & Browser Notifications for Critical Residents
+  const {
+    permission: notificationPermission,
+    requestPermission: requestNotificationPermission,
+    sendTestAlert: sendTestNotificationAlert,
+    criticalResidentsCount
+  } = useCriticalAlertNotifications(residents, (res) => setSelectedResidentFor360(res));
+
   // Open new evolution modal with optional resident preset
   const handleOpenNewEvolution = (residentId?: string) => {
     setInitialResidentIdForSOAP(residentId);
@@ -423,6 +432,10 @@ export default function App() {
         onMarkAlertsRead={handleMarkAlertsRead}
         onOpenInboundHandover={handleOpenInboundHandover}
         onOpenOutboundHandover={handleOpenOutboundHandover}
+        notificationPermission={notificationPermission}
+        onRequestNotificationPermission={requestNotificationPermission}
+        onSendTestNotificationAlert={sendTestNotificationAlert}
+        criticalResidentsCount={criticalResidentsCount}
       />
 
       {/* Main Body Shell */}

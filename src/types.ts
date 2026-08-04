@@ -196,6 +196,14 @@ export interface Resident {
     reviewDate: string;
     progressPercentage: number;
   };
+  vitals?: {
+    bp: string;
+    hr: number;
+    temp: number;
+    spo2: number;
+    respRate: number;
+    lastAfericao?: string;
+  };
   news2?: News2Score;
   aiPredictions?: AIPrediction[];
   notesCount?: number;

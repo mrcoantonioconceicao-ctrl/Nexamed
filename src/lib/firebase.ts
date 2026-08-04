@@ -1,30 +1,39 @@
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { 
   getFirestore, 
   collection, 
   doc, 
   setDoc, 
-  onSnapshot 
+  onSnapshot,
+  Firestore
 } from 'firebase/firestore';
-import localAppletConfig from '../../firebase-applet-config.json';
 import { ClinicalEvolution, Resident, HandoverLog, MedicationMAR } from '../types';
 
-// Suporta tanto variáveis de ambiente (para GitHub Actions / Vercel / Deploy seguro) quanto a config local
 const config = {
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || localAppletConfig?.projectId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || localAppletConfig?.appId,
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || localAppletConfig?.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || localAppletConfig?.authDomain,
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || localAppletConfig?.firestoreDatabaseId,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || localAppletConfig?.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || localAppletConfig?.messagingSenderId,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
 };
 
-const app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
+let app: FirebaseApp | null = null;
+let firestoreDb: Firestore | null = null;
 
-export const db = config.firestoreDatabaseId
-  ? getFirestore(app, config.firestoreDatabaseId)
-  : getFirestore(app);
+if (config.apiKey && config.projectId) {
+  try {
+    app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
+    firestoreDb = config.firestoreDatabaseId
+      ? getFirestore(app, config.firestoreDatabaseId)
+      : getFirestore(app);
+  } catch (e) {
+    console.warn('Firebase initialization failed, falling back to local state:', e);
+  }
+}
+
+export const db = firestoreDb;
 
 // Collection References
 const EVOLUTIONS_COL = 'evolutions';
@@ -40,6 +49,10 @@ export function subscribeEvolutions(
   callback: (data: ClinicalEvolution[]) => void,
   initialFallback: ClinicalEvolution[]
 ) {
+  if (!db) {
+    callback(initialFallback);
+    return () => {};
+  }
   const colRef = collection(db, EVOLUTIONS_COL);
 
   return onSnapshot(colRef, async (snapshot) => {
@@ -63,6 +76,7 @@ export function subscribeEvolutions(
 }
 
 export async function saveEvolutionToDb(evolution: ClinicalEvolution) {
+  if (!db) return;
   try {
     await setDoc(doc(db, EVOLUTIONS_COL, evolution.id), evolution, { merge: true });
   } catch (err) {
@@ -77,6 +91,10 @@ export function subscribeResidents(
   callback: (data: Resident[]) => void,
   initialFallback: Resident[]
 ) {
+  if (!db) {
+    callback(initialFallback);
+    return () => {};
+  }
   const colRef = collection(db, RESIDENTS_COL);
 
   return onSnapshot(colRef, async (snapshot) => {
@@ -97,6 +115,7 @@ export function subscribeResidents(
 }
 
 export async function saveResidentToDb(resident: Resident) {
+  if (!db) return;
   try {
     await setDoc(doc(db, RESIDENTS_COL, resident.id), resident, { merge: true });
   } catch (err) {
@@ -111,6 +130,10 @@ export function subscribeHandovers(
   callback: (data: HandoverLog[]) => void,
   initialFallback: HandoverLog[]
 ) {
+  if (!db) {
+    callback(initialFallback);
+    return () => {};
+  }
   const colRef = collection(db, HANDOVERS_COL);
 
   return onSnapshot(colRef, async (snapshot) => {
@@ -131,6 +154,7 @@ export function subscribeHandovers(
 }
 
 export async function saveHandoverToDb(handover: HandoverLog) {
+  if (!db) return;
   try {
     await setDoc(doc(db, HANDOVERS_COL, handover.id), handover, { merge: true });
   } catch (err) {
@@ -145,6 +169,10 @@ export function subscribeMedications(
   callback: (data: MedicationMAR[]) => void,
   initialFallback: MedicationMAR[]
 ) {
+  if (!db) {
+    callback(initialFallback);
+    return () => {};
+  }
   const colRef = collection(db, MEDICATIONS_COL);
 
   return onSnapshot(colRef, async (snapshot) => {
@@ -165,6 +193,7 @@ export function subscribeMedications(
 }
 
 export async function saveMedicationToDb(medication: MedicationMAR) {
+  if (!db) return;
   try {
     await setDoc(doc(db, MEDICATIONS_COL, medication.id), medication, { merge: true });
   } catch (err) {

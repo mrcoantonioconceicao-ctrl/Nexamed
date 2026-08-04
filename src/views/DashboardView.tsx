@@ -26,6 +26,7 @@ import {
   Legend 
 } from 'recharts';
 import { Resident, ClinicalAlert, MedicationMAR, ClinicalEvolution, HandoverLog } from '../types';
+import { ShiftSummaryWidget } from '../components/ShiftSummaryWidget';
 
 interface DashboardViewProps {
   residents: Resident[];
@@ -221,6 +222,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <p className="text-[10px] text-zinc-500 font-medium">Equipe multiprofissional ativa</p>
         </div>
       </div>
+
+      {/* Resumo Automático do Plantão (Shift Summary Component) */}
+      <ShiftSummaryWidget
+        residents={residents}
+        alerts={alerts}
+        medications={medications}
+        evolutions={evolutions}
+        handovers={handovers}
+        onOpenResident={onOpenResident}
+        onOpenNewEvolution={onOpenNewEvolution}
+        onNavigate={onNavigate}
+      />
 
       {/* Recharts: Occurrence Frequency Chart Section */}
       <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-xs space-y-4">

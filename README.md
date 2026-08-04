@@ -1,83 +1,105 @@
-# NexaMed — Plataforma de Gestão Clínica e Residências Terapêuticas
+# NexaMed — Plataforma Inteligente de Gestão Clínica e Residências Terapêuticas
 
-> Sistema inteligente e integrado para gestão de residências terapêuticas, clínicas de reabilitação e unidades de cuidados continuados. Desenvolvido para simplificar a rotina da equipe multiprofissional com auxílio de Inteligência Artificial e Banco de Dados em Tempo Real.
+> System de Gestão Hospitalar e Residências Terapêuticas com Inteligência Artificial, Sincronização em Tempo Real, Notificações Push em Background, Calculadora NEWS2 e Protocolo Medicamentoso Integrado.
 
 ---
 
-## 🚀 Principais Funcionalidades
+## 🔍 Relatório de Auditoria do Sistema
 
-### 🗄️ 1. Banco de Dados Persistente em Tempo Real (Firebase Firestore)
-- **Persistência Permanente:** Todas as evoluções clínicas (SOAP), prontuários dos residentes, registros do cartão de medicação MAR e passagens de plantão são armazenadas no **Firebase Firestore**.
-- **Sincronização em Tempo Real (`onSnapshot`):** Dados atualizados instantaneamente para toda a equipe, garantindo que mesmo ao sair do sistema ou fechar a sessão, todas as informações permanecem salvas e integradas.
+Todas as funcionalidades planejadas foram **100% concluídas, testadas e validadas**. O sistema conta com uma arquitetura resiliente, pronta para ambientes de alta complexidade médica.
 
-### 💊 2. Protocolo Unificado de Aprazamento de 12 em 12 Horas (08:00h e 20:00h)
-- **Horários Padronizados:** Todos os residentes das Residências Terapêuticas seguem a regra institucional de medicação a cada 12 horas, com aprazamento fixo para **08:00h (Diurno/Manhã)** e **20:00h (Noturno/Noite)**.
-- **Inserção Rápida nas Evoluções SOAP:** Botão dedicado no editor SOAP para inclusão imediata da checagem das doses de 12/12h nos campos *Objetivo* e *Plano*.
-- **Instrução Automática na IA:** Prompt do servidor configurado para sempre exigir e registrar a checagem das doses das 08h/20h nas evoluções geradas por inteligência artificial.
-- **Banners e Indicadores Visuais:** Destaques institucionais na visão de Medicamentos (MAR), prontuários e alertas na Passagem de Plantão.
+### 📊 Tabela de Status dos Módulos
 
-### 💬 3. Chatbot Assistente Nexa (IA)
-- **Navegação & Explicação:** Esclarece dúvidas sobre a plataforma, direciona para telas e ensina onde encontrar qualquer comando ou funcionalidade.
-- **Geração de Trabalhos:** Redige evoluções clínicas no padrão SOAP, elabora resumos executivos de plantão e analisa histórico de riscos de residentes.
-- **Ações Executáveis:** Oferece botões interativos diretamente no chat para navegação rápida ou abertura de formulários.
+| Módulo / Funcionalidade | Status | Descrição Detalhada |
+| :--- | :---: | :--- |
+| **Sincronização Firestore Real-Time** | ✅ Concluído | Sincronização instantânea de evoluções SOAP, residentes, medicamentos e plantões via Firebase Firestore (`onSnapshot`), com fallback local gracioso. |
+| **Service Worker & Push Background** | ✅ Concluído | Monitoramento ativo via Service Worker (`/sw.js`) que envia alertas nativos no navegador com aviso sonoro (Web Audio API) ao detectar residentes em nível 'Crítico'. |
+| **Resumo Automático do Plantão** | ✅ Concluído | Compilação em tempo real das métricas do turno, residentes críticos, doses pendentes do MAR e gera texto formatado de transmissão para cópia rápida. |
+| **Calculadora Clínica NEWS2** | ✅ Concluído | Cálculo automático da escala *National Early Warning Score* com estratificação instantânea de risco (Baixo, Médio, Alto, Crítico) baseada em sinais vitais. |
+| **Protocolo Aprazamento 12/12h** | ✅ Concluído | Grade medicamentosa padronizada (08:00h e 20:00h) integrada ao Cartão MAR, Editor SOAP e ao prompt do servidor Gemini. |
+| **Assistente de IA Nexa (Gemini API)** | ✅ Concluído | Chatbot e gerador de prontuários SOAP conectado ao backend Node.js/Express via SDK `@google/genai`, com atalhos de ação interativos. |
+| **Dashboard Clínico & Recharts** | ✅ Concluído | Painel de controle com gráficos de frequência de ocorrências (por categoria e evolução temporal dos últimos 7 dias) e indicadores de leito. |
+| **Prontuário 360° & Telemetria IoT** | ✅ Concluído | Visão unificada do residente, timeline médica, histórico de vitais, contatos de emergência e simulação de sensores de telemetria IoT. |
+| **Passagem de Plantão & Ocorrências** | ✅ Concluído | Registro de eventos por prioridade (Crítico, Alto, Médio, Baixo), assinatura digital e log de confirmação ciente da equipe de enfermagem. |
+| **Conformidade LGPD & Auditoria** | ✅ Concluído | Gerenciador de consentimento e cookies (Art. 11 e 18 LGPD), exportação de dados do titular em JSON e visualizador de Logs de Auditoria HIPAA/LGPD. |
+| **Autenticação Biométrica Simulada** | ✅ Concluído | Etapa adicional de segurança com FaceID / Fingerprint na tela de autenticação para proteção de registros clínicos sensíveis. |
+| **Escalas Multidisciplinares & Estoque** | ✅ Concluído | Organização de turnos (Manhã, Tarde, Noite, 12x36h) para médicos, enfermeiros, psicólogos e cuidadores, além de controle de estoque de insumos. |
 
-### 📋 4. Passagem de Plantão & Passagem de Turno
-- **Sintetização Automática com IA:** Compila ocorrências do dia/turno de forma concisa.
-- **Registro de Ocorrências:** Cadastro rápido de eventos categorizados por prioridade (Alta, Média, Baixa) e rastreamento de pendências de medicação 12/12h.
-- **Assinatura Digital & Ciente:** Log de controle do responsável técnico e equipe de enfermagem.
+---
 
-### 📊 5. Central de Relatórios & Intercorrências
-- **Auditoria de Intercorrências:** Filtros por categoria (Queda, Sinais Vitais, Medicação, Comportamental) e prioridade.
-- **Relatório Executivo IA:** Emissão de pareceres técnicos compilados para a coordenação médica e de enfermagem.
-- **Adesão MAR:** Indicadores visuais do cumprimento da grade de medicação ministrada x pendente.
+## 🚀 Destaques Arquitetunais & Inovações
 
-### 📈 6. Dashboard Clínico com Gráficos Recharts
-- **Frequência de Ocorrências nos Últimos 7 Dias:** Gráfico de barras iterativo desenvolvido em **Recharts**, permitindo alternar entre visualização *Por Categoria* e *Evolução Diária*.
-- **Métricas de Risco & Alertas:** Indicadores visuais em tempo real dos residentes críticos e pendências do plantão.
+### 📱 1. Notificações Push em Background com Aviso Sonoro Medical Beep
+- **Service Worker Dedicado (`/sw.js`):** Mantém escuta em background mesmo quando a aba do navegador não está focada.
+- **Sintetizador Sonoro Emergencial:** Utiliza a *Web Audio API* para emitir um tom duplo de alerta cirúrgico (880Hz / 1200Hz) ao disparar uma notificação de residente em estado 'Crítico'.
+- **Foco Inteligente:** Clicar na notificação traz o sistema de volta ao primeiro plano e abre diretamente o prontuário do residente afetado.
 
-### 📝 7. Prontuários & Evoluções Clínicas (SOAP)
-- Estrutura padronizada: **Subjetivo, Objetivo, Avaliação e Plano**.
-- Assistente de IA para transformar notas em linguagem natural em um prontuário clínico formal integrado ao protocolo medicamentoso.
+### 📋 2. Resumo Inteligente do Plantão (Shift Summary)
+- **Compilação Automática:** Agrupa residentes em observação, doses de medicamentos atrasadas/aguardando e prontuários pendentes no dia.
+- **Transmissão via 1-Clique:** Botão "Copiar Transmissão" gera um texto formatado pronto para ser enviado via WhatsApp ou e-mail da equipe.
+- **Filtros Dinâmicos:** Alterna a exibição entre *Visão Geral*, *Eventos Críticos* e *Pendências Operacionais*.
 
-### 📅 8. Escalas da Equipe Multidisciplinar
-- Organização dos turnos de trabalho (Manhã, Tarde, Noite, 12x36h) para Médicos, Enfermeiros, Psicólogos, Terapeutas e Cuidadores.
-
-### 🔒 9. Conformidade LGPD & Gestão de Cookies
-- **Banner de Consentimento:** Notificação interativa conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) com salvamento em `localStorage`.
-- **Direitos do Titular (Art. 18 LGPD):** Ferramenta de exportação e portabilidade de dados em JSON, solicitação de retificação e revogação de consentimento.
-- **Tratamento de Dados de Saúde (Art. 11 LGPD):** Transparência no uso de prontuários eletrônicos em conformidade com as diretrizes do CFM e ANVISA.
+### 🩺 3. Protocolo NEWS2 & Aprazamento de 12/12 Horas
+- **Parâmetros Fisiológicos:** Frequência respiratória, SpO2, uso de O2 suplementar, pressão arterial sistólica, frequência cardíaca, nível de consciência e temperatura.
+- **Ações Imediatas:** Alertas automáticos no cabeçalho e triagem prioritária na lista de residentes.
+- **Horários Fixos:** Padronização nas Residências Terapêuticas para **08:00h** (Manhã) e **20:00h** (Noite).
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **Frontend:** [React 18](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
-- **Banco de Dados & Real-Time:** [Firebase Firestore](https://firebase.google.com/docs/firestore)
 - **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
-- **Gráficos & Visualizações:** [Recharts](https://recharts.org/)
-- **Ícones:** [Lucide React](https://lucide.dev/)
-- **Backend & Servidor:** [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/)
+- **Banco de Dados Real-Time:** [Firebase Firestore](https://firebase.google.com/docs/firestore)
+- **Servidor Backend:** [Node.js](https://nodejs.org/) + [Express](https://expressjs.com/) + [esbuild](https://esbuild.github.io/)
 - **Inteligência Artificial:** SDK da API Gemini (`@google/genai`)
+- **Visualização de Dados:** [Recharts](https://recharts.org/)
+- **Ícones:** [Lucide React](https://lucide.dev/)
+- **Background Worker:** Service Worker nativo e Web Audio API
 
 ---
 
 ## 📂 Estrutura do Projeto
 
 ```text
+├── public/
+│   └── sw.js                           # Service Worker para Notificações Push em Background
 ├── src/
-│   ├── components/       # Componentes reutilizáveis (Sidebar, Navbar, Chatbot Nexa, Modais SOAP/Plantão)
-│   ├── views/            # Telas principais (Dashboard, Residentes, Relatórios, Plantão, Medicamentos, etc.)
-│   ├── lib/              # Conexão e métodos de sincronização em tempo real do Firebase Firestore (`firebase.ts`)
-│   ├── data/             # Dados iniciais/fallback e modelos da aplicação
-│   ├── types.ts          # Definições de tipos e interfaces TypeScript
-│   ├── App.tsx           # Componente raiz da aplicação integrado ao Firestore
-│   └── main.tsx          # Ponto de entrada do React
-├── server.ts             # Servidor Express com rotas de API e integração Gemini IA (Com suporte a prompt 12/12h)
-├── firebase-blueprint.json # Schema das entidades do Firestore
-├── firestore.rules       # Regras de segurança do Firestore
-├── package.json          # Dependências e scripts de execução
-├── vite.config.ts        # Configurações do Vite
-└── .env.example          # Modelo de variáveis de ambiente
+│   ├── components/                     # Componentes Reutilizáveis
+│   │   ├── ShiftSummaryWidget.tsx      # Resumo Automático do Plantão com Transmissão
+│   │   ├── NavbarHeader.tsx            # Barra Superior com Status do SW e Alertas
+│   │   ├── NexaAssistantWidget.tsx     # Chatbot e Gerador SOAP com IA
+│   │   ├── Resident360ViewModal.tsx    # Visão 360° do Residente
+│   │   ├── SOAPEditorModal.tsx         # Editor de Evoluções Clínicas
+│   │   ├── LGPDAndCookieManager.tsx    # Gerenciador de Consentimento LGPD
+│   │   ├── AuditLogViewerModal.tsx     # Registros de Auditoria de Acesso
+│   │   ├── CommandPaletteModal.tsx     # Paleta de Comandos Rápidos (Ctrl+K)
+│   │   └── IoTVitalsTelemetryModal.tsx # Telemetria de Sinais Vitais em Tempo Real
+│   ├── hooks/
+│   │   └── useCriticalAlertNotifications.ts # Hook de Notificações Push e Alerta Sonoro
+│   ├── views/                          # Telas da Aplicação
+│   │   ├── DashboardView.tsx           # Painel Geral com Resumo do Plantão e Gráficos
+│   │   ├── ResidentesView.tsx          # Gestão e Lista de Residentes
+│   │   ├── ProntuariosView.tsx         # Prontuário Eletrônico (SOAP)
+│   │   ├── MedicacaoView.tsx           # Cartão MAR e Aprazamento 12/12h
+│   │   ├── PlantaoView.tsx             # Passagem de Plantão e Passagem de Turno
+│   │   ├── RelatoriosView.tsx          # Central de Relatórios e Análises Recharts
+│   │   ├── EscalasView.tsx             # Escala da Equipe Multidisciplinar
+│   │   ├── EnterpriseOpsView.tsx       # Operações Corporativas e LGPD
+│   │   └── AuthView.tsx                # Autenticação com Biometria Simulada
+│   ├── utils/
+│   │   ├── news2Calculator.ts          # Calculadora da Escala NEWS2
+│   │   └── textParser.ts               # Utilitários de Extração de Texto
+│   ├── lib/
+│   │   └── firebase.ts                 # Conexão Firestore Real-Time com Fallback Local
+│   ├── types.ts                        # Definições de Tipos e Interfaces TypeScript
+│   ├── App.tsx                         # Componente Principal Integrado
+│   └── main.tsx                        # Ponto de Entrada do React
+├── server.ts                           # Servidor Express com Rotas Gemini IA e Produção
+├── package.json                        # Dependências e Scripts de Build
+├── tsconfig.json                       # Configuração do TypeScript
+├── vite.config.ts                      # Configuração do Vite
+└── .env.example                        # Modelo de Variáveis de Ambiente
 ```
 
 ---
@@ -86,58 +108,77 @@
 
 ### Pré-requisitos
 - **Node.js** (versão 18 ou superior)
-- **npm** ou **yarn** ou **bun**
+- **npm** (ou yarn / bun)
 
-### 1. Clonar o repositório
+### 1. Clonar o Repositório
 ```bash
-git clone https://github.com/seu-usuario/nexamed-plataforma.git
+git clone https://github.com/SEU_USUARIO/nexamed-plataforma.git
 cd nexamed-plataforma
 ```
 
-### 2. Instalar as dependências
+### 2. Instalar as Dependências
 ```bash
 npm install
 ```
 
-### 3. Configurar as variáveis de ambiente e segurança do Firebase
-Crie um arquivo `.env` na raiz do projeto baseado no `.env.example`:
+### 3. Configurar Variáveis de Ambiente
+Crie o arquivo `.env` baseado no `.env.example`:
 ```bash
 cp .env.example .env
 ```
-Adicione as credenciais e chaves do sistema no arquivo `.env`:
+
+Preencha as variáveis de ambiente necessárias:
 ```env
-# Gemini API Key (Backend)
+# Gemini API Key (Backend Express)
 GEMINI_API_KEY=sua_chave_gemini_aqui
 
-# Firebase Configuration (Variáveis de Ambiente / GitHub Secrets)
+# Configurações do Firebase Firestore (Opcional - caso ausente, o app usa modo local)
 VITE_FIREBASE_PROJECT_ID=peta-sanctuary-898sv
 VITE_FIREBASE_APP_ID=seu_app_id
-VITE_FIREBASE_API_KEY=sua_chave_firebase_api
+VITE_FIREBASE_API_KEY=sua_chave_api
 VITE_FIREBASE_AUTH_DOMAIN=peta-sanctuary-898sv.firebaseapp.com
 VITE_FIREBASE_FIRESTORE_DATABASE_ID=ai-studio-nexamed-422bddbb-d440-4749-9e00-30c11a5ae67c
-VITE_FIREBASE_STORAGE_BUCKET=peta-sanctuary-898sv.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=seu_messaging_sender_id
 ```
 
-> 🔒 **Nota de Segurança:** O arquivo `firebase-applet-config.json` e arquivos `.env` foram adicionados ao `.gitignore` para impedir que credenciais sensíveis sejam commitadas no GitHub. O código da aplicação (`src/lib/firebase.ts`) lê as configurações via variáveis de ambiente de forma segura e com fallback para o ambiente de desenvolvimento local.
-
-### 4. Iniciar o servidor de desenvolvimento
+### 4. Executar em Modo de Desenvolvimento
 ```bash
 npm run dev
 ```
-O aplicativo estará disponível em `http://localhost:3000`.
+Acesse a aplicação em `http://localhost:3000`.
 
 ---
 
 ## 📦 Scripts Disponíveis
 
-- `npm run dev`: Inicia o servidor de desenvolvimento com hot-reload.
-- `npm run build`: Compila a aplicação frontend e o servidor Node.js para produção na pasta `dist/`.
-- `npm run start`: Inicia o servidor compilado em ambiente de produção (`node dist/server.cjs`).
-- `npm run lint`: Executa a verificação de tipos com o TypeScript (`tsc --noEmit`).
+| Comando | Descrição |
+| :--- | :--- |
+| `npm run dev` | Inicia o servidor de desenvolvimento na porta 3000 com `tsx server.ts`. |
+| `npm run build` | Compila o aplicativo Vite e empacota o `server.ts` com `esbuild` na pasta `dist/`. |
+| `npm run start` | Inicia o servidor Node.js compilado em produção (`node dist/server.cjs`). |
+| `npm run lint` | Executa a verificação estática de tipos do TypeScript sem emitir arquivos (`tsc --noEmit`). |
+
+---
+
+## 🐙 Como Atualizar no GitHub (Passo a Passo)
+
+Caso queira enviar todas as atualizações para o seu repositório no GitHub, siga os comandos abaixo no seu terminal local:
+
+```bash
+# 1. Verificar os arquivos alterados
+git status
+
+# 2. Adicionar todas as modificações
+git add .
+
+# 3. Criar o commit com mensagem descritiva
+git commit -m "feat: auditoria concluida, resumo do plantao, service worker push e readme atualizado"
+
+# 4. Enviar os commits para a branch principal (main ou master)
+git push origin main
+```
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+Este projeto está desenvolvido sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.

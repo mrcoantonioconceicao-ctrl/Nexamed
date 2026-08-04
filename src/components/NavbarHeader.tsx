@@ -24,6 +24,10 @@ interface NavbarHeaderProps {
   onMarkAlertsRead: () => void;
   onOpenOutboundHandover?: () => void;
   onOpenInboundHandover?: () => void;
+  notificationPermission?: NotificationPermission;
+  onRequestNotificationPermission?: () => void;
+  onSendTestNotificationAlert?: () => void;
+  criticalResidentsCount?: number;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -34,6 +38,10 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onMarkAlertsRead,
   onOpenOutboundHandover,
   onOpenInboundHandover,
+  notificationPermission,
+  onRequestNotificationPermission,
+  onSendTestNotificationAlert,
+  criticalResidentsCount = 0,
 }) => {
   const currentUser = getCurrentUser();
   const demoMode = !isAuthEnabled();
@@ -161,6 +169,46 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     <Check className="w-3 h-3" /> Limpar lidos
                   </button>
                 )}
+              </div>
+
+              {/* Background Push Notifications Status & Controls for Nursing Staff */}
+              <div className="p-2.5 bg-rose-50/60 border-b border-rose-200/80 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-rose-900">
+                    <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+                    <span>Push Notificações (Estado Crítico)</span>
+                  </div>
+                  {notificationPermission === 'granted' ? (
+                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded">
+                      Ativo (Background SW)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-extrabold text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded">
+                      Pendente
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-zinc-600">
+                  Alertas em tempo real do navegador com aviso sonoro e vibração quando o status de algum residente for alterado para 'Crítico'.
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  {notificationPermission !== 'granted' && onRequestNotificationPermission && (
+                    <button
+                      onClick={onRequestNotificationPermission}
+                      className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold rounded-lg transition-colors shadow-2xs"
+                    >
+                      🔔 Ativar Notificações do Navegador
+                    </button>
+                  )}
+                  {onSendTestNotificationAlert && (
+                    <button
+                      onClick={onSendTestNotificationAlert}
+                      className="px-2 py-1 bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-300 text-[10px] font-semibold rounded-lg transition-colors"
+                    >
+                      🧪 Testar Alerta Sonoro
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100">
