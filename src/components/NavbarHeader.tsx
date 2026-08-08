@@ -10,7 +10,8 @@ import {
   Check, 
   ChevronDown,
   Activity,
-  Layers
+  Layers,
+  Compass
 } from 'lucide-react';
 import { getCurrentUser, isAuthEnabled, setCurrentUser } from '../config/auth-mode';
 import { ClinicalAlert } from '../types';
@@ -28,6 +29,7 @@ interface NavbarHeaderProps {
   onRequestNotificationPermission?: () => void;
   onSendTestNotificationAlert?: () => void;
   criticalResidentsCount?: number;
+  onOpenTour?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -42,6 +44,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onRequestNotificationPermission,
   onSendTestNotificationAlert,
   criticalResidentsCount = 0,
+  onOpenTour,
 }) => {
   const currentUser = getCurrentUser();
   const demoMode = !isAuthEnabled();
@@ -104,6 +107,18 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center space-x-2.5 sm:space-x-3">
+        {/* Guided Tour Trigger Button */}
+        {onOpenTour && (
+          <button
+            onClick={onOpenTour}
+            className="hidden sm:flex items-center gap-1.5 py-2 px-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold text-xs rounded-xl border border-zinc-200 transition-all shadow-2xs"
+            title="Iniciar Tour Guiado pelos Módulos"
+          >
+            <Compass className="w-3.5 h-3.5 text-teal-600" />
+            <span>Tour Guiado</span>
+          </button>
+        )}
+
         {/* Smart Handover Quick Trigger Button */}
         {onOpenOutboundHandover && (
           <button

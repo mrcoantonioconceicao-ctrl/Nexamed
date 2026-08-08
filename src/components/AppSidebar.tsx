@@ -21,7 +21,8 @@ import {
   AlertCircle,
   Database,
   Terminal,
-  Target
+  Target,
+  Compass
 } from 'lucide-react';
 import { getCurrentUser } from '../config/auth-mode';
 
@@ -32,6 +33,7 @@ interface AppSidebarProps {
   activeAlertsCount: number;
   openNexaChat: () => void;
   onOpenLGPD?: () => void;
+  onOpenTour?: () => void;
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({
@@ -41,6 +43,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   activeAlertsCount,
   openNexaChat,
   onOpenLGPD,
+  onOpenTour,
 }) => {
   const currentUser = getCurrentUser();
   const isDirecao = currentUser?.roleCategory === 'DIRECAO';
@@ -218,7 +221,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       </div>
 
       {/* Footer System Status & LGPD */}
-      <div className="p-3 border-t border-zinc-200/80 bg-zinc-50/80 rounded-br-2xl space-y-1">
+      <div className="p-3 border-t border-zinc-200/80 bg-zinc-50/80 rounded-br-2xl space-y-1.5">
+        {onOpenTour && (
+          <button
+            onClick={onOpenTour}
+            className="w-full py-2 px-3 bg-teal-50 hover:bg-teal-100 text-teal-800 font-extrabold text-xs rounded-xl border border-teal-200 transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+          >
+            <Compass className="w-3.5 h-3.5 text-teal-600" />
+            <span>Tour Guiado NexaMed</span>
+          </button>
+        )}
+
         <div className="flex items-center justify-between text-[11px] text-zinc-500 px-2 py-0.5">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

@@ -64,6 +64,7 @@ import { IoTVitalsTelemetryModal } from './components/IoTVitalsTelemetryModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TelehealthModal } from './components/TelehealthModal';
 import { SmartHandoverModal, PendingAuditItem } from './components/SmartHandoverModal';
+import { GuidedTourModal } from './components/GuidedTourModal';
 
 import { DashboardView } from './views/DashboardView';
 import { ResidentesView } from './views/ResidentesView';
@@ -191,6 +192,7 @@ export default function App() {
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
   const [isSOAPModalOpen, setIsSOAPModalOpen] = useState(false);
   const [isLGPDModalOpen, setIsLGPDModalOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
   const [initialResidentIdForSOAP, setInitialResidentIdForSOAP] = useState<string | undefined>();
   const [selectedResidentForDetail, setSelectedResidentForDetail] = useState<Resident | null>(null);
   const [selectedResidentFor360, setSelectedResidentFor360] = useState<Resident | null>(null);
@@ -535,6 +537,7 @@ export default function App() {
         onRequestNotificationPermission={requestNotificationPermission}
         onSendTestNotificationAlert={sendTestNotificationAlert}
         criticalResidentsCount={criticalResidentsCount}
+        onOpenTour={() => setIsTourOpen(true)}
       />
 
       {/* Main Body Shell */}
@@ -548,6 +551,7 @@ export default function App() {
             activeAlertsCount={activeAlertsCount}
             openNexaChat={() => setIsNexaChatOpen(true)}
             onOpenLGPD={() => setIsLGPDModalOpen(true)}
+            onOpenTour={() => setIsTourOpen(true)}
           />
         )}
 
@@ -849,6 +853,16 @@ export default function App() {
           setIsSmartHandoverOpen(false);
         }}
         onResolvePendingDirectly={handleResolvePendingDirectly}
+      />
+
+      {/* Guided Tour Modal */}
+      <GuidedTourModal
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onNavigate={(path) => {
+          setCurrentPath(path);
+          setIsTourOpen(false);
+        }}
       />
     </div>
   );
