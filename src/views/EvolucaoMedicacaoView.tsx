@@ -561,7 +561,7 @@ export const EvolucaoMedicacaoView: React.FC<EvolucaoMedicacaoViewProps> = ({
                 ) : (
                   resMeds.map((med) => {
                     // Filter doses for selected shift
-                    const targetDoses = med.scheduledDoses.filter(d => 
+                    const targetDoses = (med.scheduledDoses || []).filter(d => 
                       shiftFilter === 'Todos' ? true : d.time === shiftFilter
                     );
 

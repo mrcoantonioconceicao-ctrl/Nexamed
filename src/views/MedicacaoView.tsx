@@ -207,7 +207,7 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
                 Horários de Checagem no Turno:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {med.scheduledDoses.map((dose) => (
+                {(med.scheduledDoses || []).map((dose) => (
                   <div
                     key={dose.id}
                     className="p-3 bg-zinc-50/80 rounded-xl border border-zinc-200/80 flex items-center justify-between"

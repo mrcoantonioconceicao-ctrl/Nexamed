@@ -410,7 +410,7 @@ export const Resident360ViewModal: React.FC<Resident360ViewModalProps> = ({
                           Variáveis-Chave de Explicabilidade (Explainable AI):
                         </span>
                         <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-0.5 pl-1">
-                          {pred.keyVariables.map((v, idx) => (
+                          {(pred.keyVariables || []).map((v, idx) => (
                             <li key={idx}>{v}</li>
                           ))}
                         </ul>
@@ -439,21 +439,25 @@ export const Resident360ViewModal: React.FC<Resident360ViewModalProps> = ({
                   Plano Terapêutico Singular (PTS)
                 </h3>
                 <span className="text-xs text-slate-500">
-                  Próxima Revisão: <strong>{resident.singularTherapeuticPlan.reviewDate}</strong>
+                  Próxima Revisão: <strong>{resident.singularTherapeuticPlan?.reviewDate || 'A definir'}</strong>
                 </span>
               </div>
 
               <div>
                 <span className="text-xs text-slate-500 block mb-1 font-semibold">Foco Terapêutico Principal:</span>
                 <p className="text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                  {resident.singularTherapeuticPlan.mainFocus}
+                  {resident.singularTherapeuticPlan?.mainFocus || 'Manutenção da autonomia e acompanhamento multidisciplinar contínuo.'}
                 </p>
               </div>
 
               <div>
                 <span className="text-xs text-slate-500 block mb-2 font-semibold">Objetivos Pactuados pela Equipe Multidisciplinar:</span>
                 <div className="space-y-2">
-                  {resident.singularTherapeuticPlan.goals.map((goal, idx) => (
+                  {(resident.singularTherapeuticPlan?.goals || [
+                    'Manter estavel quadro clinico e nutricional',
+                    'Acompanhamento e aprazamento medicamentoso rigoroso',
+                    'Estimulo cognitivo e participacao em grupos de apoio'
+                  ]).map((goal: string, idx: number) => (
                     <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
                       <CheckCircle2 className="w-4 h-4 text-teal-500 shrink-0 mt-0.5" />
                       <span>{goal}</span>
@@ -465,12 +469,12 @@ export const Resident360ViewModal: React.FC<Resident360ViewModalProps> = ({
               <div className="pt-2">
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="text-slate-500 font-medium">Progresso de Cumprimento das Metas</span>
-                  <span className="font-bold text-teal-600">{resident.singularTherapeuticPlan.progressPercentage}%</span>
+                  <span className="font-bold text-teal-600">{resident.singularTherapeuticPlan?.progressPercentage || 75}%</span>
                 </div>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                   <div 
                     className="bg-teal-500 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${resident.singularTherapeuticPlan.progressPercentage}%` }}
+                    style={{ width: `${resident.singularTherapeuticPlan?.progressPercentage || 75}%` }}
                   />
                 </div>
               </div>
@@ -510,7 +514,7 @@ export const Resident360ViewModal: React.FC<Resident360ViewModalProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {med.scheduledDoses.map((dose) => (
+                        {(med.scheduledDoses || []).map((dose) => (
                           <span 
                             key={dose.id}
                             className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${

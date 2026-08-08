@@ -41,6 +41,11 @@ const RESIDENTS_COL = 'residents';
 const HANDOVERS_COL = 'handovers';
 const MEDICATIONS_COL = 'medications';
 
+function sanitizeForFirestore<T>(data: T): Record<string, any> {
+  if (data === null || data === undefined) return {};
+  return JSON.parse(JSON.stringify(data));
+}
+
 /**
  * Subscribe to Evolutions collection with real-time updates.
  * If database is empty, seeds initial fallback data.
@@ -59,7 +64,7 @@ export function subscribeEvolutions(
     if (snapshot.empty && initialFallback.length > 0) {
       // Seed Firestore with initial evolutions
       for (const item of initialFallback) {
-        await setDoc(doc(db, EVOLUTIONS_COL, item.id), item);
+        await setDoc(doc(db, EVOLUTIONS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
     } else {
@@ -78,7 +83,7 @@ export function subscribeEvolutions(
 export async function saveEvolutionToDb(evolution: ClinicalEvolution) {
   if (!db) return;
   try {
-    await setDoc(doc(db, EVOLUTIONS_COL, evolution.id), evolution, { merge: true });
+    await setDoc(doc(db, EVOLUTIONS_COL, evolution.id), sanitizeForFirestore(evolution), { merge: true });
   } catch (err) {
     console.error('Error saving evolution to Firestore:', err);
   }
@@ -100,7 +105,7 @@ export function subscribeResidents(
   return onSnapshot(colRef, async (snapshot) => {
     if (snapshot.empty && initialFallback.length > 0) {
       for (const item of initialFallback) {
-        await setDoc(doc(db, RESIDENTS_COL, item.id), item);
+        await setDoc(doc(db, RESIDENTS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
     } else {
@@ -117,7 +122,7 @@ export function subscribeResidents(
 export async function saveResidentToDb(resident: Resident) {
   if (!db) return;
   try {
-    await setDoc(doc(db, RESIDENTS_COL, resident.id), resident, { merge: true });
+    await setDoc(doc(db, RESIDENTS_COL, resident.id), sanitizeForFirestore(resident), { merge: true });
   } catch (err) {
     console.error('Error saving resident to Firestore:', err);
   }
@@ -139,7 +144,7 @@ export function subscribeHandovers(
   return onSnapshot(colRef, async (snapshot) => {
     if (snapshot.empty && initialFallback.length > 0) {
       for (const item of initialFallback) {
-        await setDoc(doc(db, HANDOVERS_COL, item.id), item);
+        await setDoc(doc(db, HANDOVERS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
     } else {
@@ -156,7 +161,7 @@ export function subscribeHandovers(
 export async function saveHandoverToDb(handover: HandoverLog) {
   if (!db) return;
   try {
-    await setDoc(doc(db, HANDOVERS_COL, handover.id), handover, { merge: true });
+    await setDoc(doc(db, HANDOVERS_COL, handover.id), sanitizeForFirestore(handover), { merge: true });
   } catch (err) {
     console.error('Error saving handover to Firestore:', err);
   }
@@ -178,7 +183,7 @@ export function subscribeMedications(
   return onSnapshot(colRef, async (snapshot) => {
     if (snapshot.empty && initialFallback.length > 0) {
       for (const item of initialFallback) {
-        await setDoc(doc(db, MEDICATIONS_COL, item.id), item);
+        await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
     } else {
@@ -195,7 +200,7 @@ export function subscribeMedications(
 export async function saveMedicationToDb(medication: MedicationMAR) {
   if (!db) return;
   try {
-    await setDoc(doc(db, MEDICATIONS_COL, medication.id), medication, { merge: true });
+    await setDoc(doc(db, MEDICATIONS_COL, medication.id), sanitizeForFirestore(medication), { merge: true });
   } catch (err) {
     console.error('Error saving medication to Firestore:', err);
   }

@@ -77,6 +77,11 @@ import { ResidencialGuiaView } from './views/ResidencialGuiaView';
 import { UsuariosView } from './views/UsuariosView';
 import { ConfiguracoesView } from './views/ConfiguracoesView';
 import { AuthView } from './views/AuthView';
+import { PASAtendimentosView } from './views/PASAtendimentosView';
+import { PendenciasView } from './views/PendenciasView';
+import { GiterMigrationView } from './views/GiterMigrationView';
+import { ClinicalTestSuiteView } from './views/ClinicalTestSuiteView';
+import { DailyHuddleView } from './views/DailyHuddleView';
 
 export default function App() {
   // Navigation State
@@ -421,8 +426,8 @@ export default function App() {
   };
 
   // Pending meds count
-  const pendingMedsCount = medications.reduce((acc, m) => {
-    return acc + m.scheduledDoses.filter(d => d.status === 'Pendente' || d.status === 'Atrasado').length;
+  const pendingMedsCount = (medications || []).reduce((acc, m) => {
+    return acc + (m?.scheduledDoses || []).filter(d => d.status === 'Pendente' || d.status === 'Atrasado').length;
   }, 0);
 
   // Active alerts count
@@ -537,11 +542,41 @@ export default function App() {
             />
           )}
 
+          {currentPath === '/pas-atendimentos' && (
+            <PASAtendimentosView
+              residents={residents}
+              onNavigate={setCurrentPath}
+            />
+          )}
+
+          {currentPath === '/pendencias' && (
+            <PendenciasView
+              residents={residents}
+              evolutions={evolutions}
+              medications={medications}
+              alerts={alerts}
+              onNavigate={setCurrentPath}
+              onOpenSOAPForResident={(resId) => {
+                setInitialResidentIdForSOAP(resId);
+                setIsSOAPModalOpen(true);
+              }}
+            />
+          )}
+
           {currentPath === '/escalas' && (
             <EscalasView
               roster={roster}
+              residents={residents}
               onAddRosterItem={(item) => setRoster(prev => [item, ...prev])}
             />
+          )}
+
+          {currentPath === '/migracao-giter' && (
+            <GiterMigrationView />
+          )}
+
+          {currentPath === '/testes-clinicos' && (
+            <ClinicalTestSuiteView />
           )}
 
           {currentPath === '/plantao' && (
@@ -555,6 +590,13 @@ export default function App() {
               onAcknowledgeHandover={handleAcknowledgeHandover}
               onOpenInboundHandover={handleOpenInboundHandover}
               onOpenOutboundHandover={handleOpenOutboundHandover}
+            />
+          )}
+
+          {currentPath === '/daily-huddle' && (
+            <DailyHuddleView
+              residents={residents}
+              onNavigate={setCurrentPath}
             />
           )}
 

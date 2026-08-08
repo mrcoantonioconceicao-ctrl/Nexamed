@@ -283,7 +283,7 @@ export const MedicationLabelPrinterModal: React.FC<MedicationLabelPrinterModalPr
       zpl += `^FO30,105^GB540,2,2^FS\n`; // Divider
       zpl += `^FO30,120^A0N,32,32^FDMED: ${med.medicationName.toUpperCase()}^FS\n`;
       zpl += `^FO30,160^A0N,24,24^FDDOSAGEM: ${med.dosage} (${med.route})^FS\n`;
-      zpl += `^FO30,195^A0N,20,20^FDHORARIOS: ${med.scheduledDoses.map(d => d.time + 'h').join(', ')}^FS\n`;
+      zpl += `^FO30,195^A0N,20,20^FDHORARIOS: ${(med.scheduledDoses || []).map(d => d.time + 'h').join(', ')}^FS\n`;
       if (med.isControlled) {
         zpl += `^FO30,230^A0N,18,18^FD[ALERTA]: PORTARIA 344 - PSICOTROPICO CONTROLADO^FS\n`;
       }
@@ -1068,7 +1068,7 @@ export const MedicationLabelPrinterModal: React.FC<MedicationLabelPrinterModalPr
                         <div className="p-1.5 bg-zinc-100 border border-zinc-400 rounded-lg flex items-center justify-between font-mono font-bold text-[11px]">
                           <span className="text-zinc-600 text-[10px] uppercase font-sans">Horários Aprazados:</span>
                           <div className="flex items-center gap-2 text-zinc-950">
-                            {med.scheduledDoses.map(d => (
+                            {(med.scheduledDoses || []).map(d => (
                               <span key={d.id} className="bg-white border border-zinc-800 px-1.5 py-0.5 rounded shadow-2xs">
                                 ⏰ {d.time}h
                               </span>

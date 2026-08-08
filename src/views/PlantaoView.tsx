@@ -415,7 +415,7 @@ export const PlantaoView: React.FC<PlantaoViewProps> = ({
                   Ocorrências e Intercorrências Registradas ({log.occurrences.length}):
                 </span>
                 <div className="space-y-2">
-                  {log.occurrences.map((occ) => (
+                  {(log.occurrences || []).map((occ) => (
                     <div
                       key={occ.id}
                       className="p-3 bg-zinc-50/80 rounded-xl border border-zinc-200/80 flex items-start justify-between gap-3"
@@ -446,7 +446,7 @@ export const PlantaoView: React.FC<PlantaoViewProps> = ({
             <div className="pt-2 border-t border-zinc-100 flex items-center gap-2 text-[11px] text-zinc-500">
               <span className="font-bold text-zinc-700">Cientes Confirmados:</span>
               <div className="flex flex-wrap gap-1">
-                {log.acknowledgedBy.map((name, i) => (
+                {(log.acknowledgedBy || []).map((name, i) => (
                   <span key={i} className="bg-zinc-50 text-teal-800 font-bold px-2 py-0.5 rounded-md border border-zinc-200">
                     ✓ {name}
                   </span>

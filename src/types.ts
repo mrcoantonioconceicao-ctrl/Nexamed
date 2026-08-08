@@ -2,6 +2,32 @@ export type DependenceLevel = 'Grau I' | 'Grau II' | 'Grau III';
 export type ResidentStatus = 'Ativo' | 'Em Observação' | 'Alta Provisória';
 export type RiskScore = 'Baixo' | 'Médio' | 'Alto' | 'Crítico';
 
+export type ClinicalRole = 
+  | 'Enfermeiro Responsável Técnico (RT)' 
+  | 'Enfermeiro RT'
+  | 'Técnico de Enfermagem' 
+  | 'Médico Psiquiatra' 
+  | 'Psiquiatra'
+  | 'Clínico Geral' 
+  | 'Médico'
+  | 'Psicólogo' 
+  | 'Terapeuta Ocupacional' 
+  | 'Assistente Social' 
+  | 'Fisioterapeuta' 
+  | 'Nutricionista' 
+  | 'Cuidador Residencial'
+  | 'Cuidador'
+  | 'Direção'
+  | 'Outro'
+  | string;
+
+export interface SOAPNote {
+  subjective: string;
+  objective: string;
+  assessment: string;
+  plan: string;
+}
+
 export interface News2Score {
   totalScore: number; // 0-20
   riskLevel: 'Baixo' | 'Moderado' | 'Alto' | 'Crítico';
@@ -163,7 +189,132 @@ export interface StaffTraining {
   completedDate: string;
   expirationDate: string;
   status: 'Válido' | 'A Vencer' | 'Vencido';
-  certificateUrl?: string;
+}
+
+export interface EvolutionAuditEntry {
+  id: string;
+  timestamp: string;
+  authorName?: string;
+  authorRole?: string;
+  userId?: string;
+  userName?: string;
+  userRole?: string;
+  action: 'Criado' | 'Editado' | 'Assinado' | 'Auditado' | 'Criação' | 'Edição' | string;
+  previousValues?: Record<string, any>;
+  newValues?: Record<string, any>;
+  newValue?: string;
+  justification?: string;
+  reason?: string;
+  device?: string;
+  sessionToken?: string;
+}
+
+export type EvolutionType = 
+  | 'Diária' 
+  | 'Enfermagem' 
+  | 'Médica' 
+  | 'Psicológica' 
+  | 'Multiprofissional' 
+  | 'Cuidador' 
+  | 'Plantão' 
+  | 'Intercorrência' 
+  | 'Evolução Noturna'
+  | 'Noturna';
+
+export type TurnoType = 'Manhã' | 'Tarde' | 'Noite' | 'Outros';
+
+export interface PASRecord {
+  id: string;
+  residentId: string;
+  residentName: string;
+  type: 'PAS Inicial' | 'PAS Periódico' | 'Revisão Extraordinária' | string;
+  date?: string;
+  creationDate?: string;
+  authorName: string;
+  authorRole: string;
+  careLevel?: 'Grau I' | 'Grau II' | 'Grau III';
+  mainGoals?: string[];
+  goals?: string[];
+  interventions: string[];
+  clinicalObservations?: string;
+  nextReviewDate: string;
+  status: 'Ativo' | 'Revisado' | 'Arquivado' | string;
+  version?: number;
+}
+
+export interface AppointmentRecord {
+  id: string;
+  residentId: string;
+  residentName: string;
+  room?: string;
+  date: string;
+  time?: string;
+  specialty: string;
+  professionalName?: string;
+  professionals?: { name: string; role: string; crmCoren?: string }[] | string[];
+  reason?: string;
+  conduct: string;
+  referrals?: string[] | string;
+  summary?: string;
+  evolutionSummary?: string;
+  attachments?: string[];
+  createdAt?: string;
+  status?: string;
+}
+
+export interface FunctionalScaleAssessment {
+  id: string;
+  residentId: string;
+  residentName?: string;
+  scaleType: 'Katz' | 'Lawton';
+  date?: string;
+  assessmentDate?: string;
+  evaluatorName?: string;
+  evaluatorRole?: string;
+  assessedBy?: string;
+  score?: number;
+  totalScore?: number;
+  maxScore?: number;
+  classification: string;
+  details: Record<string, any>;
+}
+
+export interface PendingClinicalTask {
+  id: string;
+  residentId: string;
+  residentName: string;
+  room: string;
+  category?: string;
+  type?: string;
+  actionType?: string;
+  priority: 'Crítica' | 'Atenção' | 'Alta' | 'Normal' | string;
+  description: string;
+  dueTime?: string;
+  responsibleRole?: ClinicalRole;
+  targetModule?: string;
+  targetFormId?: string;
+  targetResidentId?: string;
+  status?: string;
+}
+
+export interface GiterMigrationReport {
+  id: string;
+  importedAt?: string;
+  timestamp?: string;
+  date?: string;
+  fileName?: string;
+  sourceSystem?: 'GITER' | 'CSV' | 'JSON' | 'Excel' | string;
+  recordsType?: string;
+  totalFound?: number;
+  recordsProcessed?: number;
+  totalImported?: number;
+  successCount?: number;
+  totalDuplicates?: number;
+  totalErrors?: number;
+  errorCount?: number;
+  status?: string;
+  logs?: string[];
+  importedBy: string;
 }
 
 export interface Resident {
@@ -171,31 +322,26 @@ export interface Resident {
   name: string;
   photo: string;
   age: number;
-  cpf: string;
+  cpf?: string;
+  cns?: string;
+  gender?: 'Feminino' | 'Masculino' | 'Outro';
+  birthDate?: string;
   room: string; // e.g. "Quarto 102 - Leito A"
-  unit: string; // e.g. "Unidade Jardim Paulista"
-  dependenceLevel: DependenceLevel;
-  primaryDiagnosis: string;
+  unit?: string; // e.g. "Unidade Jardim Paulista"
+  dependenceLevel?: DependenceLevel;
+  careLevel?: string;
+  riskScore?: RiskScore;
+  keyTherapists?: (string | { role: string; name: string })[];
+  singularTherapeuticPlan?: any;
+  medsPendingCount?: number;
+  notesCount?: number;
+  aiPredictions?: AIPrediction[];
+  primaryDiagnosis?: string;
+  primaryDiagnostic?: string;
   secondaryDiagnoses?: string[];
-  status: ResidentStatus;
-  admissionsDate: string;
-  allergies: string[];
-  emergencyContact: {
-    name: string;
-    relationship: string;
-    phone: string;
-  };
-  keyTherapists: {
-    role: string;
-    name: string;
-  }[];
-  riskScore: RiskScore;
-  singularTherapeuticPlan: {
-    goals: string[];
-    mainFocus: string;
-    reviewDate: string;
-    progressPercentage: number;
-  };
+  status?: ResidentStatus;
+  admissionsDate?: string;
+  allergies?: string[];
   vitals?: {
     bp: string;
     hr: number;
@@ -203,31 +349,26 @@ export interface Resident {
     spo2: number;
     respRate: number;
     lastAfericao?: string;
+    [key: string]: any;
   };
-  news2?: News2Score;
-  aiPredictions?: AIPrediction[];
-  notesCount?: number;
-  medsPendingCount?: number;
-}
-
-
-export type ClinicalRole = 
-  | 'Psiquiatra' 
-  | 'Enfermeiro RT' 
-  | 'Técnico de Enfermagem' 
-  | 'Cuidador'
-  | 'Psicólogo' 
-  | 'Terapeuta Ocupacional' 
-  | 'Assistente Social' 
-  | 'Educador Físico'
-  | 'Fisioterapeuta'
-  | 'Nutricionista';
-
-export interface SOAPNote {
-  subjective: string; // S: Queixas, relato do residente ou familiares
-  objective: string;   // O: Exame físico, sinais vitais, dados mensuráveis
-  assessment: string;  // A: Análise do quadro clínico/psicológico
-  plan: string;        // P: Conduta, encaminhamentos e prescrições
+  news2?: {
+    totalScore: number;
+    riskLevel: string;
+    [key: string]: any;
+  };
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phone: string;
+    email?: string;
+  };
+  responsibles?: {
+    name: string;
+    kinship: string;
+    phone: string;
+    email?: string;
+    isLegalGuardian: boolean;
+  }[];
 }
 
 export interface ClinicalEvolution {
@@ -238,18 +379,33 @@ export interface ClinicalEvolution {
   date: string;
   time: string;
   author: string;
-  role: ClinicalRole;
+  role: ClinicalRole | string;
+  evolutionType?: EvolutionType;
+  turno?: TurnoType;
   soap: SOAPNote;
+  isSoapModel?: boolean;
+  freeTextContent?: string;
   tags: string[];
   status: 'Finalizado' | 'Rascunho';
   vitals?: {
-    bp?: string; // Pressão Arterial
-    hr?: number; // Frequência Cardíaca
-    temp?: number; // Temperatura
-    spo2?: number; // Sat O2
-    glucose?: number; // Glicemia
-    respRate?: number; // Frequência Respiratória
+    bp?: string;
+    hr?: number;
+    temp?: number;
+    spo2?: number;
+    glucose?: number;
+    respRate?: number;
   };
+  nightEvolution?: {
+    sleepQualityScore: number; // 0 a 10
+    sleepHours?: number;
+    sleepInterruptions?: number;
+    nightBehavior?: string;
+    interventionsNeeded?: boolean;
+    interferences?: string[];
+    nightObservations?: string;
+  };
+  auditTrail?: EvolutionAuditEntry[];
+  sourceSystem?: 'GITER' | 'NEXAMED';
 }
 
 export type MedRoute = 'VO' | 'IV' | 'IM' | 'SC' | 'Tópico' | 'Inalatório';
@@ -257,7 +413,7 @@ export type DoseStatus = 'Pendente' | 'Ministrado' | 'Parcial' | 'Recusado' | 'A
 
 export interface ScheduledDose {
   id: string;
-  time: string; // e.g. "08:00"
+  time: string;
   status: DoseStatus;
   administeredBy?: string;
   administeredAt?: string;
@@ -272,10 +428,10 @@ export interface MedicationMAR {
   medicationName: string;
   dosage: string;
   route: MedRoute;
-  frequency: string; // e.g. "12/12h", "Uma vez ao dia", "Se necessário (SOS)"
+  frequency: string;
   scheduledDoses: ScheduledDose[];
   stockDosesRemaining: number;
-  isControlled: boolean; // Psicotrópico/Portaria 344
+  isControlled: boolean;
   allergyWarning?: string;
   prescribedBy: string;
 }
@@ -287,7 +443,7 @@ export interface StaffRoster {
   date: string;
   dayOfWeek: string;
   shiftType: ShiftType;
-  roleRequired: ClinicalRole;
+  roleRequired: ClinicalRole | string;
   assignedStaffId?: string;
   assignedStaffName?: string;
   status: 'Confirmado' | 'Vago' | 'Sobreposição';
@@ -318,10 +474,10 @@ export interface HandoverLog {
   date: string;
   shift: 'Manhã' | 'Tarde' | 'Noturno';
   authorName: string;
-  authorRole: ClinicalRole;
+  authorRole: ClinicalRole | string;
   summaryText: string;
   occurrences: OccurrenceItem[];
-  acknowledgedBy: string[]; // Nomes dos profissionais que deram ciente
+  acknowledgedBy: string[];
 }
 
 export interface ClinicalAlert {
@@ -333,6 +489,60 @@ export interface ClinicalAlert {
   message: string;
   timestamp: string;
   read: boolean;
+}
+
+export interface DailyHuddleTopic {
+  id: string;
+  shift: 'Manhã' | 'Tarde' | 'Noturno';
+  title: string;
+  category: 'Segurança do Paciente' | 'Farmacovigilância' | 'Manejamento de Crise' | 'Comunicação e Handover' | 'Normas SRT / LGPD' | 'Cuidado Humanizado';
+  priority: 'Alta' | 'Média' | 'Normal';
+  description: string;
+  assignedLead: string;
+  completed: boolean;
+  notes?: string;
+  residentHighlights?: string[];
+}
+
+export interface StaffTrainingEvent {
+  id: string;
+  title: string;
+  instructor: string;
+  category: 'Suporte Básico de Vida (BLS)' | 'Prev. Incêndio / Evacuação' | 'Biossegurança NR32' | 'Humanização e Psicopatologia' | 'Boas Práticas MAR';
+  date: string;
+  time: string;
+  location: string;
+  targetRoles: string[];
+  registeredParticipants: string[];
+  maxSeats: number;
+  mandatoryForRoles?: string[];
+  status: 'Agendado' | 'Em Andamento' | 'Concluído';
+}
+
+export interface ClinicalBriefingItem {
+  id: string;
+  title: string;
+  sourceModule: 'NEWS2 / Vitais' | 'Alergias MAR' | 'Aviso Epidemiológico' | 'Relatório de Plantão' | 'Protocolo Institucional';
+  residentName?: string;
+  urgency: 'Crítica' | 'Atenção' | 'Informativa';
+  content: string;
+  actionRequired: string;
+  acknowledgedBy: string[];
+}
+
+export interface ShiftHuddlePlan {
+  id: string;
+  date: string;
+  shift: 'Manhã' | 'Tarde' | 'Noturno';
+  teamLeadName: string;
+  teamLeadRole: string;
+  shiftFocusGoal: string;
+  briefingItems: ClinicalBriefingItem[];
+  focusTopics: DailyHuddleTopic[];
+  trainingsToday: StaffTrainingEvent[];
+  attendanceList: { staffName: string; role: string; present: boolean }[];
+  huddleStatus: 'Planejado' | 'Em Andamento' | 'Concluído';
+  completedAt?: string;
 }
 
 export interface NexaAction {

@@ -16,7 +16,12 @@ import {
   BookOpen,
   UserCheck,
   Printer,
-  Settings
+  Settings,
+  ClipboardList,
+  AlertCircle,
+  Database,
+  Terminal,
+  Target
 } from 'lucide-react';
 import { getCurrentUser } from '../config/auth-mode';
 
@@ -59,6 +64,20 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: FileText,
     },
     {
+      path: '/pas-atendimentos',
+      label: 'PAS & Atendimentos',
+      icon: ClipboardList,
+      badge: 'GITER',
+      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+    },
+    {
+      path: '/pendencias',
+      label: 'Central de Pendências',
+      icon: AlertCircle,
+      badge: 'Prontidão',
+      badgeColor: 'bg-rose-50 text-rose-800 border-rose-200',
+    },
+    {
       path: '/evolucao-medicacao',
       label: 'Evolução Medicação (12/12h)',
       icon: HeartPulse,
@@ -74,7 +93,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     },
     {
       path: '/escalas',
-      label: 'Escalas de Plantão',
+      label: 'Escalas & Avaliações',
       icon: CalendarRange,
     },
     {
@@ -83,9 +102,30 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: ClipboardCheck,
     },
     {
+      path: '/daily-huddle',
+      label: 'Daily Huddle & Briefings',
+      icon: Target,
+      badge: '5 min',
+      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+    },
+    {
       path: '/relatorios',
       label: 'Relatórios & Intercorrências',
       icon: BarChart3,
+    },
+    {
+      path: '/migracao-giter',
+      label: 'Migração GITER Center',
+      icon: Database,
+      badge: 'Import',
+      badgeColor: 'bg-purple-50 text-purple-800 border-purple-200',
+    },
+    {
+      path: '/testes-clinicos',
+      label: 'Testes da Operação',
+      icon: Terminal,
+      badge: 'Bateria',
+      badgeColor: 'bg-indigo-50 text-indigo-800 border-indigo-200',
     },
     {
       path: '/guia-residencial',

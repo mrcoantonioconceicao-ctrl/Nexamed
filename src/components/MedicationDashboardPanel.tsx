@@ -74,7 +74,7 @@ export const MedicationDashboardPanel: React.FC<MedicationDashboardPanelProps> =
       const resident = residents.find(r => r.id === med.residentId);
       if (!resident) return;
 
-      med.scheduledDoses.forEach(dose => {
+      (med.scheduledDoses || []).forEach(dose => {
         list.push({
           resident,
           medication: med,

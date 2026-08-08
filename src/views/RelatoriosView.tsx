@@ -388,7 +388,7 @@ Relatório validado digitalmente pelo Responsável Técnico Enf. Dr. Fernando Al
               <div className="pt-2 flex items-center gap-2 text-[11px] text-zinc-500">
                 <span className="font-bold text-zinc-700">Assinaturas e Cientes:</span>
                 <div className="flex flex-wrap gap-1">
-                  {log.acknowledgedBy.map((name, i) => (
+                  {(log.acknowledgedBy || []).map((name, i) => (
                     <span key={i} className="bg-zinc-50 text-teal-800 font-bold px-2 py-0.5 rounded-md border border-zinc-200">
                       ✓ {name}
                     </span>
@@ -467,7 +467,7 @@ Relatório validado digitalmente pelo Responsável Técnico Enf. Dr. Fernando Al
 
                 <div className="flex items-center gap-2 pt-2 border-t border-zinc-100">
                   <span className="text-[10px] font-bold text-zinc-500">Doses do Dia:</span>
-                  {med.scheduledDoses.map((dose) => (
+                  {(med.scheduledDoses || []).map((dose) => (
                     <span
                       key={dose.id}
                       className={`text-xs font-bold px-2 py-0.5 rounded-md border ${
