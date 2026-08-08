@@ -19,6 +19,7 @@
    - [8. Triagem NEWS2, Telemetria e Alerta Sonoro de Emergência](#8-triagem-news2-telemetria-e-alerta-sonoro-de-emergência)
    - [9. Relatórios Gerenciais, Ocorrências e Indicadores SRT](#9-relatórios-gerenciais-ocorrências-e-indicadores-srt)
    - [10. Segurança, Privacidade, LGPD e Logs de Auditoria](#10-segurança-privacidade-lgpd-e-logs-de-auditoria)
+11. [Daily Huddle Clínico & Alinhamento Operacional](#11-daily-huddle-clínico--alinhamento-operacional)
 4. [📊 Status dos Módulos SRT](#-status-dos-módulos-srt)
 5. [🛠️ Arquitetura Tecnológica](#️-arquitetura-tecnológica)
 6. [📂 Estrutura de Arquivos da Aplicação](#-estrutura-de-arquivos-da-aplicação)
@@ -104,12 +105,20 @@ O sistema abandona estruturas hospitalares generalistas ou burocracias corporati
 - **LGPD & HIPAA Compliance:** Ferramenta de exportação de dados do titular, consentimento transparente e gerenciamento de cookies.
 - **Logs de Auditoria Rastreáveis:** Registro imutável de leituras, edições e cadastros com identificação de usuário, função e IP.
 
+### 11. Daily Huddle Clínico & Alinhamento Operacional
+- **Alinhamento Rápido de 5 Minutos (Modo Express):** Apresentador interativo tipo *slideshow* com cronômetro regressivo para reuniões de passagem de turno rápidas e focadas.
+- **Atribuição de Tópicos de Foco da Liderança:** Atribuição de prioridades clínicas, comportamentais e operacionais específicas por turno (Manhã, Tarde e Noturno) com vinculação a moradores específicos.
+- **Painel de Briefings Clínicos de Prontidão:** Agrupamento automático de alertas do NEWS2, alergias do aprazamento MAR, avisos sanitários e condutas requeridas.
+- **Agenda e Controle de Capacitações:** Cronograma de cursos e certificações (BLS, descalonamento de crise, biossegurança NR32) com controle de vagas e inscrições em tempo real.
+- **Exportação e Compartilhamento:** Botão de cópia rápida formatada para o WhatsApp/Chat da equipe e impressão da folha de huddle do turno.
+
 ---
 
 ## 📊 Status dos Módulos SRT
 
 | Módulo / Funcionalidade | Status | Aplicação na Residência Terapêutica |
 | :--- | :---: | :--- |
+| **Daily Huddle Clínico & Briefings** | ✅ 100% Concluído | Alinhamento de 5m por turno, atribuição de focos e agenda de treinamentos. |
 | **Prontuário SOAP com Sugestões do Histórico** | ✅ 100% Concluído | Agiliza o preenchimento reaproveitando histórico anterior do morador. |
 | **Assistente Nexa (Curta & Objetiva)** | ✅ 100% Concluído | Respostas diretas ao ponto, sem prolixidade, focadas na rotina da SRT. |
 | **Aprazamento MAR (12/12h)** | ✅ 100% Concluído | Controle rigoroso da medicação assitida de uso contínuo e psicotrópicos. |
@@ -157,6 +166,7 @@ O sistema abandona estruturas hospitalares generalistas ou burocracias corporati
 │   │   └── LGPDAndCookieManager.tsx      # Gerenciador de Consentimento LGPD
 │   ├── views/
 │   │   ├── DashboardView.tsx             # Dashboard Residencial Principal
+│   │   ├── DailyHuddleView.tsx           # Daily Huddle Clínico, Briefings e Treinamentos
 │   │   ├── ResidentesView.tsx            # Gestão de Moradores e PTS
 │   │   ├── ProntuariosView.tsx           # Prontuários e Evoluções Clínicas
 │   │   ├── EvolucaoMedicacaoView.tsx     # Painel Unificado de Evolução e Medicação
