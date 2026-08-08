@@ -87,20 +87,86 @@ export default function App() {
   // Navigation State
   const [currentPath, setCurrentPath] = useState<string>('/dashboard');
 
-  // Core Data States
-  const [residents, setResidents] = useState<Resident[]>(INITIAL_RESIDENTS);
-  const [evolutions, setEvolutions] = useState<ClinicalEvolution[]>(INITIAL_EVOLUTIONS);
-  const [medications, setMedications] = useState<MedicationMAR[]>(INITIAL_MEDICATIONS);
+  // Core Data States with localStorage persistence fallback
+  const [residents, setResidents] = useState<Resident[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexamed_residents');
+      return saved ? JSON.parse(saved) : INITIAL_RESIDENTS;
+    } catch {
+      return INITIAL_RESIDENTS;
+    }
+  });
+
+  const [evolutions, setEvolutions] = useState<ClinicalEvolution[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexamed_evolutions');
+      return saved ? JSON.parse(saved) : INITIAL_EVOLUTIONS;
+    } catch {
+      return INITIAL_EVOLUTIONS;
+    }
+  });
+
+  const [medications, setMedications] = useState<MedicationMAR[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexamed_medications');
+      return saved ? JSON.parse(saved) : INITIAL_MEDICATIONS;
+    } catch {
+      return INITIAL_MEDICATIONS;
+    }
+  });
+
   const [roster, setRoster] = useState<StaffRoster[]>(INITIAL_ROSTER);
-  const [handovers, setHandovers] = useState<HandoverLog[]>(INITIAL_HANDOVERS);
+
+  const [handovers, setHandovers] = useState<HandoverLog[]>(() => {
+    try {
+      const saved = localStorage.getItem('nexamed_handovers');
+      return saved ? JSON.parse(saved) : INITIAL_HANDOVERS;
+    } catch {
+      return INITIAL_HANDOVERS;
+    }
+  });
+
   const [alerts, setAlerts] = useState<ClinicalAlert[]>(INITIAL_ALERTS);
+
+  // Sync state changes to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('nexamed_residents', JSON.stringify(residents));
+    } catch (e) {
+      console.warn('Error saving residents to localStorage:', e);
+    }
+  }, [residents]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nexamed_evolutions', JSON.stringify(evolutions));
+    } catch (e) {
+      console.warn('Error saving evolutions to localStorage:', e);
+    }
+  }, [evolutions]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nexamed_medications', JSON.stringify(medications));
+    } catch (e) {
+      console.warn('Error saving medications to localStorage:', e);
+    }
+  }, [medications]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nexamed_handovers', JSON.stringify(handovers));
+    } catch (e) {
+      console.warn('Error saving handovers to localStorage:', e);
+    }
+  }, [handovers]);
 
   // Firestore Real-time Persistence Effect
   useEffect(() => {
-    const unsubEvo = subscribeEvolutions(setEvolutions, INITIAL_EVOLUTIONS);
-    const unsubRes = subscribeResidents(setResidents, INITIAL_RESIDENTS);
-    const unsubHan = subscribeHandovers(setHandovers, INITIAL_HANDOVERS);
-    const unsubMed = subscribeMedications(setMedications, INITIAL_MEDICATIONS);
+    const unsubEvo = subscribeEvolutions(setEvolutions, residents.length > 0 ? [] : INITIAL_EVOLUTIONS);
+    const unsubRes = subscribeResidents(setResidents, residents.length > 0 ? [] : INITIAL_RESIDENTS);
+    const unsubHan = subscribeHandovers(setHandovers, handovers.length > 0 ? [] : INITIAL_HANDOVERS);
+    const unsubMed = subscribeMedications(setMedications, medications.length > 0 ? [] : INITIAL_MEDICATIONS);
 
     return () => {
       unsubEvo();

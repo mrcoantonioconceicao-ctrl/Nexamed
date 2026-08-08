@@ -55,7 +55,6 @@ export function subscribeEvolutions(
   initialFallback: ClinicalEvolution[]
 ) {
   if (!db) {
-    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, EVOLUTIONS_COL);
@@ -67,7 +66,7 @@ export function subscribeEvolutions(
         await setDoc(doc(db, EVOLUTIONS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
-    } else {
+    } else if (!snapshot.empty) {
       const list: ClinicalEvolution[] = [];
       snapshot.forEach((d) => list.push(d.data() as ClinicalEvolution));
       // Sort newest first
@@ -75,8 +74,7 @@ export function subscribeEvolutions(
       callback(list);
     }
   }, (err) => {
-    console.warn('Firestore evolutions error, fallback to memory:', err);
-    callback(initialFallback);
+    console.warn('Firestore evolutions error, keeping local state:', err);
   });
 }
 
@@ -97,7 +95,6 @@ export function subscribeResidents(
   initialFallback: Resident[]
 ) {
   if (!db) {
-    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, RESIDENTS_COL);
@@ -108,14 +105,13 @@ export function subscribeResidents(
         await setDoc(doc(db, RESIDENTS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
-    } else {
+    } else if (!snapshot.empty) {
       const list: Resident[] = [];
       snapshot.forEach((d) => list.push(d.data() as Resident));
       callback(list);
     }
   }, (err) => {
     console.warn('Firestore residents error:', err);
-    callback(initialFallback);
   });
 }
 
@@ -136,7 +132,6 @@ export function subscribeHandovers(
   initialFallback: HandoverLog[]
 ) {
   if (!db) {
-    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, HANDOVERS_COL);
@@ -147,14 +142,13 @@ export function subscribeHandovers(
         await setDoc(doc(db, HANDOVERS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
-    } else {
+    } else if (!snapshot.empty) {
       const list: HandoverLog[] = [];
       snapshot.forEach((d) => list.push(d.data() as HandoverLog));
       callback(list);
     }
   }, (err) => {
     console.warn('Firestore handovers error:', err);
-    callback(initialFallback);
   });
 }
 
@@ -175,7 +169,6 @@ export function subscribeMedications(
   initialFallback: MedicationMAR[]
 ) {
   if (!db) {
-    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, MEDICATIONS_COL);
@@ -186,14 +179,13 @@ export function subscribeMedications(
         await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitizeForFirestore(item));
       }
       callback(initialFallback);
-    } else {
+    } else if (!snapshot.empty) {
       const list: MedicationMAR[] = [];
       snapshot.forEach((d) => list.push(d.data() as MedicationMAR));
       callback(list);
     }
   }, (err) => {
     console.warn('Firestore medications error:', err);
-    callback(initialFallback);
   });
 }
 
