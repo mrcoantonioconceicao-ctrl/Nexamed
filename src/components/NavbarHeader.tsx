@@ -277,12 +277,29 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
           {showUserDropdown && (
             <div className="absolute right-0 mt-2 w-56 bg-white border border-zinc-200 rounded-2xl shadow-xl z-50 p-2 divide-y divide-zinc-100">
-              <div className="p-2.5 mb-1 bg-zinc-50 rounded-xl border border-zinc-100">
-                <p className="text-xs font-bold text-zinc-900">{currentUser?.name}</p>
+              <div className="p-2.5 mb-1 bg-zinc-50 rounded-xl border border-zinc-100 space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-zinc-900">{currentUser?.name}</p>
+                  {currentUser?.roleCategory === 'CUIDADOR' && <span className="text-[9px] font-extrabold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">🟢 Cuidador</span>}
+                  {currentUser?.roleCategory === 'ENFERMEIRA' && <span className="text-[9px] font-extrabold bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded">🔵 Enfermeira</span>}
+                  {currentUser?.roleCategory === 'DIRECAO' && <span className="text-[9px] font-extrabold bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">🟣 Direção</span>}
+                </div>
                 <p className="text-[11px] text-zinc-500">{currentUser?.email}</p>
-                <p className="text-[10px] text-teal-700 font-bold mt-1">{currentUser?.role}</p>
+                <p className="text-[10px] text-teal-700 font-bold">{currentUser?.role}</p>
               </div>
-              <div className="py-1">
+              <div className="py-1 space-y-0.5">
+                {currentUser?.roleCategory === 'DIRECAO' && (
+                  <button
+                    onClick={() => {
+                      onNavigate('/usuarios');
+                      setShowUserDropdown(false);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 text-xs text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-lg flex items-center gap-2 font-extrabold border border-purple-200/80"
+                  >
+                    <User className="w-3.5 h-3.5 text-purple-700" />
+                    <span>Gestão de Usuários & Senhas</span>
+                  </button>
+                )}
                 {onOpenOutboundHandover && (
                   <button
                     onClick={() => {

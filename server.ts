@@ -56,13 +56,13 @@ async function startServer() {
 
       const lowerMsg = message.toLowerCase();
 
-      // Platform knowledge helper for quick local actions and clear instructions
+      // Platform knowledge helper for quick local actions and clear instructions (Respostas curtas e objetivas)
       const generateLocalResponse = (msg: string) => {
         const lower = msg.toLowerCase();
 
         if (lower.includes('residente') || lower.includes('cadastrar') || lower.includes('ficha')) {
           return {
-            text: `📍 **Como encontrar e gerenciar Residentes:**\n\n1. Acesse o menu **"Residentes & Fichas"** na barra lateral (ou clique no botão abaixo).\n2. Na tela de Residentes, clique no botão **"+ Novo Residente"** no canto superior direito para cadastrar um morador.\n3. Para ver a ficha completa de um morador existente, clique sobre o card dele.\n\n✨ **O que você encontra na ficha:**\n- Plano Terapêutico Singular (PTS)\n- Grau de Dependência (ABVD/AIVD)\n- Histórico de Sinais Vitais e Alergias\n- Prescrições e Contatos de Emergência`,
+            text: `📍 **Residentes & Fichas (SRT):**\n• Acesse **"Residentes & Fichas"** no menu.\n• Clique em **"+ Cadastrar Novo Residente"** para incluir um morador.\n• Clique no card para ver o **Plano Terapêutico Singular (PTS)** e ficha completa.`,
             actions: [
               { type: 'navigate', payload: { path: '/residentes' }, label: 'Ir para Residentes' },
               { type: 'navigate', payload: { path: '/prontuarios' }, label: 'Ver Prontuários' }
@@ -72,17 +72,17 @@ async function startServer() {
 
         if (lower.includes('soap') || lower.includes('evoluç') || lower.includes('prontuár')) {
           return {
-            text: `📍 **Como criar e registrar Evoluções Clínicas (SOAP):**\n\n1. Vá até a tela **"Prontuário (SOAP)"** ou pressione **⌘K** no teclado.\n2. Clique em **"+ Nova Evolução SOAP"**.\n3. **Dica da Nexa:** Digite pontos brutos em linguagem natural e clique em **"Gerar com IA Nexa"**. Eu organizarei os dados automaticamente em **Subjetivo, Objetivo, Avaliação e Plano**!`,
+            text: `📍 **Evolução Clínica SOAP (SRT):**\n• Vá em **"Prontuário (SOAP)"** ou pressione **⌘K**.\n• Clique em **"+ Nova Evolução SOAP"**.\n• Digite notas breves e use **"Gerar com IA Nexa"** para estruturar a evolução.`,
             actions: [
-              { type: 'create_evolution', payload: {}, label: '✍️ Abrir Editor SOAP com IA' },
-              { type: 'navigate', payload: { path: '/prontuarios' }, label: 'Ver Histórico de Prontuários' }
+              { type: 'create_evolution', payload: {}, label: '✍️ Abrir Editor SOAP' },
+              { type: 'navigate', payload: { path: '/prontuarios' }, label: 'Ver Prontuários' }
             ]
           };
         }
 
         if (lower.includes('remédio') || lower.includes('medicaç') || lower.includes('mar') || lower.includes('atras')) {
           return {
-            text: `📍 **Onde gerenciar Medicamentos e Aprazamento (MAR):**\n\n1. Na barra lateral, acesse **"Aprazamento (MAR)"**.\n2. Veja os horários de cada residente organizados por turno (Manhã, Tarde, Noite).\n3. Clique em **"Ministrar"** para dar baixa na dose ou registrar recusa/atraso.\n4. Medicamentos psicotrópicos possuem destaque amarelo para dupla checagem obrigatória.`,
+            text: `📍 **Aprazamento Medicamentoso MAR (SRT):**\n• Acesse **"Medicação (MAR)"**.\n• Confira a administração de uso contínuo/psicotrópicos no esquema **12/12h** (08h e 20h).\n• Clique em **"Ministrar"** para dar baixa ou registrar recusa.`,
             actions: [
               { type: 'navigate', payload: { path: '/medicacao' }, label: '💊 Abrir Aprazamento MAR' }
             ]
@@ -91,16 +91,16 @@ async function startServer() {
 
         if (lower.includes('escala') || lower.includes('folga') || lower.includes('turno') || lower.includes('equipe')) {
           return {
-            text: `📍 **Onde consultar e montar as Escalas de Trabalho:**\n\n1. Acesse **"Escalas da Equipe"** no menu principal.\n2. Filtre por **Médicos, Enfermagem, Cuidadores ou Terapeutas**.\n3. Acompanhe a cobertura de 24 horas por dia da unidade, verificando folgas e substituições ativas.`,
+            text: `📍 **Escalas da Equipe SRT:**\n• Acesse **"Escalas de Plantão"**.\n• Visualize a cobertura 24h de cuidadores, enfermagem e equipe multidisciplinar.`,
             actions: [
-              { type: 'navigate', payload: { path: '/escalas' }, label: '📅 Ir para Escalas da Equipe' }
+              { type: 'navigate', payload: { path: '/escalas' }, label: '📅 Ir para Escalas' }
             ]
           };
         }
 
         if (lower.includes('plantão') || lower.includes('passagem') || lower.includes('troca')) {
           return {
-            text: `📍 **Como fazer a Passagem de Plantão:**\n\n1. Acesse o menu **"Passagem de Plantão"**.\n2. Clique em **"Sintetizar com IA Nexa"** para que eu monte o resumo de ocorrências e pendências das últimas 12h.\n3. Digite suas observações e clique em **"Assinar e Passar Turno"** para registrar seu visto digital.`,
+            text: `📍 **Passagem de Plantão SRT:**\n• Acesse **"Passagem de Plantão"**.\n• Clique em **"Sintetizar com IA Nexa"** para resumo objetivo de 12h.\n• Assine digitalmente para concluir a passagem do turno.`,
             actions: [
               { type: 'navigate', payload: { path: '/plantao' }, label: '📋 Ir para Passagem de Plantão' }
             ]
@@ -109,35 +109,32 @@ async function startServer() {
 
         if (lower.includes('relatóri') || lower.includes('intercorrênci') || lower.includes('queda') || lower.includes('pressã')) {
           return {
-            text: `📍 **Onde ver Relatórios e Intercorrências:**\n\n1. Acesse o menu **"Relatórios & Intercorrências"**.\n2. Alterne entre as abas: **Intercorrências, Passagens de Plantão, Evoluções SOAP e Adesão MAR**.\n3. Clique no botão **"Relatório Executivo IA"** no topo da página para gerar um parecer sintético para a coordenação técnica.`,
+            text: `📍 **Relatórios & Intercorrências (SRT):**\n• Acesse **"Relatórios & Intercorrências"**.\n• Alterne entre abas para verificar ocorrências diárias e emitir parecer sintético.`,
             actions: [
-              { type: 'navigate', payload: { path: '/relatorios' }, label: '📊 Abrir Central de Relatórios' },
-              { type: 'navigate', payload: { path: '/dashboard' }, label: 'Ver Gráfico no Dashboard' }
+              { type: 'navigate', payload: { path: '/relatorios' }, label: '📊 Abrir Relatórios' }
             ]
           };
         }
 
         if (lower.includes('comando') || lower.includes('onde achar') || lower.includes('como usar') || lower.includes('ajuda') || lower.includes('funciona')) {
           return {
-            text: `✨ **Guia Rápido da Assistente Nexa — Como usar e encontrar qualquer comando:**\n\n• **Busca Rápida (⌘K ou Ctrl+K):** Pressione estas teclas em qualquer lugar do sistema para abrir a barra de comando instantâneo.\n• **Painel Principal (/dashboard):** Visão geral de residentes, alertas críticos e gráfico de intercorrências.\n• **Fichas e PTS (/residentes):** Cadastro de moradores, contatos e plano terapêutico.\n• **Prontuários SOAP (/prontuarios):** Registros clínicos estruturados com auxílio da IA Nexa.\n• **Aprazamento MAR (/medicacao):** Checagem de medicamentos ministrados x pendentes.\n• **Escalas (/escalas):** Programação de turnos de médicos, enfermeiros e cuidadores.\n• **Passagem de Plantão (/plantao):** Assinatura e resumo do turno.\n• **Relatórios (/relatorios):** Auditoria de quedas, sinais vitais e relatórios executivos.\n\nQual destas áreas você deseja acessar agora?`,
+            text: `✨ **Acesso Rápido Nexa SRT:**\n• **Atalho ⌘K:** Busca rápida por morador ou tela.\n• **Residentes (/residentes):** Fichas e PTS.\n• **Prontuário (/prontuarios):** Evolução SOAP com IA.\n• **Medicação (/medicacao):** MAR 12/12h.\n• **Plantão (/plantao):** Passagem de turno e ocorrências.`,
             actions: [
               { type: 'navigate', payload: { path: '/dashboard' }, label: '📊 Dashboard' },
               { type: 'navigate', payload: { path: '/residentes' }, label: '👥 Residentes' },
               { type: 'navigate', payload: { path: '/prontuarios' }, label: '📝 Prontuários' },
-              { type: 'navigate', payload: { path: '/medicacao' }, label: '💊 Aprazamento MAR' },
-              { type: 'navigate', payload: { path: '/escalas' }, label: '📅 Escalas' },
-              { type: 'navigate', payload: { path: '/plantao' }, label: '📋 Passagem de Plantão' },
-              { type: 'navigate', payload: { path: '/relatorios' }, label: '📈 Relatórios' },
+              { type: 'navigate', payload: { path: '/medicacao' }, label: '💊 Medicação MAR' },
+              { type: 'navigate', payload: { path: '/plantao' }, label: '📋 Passagem de Plantão' }
             ]
           };
         }
 
         return {
-          text: `Entendi perfeitamente sua solicitação ("${msg}"). Como sua assistente clínica, analisei o histórico da unidade e posso te ajudar a executar esse trabalho na plataforma ou direcionar ao local exato.`,
+          text: `Solicitação registrada. Selecione uma ação abaixo para navegar diretamente no sistema da Residência Terapêutica:`,
           actions: [
-            { type: 'navigate', payload: { path: '/dashboard' }, label: 'Ver Dashboard Clínico' },
+            { type: 'navigate', payload: { path: '/dashboard' }, label: 'Ver Dashboard SRT' },
             { type: 'create_evolution', payload: {}, label: 'Criar Evolução SOAP' },
-            { type: 'navigate', payload: { path: '/relatorios' }, label: 'Gerar Relatório de Intercorrências' }
+            { type: 'navigate', payload: { path: '/relatorios' }, label: 'Ver Relatórios' }
           ]
         };
       };
@@ -150,21 +147,21 @@ async function startServer() {
 
       const ai = getAiClient();
 
-      const systemPrompt = `Você é a "Nexa", a assistente clínica e de navegação inteligente da plataforma NexaMed para clínicas e residências terapêuticas.
-Sua missão é:
-1. Tirar todas as dúvidas do usuário sobre a plataforma.
-2. Explicar onde fica qualquer recurso ou comando e mostrar o passo a passo de como chegar lá.
-3. Gerar e auxiliar em qualquer tipo de trabalho dentro da plataforma (redigir evolução SOAP, sintetizar plantão, analisar intercorrências, checar aprazamento).
-4. Sempre sugerir botões de ações executáveis ("actions") no JSON de resposta para que o usuário clique e execute diretamente o comando ou vá para a tela.
+      const systemPrompt = `Você é a "Nexa", assistente especializada EXCLUSIVAMENTE em Serviços de Residência Terapêutica (SRT - Tipo I e Tipo II) na plataforma NexaMed.
+
+REGRAS DE RESPOSTA OBRIGATÓRIAS:
+1. SEJA EXTREMAMENTE CURTA, DIRETA E OBJETIVA. Evite saudações longas, introduções prolixas, enrolação ou explicações repetitivas. Responda em no máximo 2 a 3 tópicos curtos e diretos.
+2. Mantenha o foco estritamente nas normas de Residências Terapêuticas (Portaria MS/GM nº 106/2000, RAPS, reinserção social, PTS, medicação assistida).
+3. Sempre inclua botões de ações executáveis ("actions") no JSON.
 
 Navegações válidas em 'path':
-- '/dashboard' (Dashboard Clínico e Gráficos)
-- '/residentes' (Fichas e Cadastro de Residentes)
+- '/dashboard' (Dashboard Residencial SRT)
+- '/residentes' (Fichas dos Moradores e PTS)
 - '/prontuarios' (Prontuário e Evoluções SOAP)
-- '/medicacao' (Aprazamento de Medicamentos MAR)
-- '/escalas' (Escalas da Equipe Multidisciplinar)
-- '/plantao' (Passagem de Plantão)
-- '/relatorios' (Central de Relatórios e Intercorrências)
+- '/medicacao' (Aprazamento MAR - 12/12h)
+- '/escalas' (Escalas dos Cuidados e Enfermagem)
+- '/plantao' (Passagem de Plantão e Ocorrências)
+- '/relatorios' (Relatórios de Acompanhamento)
 
 Ações válidas em 'type':
 - 'navigate' (com payload.path)
@@ -175,14 +172,14 @@ Ações válidas em 'type':
 
 CONTEXTO DA PÁGINA ATUAL: "${contextPage || 'Geral'}"
 
-DADOS ATUAIS DO SISTEMA:
-- Residentes ativos: ${JSON.stringify(residentsData || [])}
-- Alertas clínicos ativos: ${JSON.stringify(alertsData || [])}
-- Últimas evoluções clínicas: ${JSON.stringify(recentEvolutions || [])}
+DADOS ATUAIS DA RESIDÊNCIA:
+- Moradores ativos: ${JSON.stringify(residentsData || [])}
+- Alertas ativos: ${JSON.stringify(alertsData || [])}
+- Últimas evoluções: ${JSON.stringify(recentEvolutions || [])}
 
 Responda SEMPRE em formato JSON estrito:
 {
-  "text": "Sua resposta explicativa, didática e clínica em Markdown...",
+  "text": "Sua resposta curta, direta e objetiva em Markdown (máximo 2-3 linhas/tópicos)...",
   "actions": [
     {
       "type": "navigate" | "open_resident" | "create_evolution" | "mark_alerts_read" | "open_escala",

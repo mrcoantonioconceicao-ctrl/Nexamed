@@ -13,8 +13,12 @@ import {
   HeartPulse,
   ShieldCheck,
   Building2,
-  BookOpen
+  BookOpen,
+  UserCheck,
+  Printer,
+  Settings
 } from 'lucide-react';
+import { getCurrentUser } from '../config/auth-mode';
 
 interface AppSidebarProps {
   currentPath: string;
@@ -33,6 +37,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   openNexaChat,
   onOpenLGPD,
 }) => {
+  const currentUser = getCurrentUser();
+  const isDirecao = currentUser?.roleCategory === 'DIRECAO';
+
   const navItems = [
     {
       path: '/dashboard',
@@ -81,20 +88,30 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: BarChart3,
     },
     {
-      path: '/operacoes',
-      label: 'Operações Enterprise',
-      icon: Building2,
-      badge: 'v2.5',
-      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
-    },
-    {
       path: '/guia-residencial',
       label: 'Guia Residencial Terapêutico',
       icon: BookOpen,
-      badge: 'Manual',
+      badge: 'Normas SRT',
       badgeColor: 'bg-purple-50 text-purple-800 border-purple-200',
     },
+    {
+      path: '/configuracoes',
+      label: 'Configurações & Impressoras',
+      icon: Settings,
+      badge: 'Wi-Fi',
+      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+    },
   ];
+
+  if (isDirecao) {
+    navItems.push({
+      path: '/usuarios',
+      label: 'Gestão de Usuários & Senhas',
+      icon: UserCheck,
+      badge: 'Direção',
+      badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
+    });
+  }
 
   return (
     <aside className="w-64 bg-white border-r border-zinc-200/80 text-zinc-700 flex flex-col justify-between h-[calc(100vh-4rem)] sticky top-16 select-none shrink-0 hidden md:flex rounded-r-2xl shadow-2xs my-2">

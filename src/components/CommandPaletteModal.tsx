@@ -111,18 +111,35 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                 <button
                   onClick={() => {
                     onClose();
-                    onNavigate('/operacoes');
+                    onNavigate('/medicacao');
                   }}
-                  className="p-3 bg-zinc-800/80 hover:bg-teal-950/60 hover:border-teal-700/60 border border-zinc-700/60 rounded-xl transition-all flex items-center justify-between text-left group"
+                  className="p-3 bg-zinc-800/80 hover:bg-amber-950/60 hover:border-amber-700/60 border border-zinc-700/60 rounded-xl transition-all flex items-center justify-between text-left group"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Building2 className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                    <Pill className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
                     <div>
-                      <strong className="block text-white">Operações & OCR Med</strong>
-                      <span className="text-[10px] text-zinc-400">Estoque, receitas e financeiro</span>
+                      <strong className="block text-white">Etiquetas de Medicação (MAR)</strong>
+                      <span className="text-[10px] text-zinc-400">Imprimir etiquetas por residente</span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-teal-400" />
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-amber-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onNavigate('/usuarios');
+                  }}
+                  className="p-3 bg-zinc-800/80 hover:bg-purple-950/60 hover:border-purple-700/60 border border-zinc-700/60 rounded-xl transition-all flex items-center justify-between text-left group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <User className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                    <div>
+                      <strong className="block text-white">Gestão de Usuários & Senhas</strong>
+                      <span className="text-[10px] text-zinc-400">Liberar acesso por cargo (Direção)</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-purple-400" />
                 </button>
               </div>
             </div>

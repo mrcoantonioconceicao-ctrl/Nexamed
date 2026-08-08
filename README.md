@@ -1,274 +1,230 @@
-# 🏥 NexaMed — Plataforma Inteligente de Gestão Clínica e Residências Terapêuticas
+# 🏠 NexaMed — Plataforma de Gestão Especializada em Residências Terapêuticas (SRT)
 
-> **Sistema de Gestão Hospitalar e Residências Terapêuticas (SRT/RT)** com Inteligência Artificial (Gemini API), Sincronização Real-Time (Firebase Firestore), Painel de Checagem por Horários de Medicação (MAR), Cadastro Integrado de Medicamentos no Acolhimento, Guia Operacional Normativo, Calculadora NEWS2, Service Worker com Alerta Sonoro de Emergência e Conformidade LGPD/HIPAA.
+> **Plataforma de Gestão Técnica e Assistencial para Serviços de Residência Terapêutica (SRT Tipo I e Tipo II)** com Inteligência Artificial Clínica (Gemini API), Sincronização Real-Time (Firebase Firestore), Aprazamento Medicamentoso por Turnos (MAR), Sugestões Inteligentes no Prontuário SOAP baseadas no Histórico do Morador, Guia Operacional Normativo (Portaria MS/GM nº 106/2000 & RAPS), Calculadora NEWS2, Service Worker com Notificações e Alerta Sonoro de Emergência em Background, e Conformidade LGPD/HIPAA.
 
 ---
 
 ## 📌 Sumário
 
-1. [Visão Geral do Sistema](#-visão-geral-do-sistema)
-2. [Módulos Principais & Funcionalidades](#-módulos-principais--funcionalidades)
-   - [1. Painel Dashboard & Resumo Automático do Plantão](#1-painel-dashboard--resumo-automático-do-plantão)
-   - [2. Acolhimento de Residentes & Cadastro de Medicamentos](#2-acolhimento-de-residentes--cadastro-de-medicamentos)
-   - [3. Painel de Checagem por Horários de Medicação (MAR)](#3-painel-de-checagem-por-horários-de-medicação-mar)
-   - [4. Guia Residencial Terapêutico (Manual Técnico e Normativo)](#4-guia-residencial-terapêutico-manual-técnico-e-normativo)
-   - [5. Prontuário Eletrônico SOAP & Assistente de IA Nexa](#5-prontuário-eletrônico-soap--assistente-de-ia-nexa)
-   - [6. Triagem Fisiológica NEWS2 & Alertas Sonoros em Background](#6-triagem-fisiológica-news2--alertas-sonoros-em-background)
-   - [7. Passagem de Plantão & Registro de Ocorrências](#7-passagem-de-plantão--registro-de-ocorrências)
-   - [8. Prontuário 360°, Telemetria IoT & Visita Telemedicina](#8-prontuário-360-telemetria-iot--visita-telemedicina)
-   - [9. Segurança, Biometria, LGPD & Auditoria](#9-segurança-biometria-lgpd--auditoria)
-   - [10. Escalas Multidisciplinares & Gestão de Estoque](#10-escalas-multidisciplinares--gestão-de-estoque)
-3. [📊 Tabela de Status dos Módulos](#-tabela-de-status-dos-módulos)
-4. [🛠️ Tecnologias Utilizadas](#️-tecnologias-utilizadas)
-5. [📂 Estrutura Completa do Projeto](#-estrutura-completa-do-projeto)
-6. [🔧 Como Executar o Projeto Localmente](#-como-executar-o-projeto-localmente)
-7. [⚙️ Configuração de Variáveis de Ambiente](#️-configuração-de-variáveis-de-ambiente)
-8. [📦 Scripts Disponíveis](#-scripts-disponíveis)
-9. [🐙 Guia de Atualização no GitHub](#-guia-de-atualização-no-github)
+1. [Visão Geral e Foco em Residência Terapêutica](#-visão-geral-e-foco-em-residência-terapêutica)
+2. [Conformidade Legal e Normas Técnicas (MS/SUS)](#-conformidade-legal-e-normas-técnicas-mssus)
+3. [Módulos Principais & Funcionalidades](#-módulos-principais--funcionalidades)
+   - [1. Prontuário Eletrônico SOAP com Sugestões Inteligentes de Histórico](#1-prontuário-eletrônico-soap-com-sugestões-inteligentes-de-histórico)
+   - [2. Assistente Técnica Nexa (Respostas Curtas e Objetivas)](#2-assistente-técnica-nexa-respostas-curtas-e-objetivas)
+   - [3. Gestão de Moradores & Plano Terapêutico Singular (PTS)](#3-gestão-de-moradores--plano-terapêutico-singular-pts)
+   - [4. Aprazamento e Checagem de Medicação (MAR - 12/12h)](#4-aprazamento-e-checagem-de-medicação-mar---1212h)
+   - [5. Passagem de Plantão & Auditoria de Pendências (Smart Handover)](#5-passagem-de-plantão--auditoria-de-pendências-smart-handover)
+   - [6. Guia Residencial Terapêutico (Manual Técnico & Operacional)](#6-guia-residencial-terapêutico-manual-técnico--operacional)
+   - [7. Escalas de Cuidadores, Enfermagem e Equipe Multidisciplinar](#7-escalas-de-cuidadores-enfermagem-e-equipe-multidisciplinar)
+   - [8. Triagem NEWS2, Telemetria e Alerta Sonoro de Emergência](#8-triagem-news2-telemetria-e-alerta-sonoro-de-emergência)
+   - [9. Relatórios Gerenciais, Ocorrências e Indicadores SRT](#9-relatórios-gerenciais-ocorrências-e-indicadores-srt)
+   - [10. Segurança, Privacidade, LGPD e Logs de Auditoria](#10-segurança-privacidade-lgpd-e-logs-de-auditoria)
+4. [📊 Status dos Módulos SRT](#-status-dos-módulos-srt)
+5. [🛠️ Arquitetura Tecnológica](#️-arquitetura-tecnológica)
+6. [📂 Estrutura de Arquivos da Aplicação](#-estrutura-de-arquivos-da-aplicação)
+7. [🔧 Como Executar Localmente](#-como-executar-localmente)
+8. [⚙️ Variáveis de Ambiente](#️-variáveis-de-ambiente)
+9. [🐙 Guia de Deploy e Versionamento](#-guia-de-deploy-e-versionamento)
 10. [📄 Licença](#-licença)
 
 ---
 
-## 🌟 Visão Geral do Sistema
+## 🏠 Visão Geral e Foco em Residência Terapêutica
 
-O **NexaMed** é uma solução completa desenvolvida para suprir as demandas complexas de equipes multidisciplinares em **Serviços de Residência Terapêutica (SRT)**, Instituições de Longa Permanência e Clínicas Especializadas em Saúde Mental.
+O **NexaMed** foi reestruturado e otimizado para atender de forma **exclusiva e especializada** os **Serviços de Residência Terapêutica (SRT - Tipo I e Tipo II)**, garantindo conformidade estrita com as diretrizes do Ministério da Saúde e da Rede de Atenção Psicossocial (RAPS).
 
-Construído sob as diretrizes da **Portaria MS/GM nº 106/2000**, **RDC ANVISA nº 50/2002** e **Lei nº 10.216/2001 (Reforma Psiquiátrica)**, o NexaMed une a humanização do acolhimento ao rigor técnico da enfermagem e medicina. O sistema elimina falhas na administração de medicamentos, agiliza a passagem de turno, calcula o risco clínico em tempo real e emite alertas emergenciais mesmo quando a tela do computador está inativa.
+O sistema abandona estruturas hospitalares generalistas ou burocracias corporativas para focar 100% no **cuidado residencial, na reabilitação psicossocial, na autonomia dos moradores e na segurança do acompanhamento medicamentoso e clínico**.
+
+---
+
+## 📜 Conformidade Legal e Normas Técnicas (MS/SUS)
+
+- **Portaria MS/GM nº 106/2000:** Regulamentação dos Serviços de Residência Terapêutica no âmbito do SUS.
+- **Portaria MS/GM nº 3.088/2011:** Instituição da Rede de Atenção Psicossocial (RAPS).
+- **Lei nº 10.216/2001 (Reforma Psiquiátrica):** Proteção e os direitos das pessoas portadoras de transtornos mentais e redirecionamento do modelo assistencial.
+- **RDC ANVISA nº 50/2002:** Normas para estabelecimentos assistenciais de saúde.
+- **Resolução COFEN nº 564/2017 & COFEN nº 681/2021:** Registros de enfermagem em prontuário eletrônico e aplicação da metodologia SOAP.
 
 ---
 
 ## 🚀 Módulos Principais & Funcionalidades
 
-### 1. Painel Dashboard & Resumo Automático do Plantão
-- **Indicadores Rápidos de Leito:** Contagem instantânea de residentes ativos, leitos ocupados, casos críticos e pendências do MAR.
-- **Resumo Inteligente (Shift Summary):** Compilação automática de eventos do turno, residentes em observação rigorosa e lista de remédios aguardando checagem.
-- **Transmissão via 1-Clique:** Botão de cópia formatada para rápido envio do relatório de passagem de turno via WhatsApp ou e-mail da equipe.
-- **Análises Gráficas (Recharts):** Gráficos de distribuição de ocorrências por categoria e evolução temporal dos episódios clínicos dos últimos 7 dias.
+### 1. Prontuário Eletrônico SOAP com Sugestões Inteligentes de Histórico
+- **Editor Modal de Evolução SOAP:** Interface focada em agilidade e precisão para registro de evoluções técnicas (*Subjetivo, Objetivo, Avaliação, Plano*).
+- **Sugestões Inteligentes Focadas no Histórico do Morador:**
+  - O sistema analisa evoluções anteriores registradas especificamente para o morador selecionado.
+  - Exibe um painel de **"Sugestões Inteligentes do Histórico"** com um clique direto para reaproveitamento de padrões de conduta, queixas subjetivas recorrentes ou padrões de resposta ao PTS.
+  - Reduz drasticamente o tempo de digitação da equipe de cuidadores, técnicos e enfermeiros.
+- **Gerador Automático Nexa (Gemini IA):** Botão para estruturação instantânea de notas brutas em linguagem natural para a norma SOAP padronizada.
 
-### 2. Acolhimento de Residentes & Cadastro de Medicamentos
-- **Formulário de Entrada do Residente:** Coleta de dados pessoais, idade, CPF, quarto/leito, grau de dependência (Grau I, II ou III), diagnóstico principal, alergias conhecidas e contato familiar de emergência.
-- **Cadastro Integrado de Remédios no Acolhimento:** Permite cadastrar a prescrição contínua diretamente durante a criação do residente.
-  - **Atalhos Rápidos (Presets):** Inserção em 1-clique de psicotrópicos e medicamentos frequentes (Quetiapina, Risperidona, Losartana, Clonazepam, Sertralina, Memantina).
-  - **Atributos Completos:** Configuração de dosagem, via de administração (VO, IV, IM, SC, Tópico, Inalatório), frequência, horários de aprazamento, estoque inicial de doses, alerta de psicotrópico (Portaria 344) e orientações de enfermagem.
-  - **Geração Automática do MAR:** Cria automaticamente as doses pendentes na grade do Kardex Eletrônico para o novo residente.
+### 2. Assistente Técnica Nexa (Respostas Curtas e Objetivas)
+- **Engine Redesenhada no Backend (`server.ts`):** A assistente virtual Nexa foi programada com diretrizes estritas para fornecer **respostas extremamente curtas, diretas e objetivas** (máximo de 2 a 3 tópicos práticos), eliminando enrolação.
+- **Foco Exclusivo em SRT:** Especializada na rotina de Residências Terapêuticas (reabilitação, reinserção comunitária, PTS e medicação assistida).
+- **Ações Executáveis Diretas (Actions):** Toda resposta traz botões de navegação e execução direta de comandos (ex: *Abrir Editor SOAP*, *Ver Aprazamento 12/12h*, *Ver Residentes*).
 
-### 3. Painel de Checagem por Horários de Medicação (MAR)
-- **Visão Categorizada por Horário:** Agrupamento de todas as medicação a serem ministradas nos horários padronizados (08:00h, 12:00h, 16:00h, 20:00h, 22:00h).
-- **Ações Diretas de Administração:**
-  - **Tomou (100%):** Botão verde de confirmação imediata da ingestão completa em 1-clique.
-  - **Parcial:** Permite registrar administração incompleta escolhendo justificativas pré-definidas (ex: *ingeriu 50% e cuspiu*, *aceitou apenas parte da solução*) ou inserindo texto livre da enfermagem.
-  - **Recusou:** Permite registrar a recusa do medicamento selecionando causas clínicas ou comportamentais (ex: *recusa verbal*, *agitação/desorientação*, *disfagia*, *náusea*) com gravação do motivo no prontuário.
-- **Badges de Contagem de Doses:** Destaque para o número de remédios pendentes em cada faixa horária e sinalização imediata para residentes em estado 'Crítico'.
+### 3. Gestão de Moradores & Plano Terapêutico Singular (PTS)
+- **Ficha Completa do Morador:** Cadastro com foto, idade, grau de dependência (Grau I, II ou III), CAPS de referência, contato da rede de apoio e diagnóstico principal.
+- **Plano Terapêutico Singular (PTS):** Monitoramento das metas de autonomia, reinserção comunitária, oficinas, convivência e acompanhamento no CAPS.
+- **Prontuário 360°:** Visão holística reunindo histórico de sinais vitais, linha do tempo de intercorrências, cartão de medicação e evoluções anteriores.
 
-### 4. Guia Residencial Terapêutico (Manual Técnico e Normativo)
-- **Manual Operacional Integrado:** Guia de referência rápida para cuidadores, técnicos de enfermagem e enfermeiros sobre a rotina de Residência Terapêutica.
-- **Fundamentação Legal:** Conteúdo alinhado com a Portaria MS nº 106/2000, RDC ANVISA nº 50/2002 e diretrizes do Ministério da Saúde.
-- **Seções Temáticas:**
-  - Diretrizes de Autonomia e Convivência Comunitária.
-  - Protocolo de Administração e Armazenamento Seguro de Medicamentos.
-  - Rotinas de Higiene, Nutrição e Prevenção de Lesões.
-  - Manejo de Crises e Protocolos de Urgência Psiquiátrica.
-  - Projeto Terapêutico Singular (PTS) e Articulação com CAPS.
+### 4. Aprazamento e Checagem de Medicação (MAR - 12/12h)
+- **Esquema Padronizado 12/12h (08:00h e 20:00h):** Visão rápida da administração de psicotrópicos e fármacos contínuos.
+- **Confirmação e Justificativas Rápidas:**
+  - **Ministrado (100%):** Dar baixa imediata com um clique e atualização em tempo real do estoque.
+  - **Parcial:** Registro de ingestão parcial com motivos pré-formatados.
+  - **Recusa:** Registro formal de recusa comportamental ou clínica para notificação à equipe médica do CAPS.
+- **Dupla Checagem:** Destaque visual diferenciado para medicamentos de alta vigilância / Portaria 344.
 
-### 5. Prontuário Eletrônico SOAP & Assistente de IA Nexa
-- **Evoluções SOAP Padronizadas:** Registro dividido em *Subjetivo*, *Objetivo*, *Avaliação* e *Plano*, garantindo consistência com normas do COFEN/CFM.
-- **Assistente Nexa (Gemini API):** Chatbot especializado e gerador de rascunho de evolução SOAP integrado via SDK `@google/genai`. Analisa histórico do residente e sugere intervenções baseadas em evidências.
-- **Atalhos Interativos:** Botões para aplicar sugestões diretamente nos campos do prontuário ou copiar condutas médicas.
+### 5. Passagem de Plantão & Auditoria de Pendências (Smart Handover)
+- **Sintetizador com IA Nexa:** Resumo automático e objetivo das ocorrências das últimas 12 horas.
+- **Auditoria de Pendências:** Verificação imediata de medicações não checadas ou ausência de evolução diária antes do encerramento do turno.
+- **Assinatura Digital de Plantão:** Registro imutável de quem entregou e quem assumiu o turno com timestamp e código de confirmação.
 
-### 6. Triagem Fisiológica NEWS2 & Alertas Sonoros em Background
-- **CalculadoraNEWS2:** Cálculo automático da pontuação *National Early Warning Score* considerando Frequência Respiratória, SpO2, Suporte de O2, Pressão Arterial Sistólica, Frequência Cardíaca, Nível de Consciência (AVPU) e Temperatura.
-- **Classificação de Risco:** Categorização imediata em Baixo, Médio, Alto e Crítico.
-- **Notificações Push com Service Worker (`/sw.js`):** Escuta contínua no navegador em segundo plano.
-- **Sintetizador Sonoro Medical Beep:** Emite um bipe cirúrgico duplo (Web Audio API) ao detectar a transição de um residente para o nível 'Crítico', garantindo atenção imediata da equipe de plantão.
+### 6. Guia Residencial Terapêutico (Manual Técnico & Operacional)
+- **Manual de Procedimentos SRT:** Guia de referência rápida integrado ao sistema para consulta de cuidadores e técnicos.
+- **Seções Normativas:**
+  - Convivência, Direitos e Autonomia dos Moradores.
+  - Administração Segura de Medicamentos e Armazenamento.
+  - Sinais de Alerta e Manejo de Crises Psiquiátricas.
+  - Articulação com a RAPS, CAPS e Atenção Básica (UBS).
 
-### 7. Passagem de Plantão & Registro de Ocorrências
-- **Passagem de Turno Estruturada:** Registro de intercorrências com classificação por severidade (Crítica, Alta, Média, Baixa).
-- **Assinatura Digital & Ciente:** Sistema de assinatura pelo profissional transmissor e receptor com registro de data/hora.
-- **Linha do Tempo de Ocorrências:** Histórico filtrável por período e por residente.
+### 7. Escalas de Cuidadores, Enfermagem e Equipe Multidisciplinar
+- **Gestão de Turnos 24/7:** Programação visual de escalas de cuidadores de saúde mental, técnicos de enfermagem, enfermeiros RT e acompanhantes terapêuticos.
+- **Controle de Folgas e Substituições:** Prevenção de desfalques na cobertura da residência.
 
-### 8. Prontuário 360°, Telemetria IoT & Visita Telemedicina
-- **Visualização Holística (Prontuário 360°):** Abas dedicadas a Dados Pessoais, Histórico Clínico, Gráfico MAR de Medicamentos, Plano Terapêutico Singular (PTS) e Linha do Tempo.
-- **Telemetria de Sinais Vitais IoT:** Simulação de sensores em tempo real monitorando Oximetria, Frequência Cardíaca e Pressão Arterial.
-- **Módulo de Telemedicina:** Agendamento e realização de teleconsultas com psiquiatras e médicos da rede.
+### 8. Triagem NEWS2, Telemetria e Alerta Sonoro de Emergência
+- **EscalaNEWS2 Integrada:** Cálculo automatizado do score fisiológico em tempo real.
+- **Service Worker (`/sw.js`) & Alerta Sonoro:** Emite bipe cirúrgico duplo em tempo real (Web Audio API) e notificação push caso o status de um morador mude para 'Crítico'.
 
-### 9. Segurança, Biometria, LGPD & Auditoria
-- **Autenticação Biométrica Simulada:** Etapa adicional de proteção via FaceID / Impressão Digital para liberação de dados sensíveis.
-- **Conformidade LGPD (Art. 11 e 18):** Termos de consentimento do titular de dados, gerenciador de cookies e ferramenta de exportação completa dos registros em formato JSON.
-- **Logs de Auditoria (HIPAA/LGPD):** Registro imutável de ações no sistema (quem acessou, qual prontuário foi alterado, data, hora e IP).
+### 9. Relatórios Gerenciais, Ocorrências e Indicadores SRT
+- **Central de Relatórios:** Análise visual de ocorrências por tipo (quedas, recusa medicamentosa, alteração de comportamento, emergências clínicas).
+- **Exportação e Parecer Executivo:** Gerador de parecer técnico simplificado para apresentação à coordenação de saúde mental do município.
 
-### 10. Escalas Multidisciplinares & Gestão de Estoque
-- **Escala de Plantão:** Organização por turnos (Manhã, Tarde, Noite, 12x36h) para Médicos, Enfermeiros, Psicólogos, Cuidadores e Assistentes Sociais.
-- **Estoque de Insumos e Fármacos:** Controle de quantidade mínima, validade e reposição de materiais de enfermagem e medicamentos.
+### 10. Segurança, Privacidade, LGPD e Logs de Auditoria
+- **LGPD & HIPAA Compliance:** Ferramenta de exportação de dados do titular, consentimento transparente e gerenciamento de cookies.
+- **Logs de Auditoria Rastreáveis:** Registro imutável de leituras, edições e cadastros com identificação de usuário, função e IP.
 
 ---
 
-## 📊 Tabela de Status dos Módulos
+## 📊 Status dos Módulos SRT
 
-| Módulo / Funcionalidade | Status | Descrição Detalhada |
+| Módulo / Funcionalidade | Status | Aplicação na Residência Terapêutica |
 | :--- | :---: | :--- |
-| **Painel de Checagem por Horário (MAR)** | ✅ 100% Concluído | Visão categorizada por horário com botões 'Tomou', 'Parcial' e 'Recusou' (com justificativa). |
-| **Cadastro de Remédios no Acolhimento** | ✅ 100% Concluído | Inclusão de medicamentos com presets rápidos, vias, horários e geração automática no MAR. |
-| **Guia Residencial Terapêutico** | ✅ 100% Concluído | Manual técnico-operacional integrado com diretrizes da Portaria MS 106/2000 e ANVISA. |
-| **Sincronização Firestore Real-Time** | ✅ 100% Concluído | Atualização instantânea de evoluções, residentes e medicações via `onSnapshot` com fallback local. |
-| **Service Worker & Push Background** | ✅ 100% Concluído | Notificações nativas no navegador com alarme sonoro (Web Audio API) para residentes críticos. |
-| **Resumo Automático do Plantão** | ✅ 100% Concluído | Agrupamento de eventos do turno e texto de transmissão formatado para cópia rápida. |
-| **Calculadora Clínica NEWS2** | ✅ 100% Concluído | Cálculo automatizado de pontuação fisiológica e estratificação de risco imediata. |
-| **Assistente de IA Nexa (Gemini API)** | ✅ 100% Concluído | Integração backend com SDK `@google/genai` para apoio no diagnóstico e evoluções SOAP. |
-| **Dashboard Clínico & Recharts** | ✅ 100% Concluído | Gráficos de intercorrências e métricas operacionais atualizadas dinamicamente. |
-| **Prontuário 360° & Telemetria IoT** | ✅ 100% Concluído | Visão holística do residente, histórico vital e simulação de sensores de telemetria. |
-| **Conformidade LGPD & Auditoria** | ✅ 100% Concluído | Gestão de consentimento, exportação JSON de dados e auditoria de logs HIPAA/LGPD. |
-| **Autenticação Biométrica Simulada** | ✅ 100% Concluído | Verificação facial/digital para acesso a prontuários e administração de medicamentos. |
-| **Escalas & Gestão de Estoque** | ✅ 100% Concluído | Grade de turnos multidisciplinares e controle de estoque de insumos de enfermagem. |
+| **Prontuário SOAP com Sugestões do Histórico** | ✅ 100% Concluído | Agiliza o preenchimento reaproveitando histórico anterior do morador. |
+| **Assistente Nexa (Curta & Objetiva)** | ✅ 100% Concluído | Respostas diretas ao ponto, sem prolixidade, focadas na rotina da SRT. |
+| **Aprazamento MAR (12/12h)** | ✅ 100% Concluído | Controle rigoroso da medicação assitida de uso contínuo e psicotrópicos. |
+| **Passagem de Plantão Inteligente** | ✅ 100% Concluído | Troca de turno com checagem de pendências e assinatura dos cuidadores. |
+| **Guia Residencial Terapêutico** | ✅ 100% Concluído | Manual normativo técnico baseado nas Portarias MS 106/2000 e RAPS. |
+| **Ficha do Morador & PTS** | ✅ 100% Concluído | Acompanhamento da evolução de autonomia e projetos do morador. |
+| **Escalas da Equipe Multidisciplinar** | ✅ 100% Concluído | Garantia da cobertura 24h por cuidadores e equipe de enfermagem. |
+| **Triagem NEWS2 & Alerta Sonoro** | ✅ 100% Concluído | Monitoramento de descompensação clínica com alarme em background. |
+| **Persistência Real-Time (Firestore)** | ✅ 100% Concluído | Sincronização automática entre computadores/tablets da casa. |
+| **Gestão LGPD & Auditoria** | ✅ 100% Concluído | Proteção total de dados sensíveis de saúde mental. |
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Arquitetura Tecnológica
 
-- **Frontend:** [React 18](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
-- **Estilização:** [Tailwind CSS](https://tailwindcss.com/)
-- **Banco de Dados Real-Time:** [Firebase Firestore](https://firebase.google.com/docs/firestore)
-- **Backend / Servidor Express:** [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [esbuild](https://esbuild.github.io/)
-- **Inteligência Artificial:** SDK da API Gemini (`@google/genai`)
-- **Gráficos & Visualização:** [Recharts](https://recharts.org/)
-- **Ícones:** [Lucide React](https://lucide.dev/)
-- **Workers e Áudio:** Service Worker PWA nativo e Web Audio API (Sintetizador Sonoro)
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS.
+- **Backend Servidor:** Node.js, Express, `esbuild` (Compilação para `dist/server.cjs`).
+- **Engine de IA:** Google Gemini API (`@google/genai` com modelo `gemini-3.6-flash`).
+- **Banco de Dados:** Firebase Firestore Real-Time com Fallback Local Inteligente.
+- **Background Worker & Som:** Service Worker PWA nativo (`/sw.js`) e Web Audio API.
+- **Gráficos:** Recharts.
+- **Ícones:** Lucide React.
 
 ---
 
-## 📂 Estrutura Completa do Projeto
+## 📂 Estrutura de Arquivos da Aplicação
 
 ```text
 ├── public/
-│   └── sw.js                             # Service Worker para Notificações Push em Background
+│   └── sw.js                             # Service Worker de Notificações e PWA
 ├── src/
-│   ├── components/                       # Componentes Reutilizáveis
-│   │   ├── MedicationDashboardPanel.tsx  # Painel de Checagem por Horário de Medicação (MAR)
-│   │   ├── ShiftSummaryWidget.tsx        # Resumo Automático do Plantão com Botão de Transmissão
-│   │   ├── NavbarHeader.tsx              # Barra Superior com Status do Service Worker e Alertas
-│   │   ├── NexaAssistantWidget.tsx       # Chatbot e Gerador SOAP impulsionado por Gemini IA
-│   │   ├── Resident360ViewModal.tsx      # Modal de Visão Holística 360° do Residente
-│   │   ├── ResidentDetailModal.tsx       # Detalhes Rápidos e Prontuário Resumido
-│   │   ├── SOAPEditorModal.tsx           # Editor de Evolução Clínica Estruturada (SOAP)
-│   │   ├── LGPDAndCookieManager.tsx      # Gerenciador de Consentimento e Cookies LGPD
-│   │   ├── AuditLogViewerModal.tsx       # Visualizador de Logs de Auditoria HIPAA/LGPD
-│   │   ├── CommandPaletteModal.tsx       # Paleta de Comandos Rápidos (Ctrl + K)
-│   │   ├── IoTVitalsTelemetryModal.tsx   # Painel de Telemetria de Sinais Vitais em Tempo Real
-│   │   ├── SmartHandoverModal.tsx        # Modal de Passagem de Plantão Inteligente
-│   │   ├── TelehealthModal.tsx           # Módulo de Consultas de Telemedicina
-│   │   ├── AddInventoryModal.tsx         # Cadastro e Entrada de Estoque de Insumos
-│   │   └── AppSidebar.tsx                # Menu Lateral de Navegação
-│   ├── hooks/
-│   │   └── useCriticalAlertNotifications.ts # Hook de Notificações Push e Alerta Sonoro
-│   ├── views/                            # Telas/Visões da Aplicação
-│   │   ├── DashboardView.tsx             # Painel Principal com Indicadores e Gráficos
-│   │   ├── ResidentesView.tsx            # Gestão de Residentes e Form com Cadastro de Remedios
-│   │   ├── EvolucaoMedicacaoView.tsx     # Visão MAR e Painel Dashboard por Horários
-│   │   ├── ResidencialGuiaView.tsx       # Guia Residencial Terapêutico (Manual Normativo)
-│   │   ├── ProntuariosView.tsx           # Prontuário Eletrônico e Registros SOAP
-│   │   ├── MedicacaoView.tsx             # Cartão de Aprazamento e Kardex
-│   │   ├── PlantaoView.tsx               # Passagem de Turno e Histórico de Ocorrências
-│   │   ├── RelatoriosView.tsx            # Relatórios Gerenciais e Análises Clínicas
-│   │   ├── EscalasView.tsx               # Escalas da Equipe Multidisciplinar e Estoque
-│   │   ├── EnterpriseOpsView.tsx         # Operações Corporativas, Governança e LGPD
-│   │   └── AuthView.tsx                  # Tela de Login com Biometria Simulada
-│   ├── utils/
-│   │   ├── news2Calculator.ts            # Calculadora da Escala Fisiológica NEWS2
-│   │   └── textParser.ts                 # Manipulação de Texto e Tokens
+│   ├── components/
+│   │   ├── SOAPEditorModal.tsx           # Editor SOAP com Sugestões Inteligentes do Histórico
+│   │   ├── NexaAssistantWidget.tsx       # Chatbot e Assistente IA com Respostas Objetivas
+│   │   ├── SmartHandoverModal.tsx        # Troca de Plantão e Auditoria de Pendências
+│   │   ├── MedicationDashboardPanel.tsx  # Checagem de Medicação por Turno (MAR)
+│   │   ├── ShiftSummaryWidget.tsx        # Resumo Rápido para Transmissão de Plantão
+│   │   ├── Resident360ViewModal.tsx      # Modal Prontuário 360° do Morador
+│   │   ├── ResidentDetailModal.tsx       # Detalhes e Ficha Rápida
+│   │   ├── NavbarHeader.tsx              # Barra Superior e Alertas Ativos
+│   │   ├── AppSidebar.tsx                # Navegação Lateral Ajustada para SRT
+│   │   ├── CommandPaletteModal.tsx       # Paleta de Comandos (⌘K)
+│   │   ├── IoTVitalsTelemetryModal.tsx   # Telemetria de Sinais Vitais Beira-Leito
+│   │   ├── TelehealthModal.tsx           # Módulo de Telemedicina / Teleconsulta CAPS
+│   │   └── LGPDAndCookieManager.tsx      # Gerenciador de Consentimento LGPD
+│   ├── views/
+│   │   ├── DashboardView.tsx             # Dashboard Residencial Principal
+│   │   ├── ResidentesView.tsx            # Gestão de Moradores e PTS
+│   │   ├── ProntuariosView.tsx           # Prontuários e Evoluções Clínicas
+│   │   ├── EvolucaoMedicacaoView.tsx     # Painel Unificado de Evolução e Medicação
+│   │   ├── MedicacaoView.tsx             # Grade MAR de Aprazamento
+│   │   ├── PlantaoView.tsx               # Passagem de Turno e Ocorrências
+│   │   ├── RelatoriosView.tsx            # Central de Relatórios e Análise de Ocorrências
+│   │   ├── EscalasView.tsx               # Escalas da Equipe da Casa
+│   │   ├── ResidencialGuiaView.tsx       # Guia Residencial Terapêutico (Manual SRT)
+│   │   └── AuthView.tsx                  # Login e Segurança
 │   ├── lib/
-│   │   └── firebase.ts                   # Conexão Firestore Real-Time com Fallback Local
-│   ├── types.ts                          # Definições de Tipos e Interfaces TypeScript
-│   ├── App.tsx                           # Componente Raiz da Aplicação
-│   ├── main.tsx                          # Ponto de Entrada do React
-│   └── index.css                         # Estilização Global com Tailwind CSS
-├── server.ts                             # Servidor Express Backend para Gemini IA e Produção
-├── package.json                          # Dependências do Projeto e Scripts
-├── tsconfig.json                         # Configurações do Compilador TypeScript
-├── vite.config.ts                        # Configurações do Vite
-└── .env.example                          # Modelo de Variáveis de Ambiente
+│   │   └── firebase.ts                   # Sincronização Firestore Real-Time
+│   ├── utils/
+│   │   ├── news2Calculator.ts            # Calculadora de RiscoNEWS2
+│   │   └── textParser.ts                 # Utilitários de Tratamento de Texto
+│   ├── types.ts                          # Tipagens Globais da Aplicação
+│   ├── App.tsx                           # Componente Principal e Rotas SRT
+│   ├── main.tsx                          # Bootstrap React
+│   └── index.css                         # CSS Global com Tailwind
+├── server.ts                             # Servidor Express com Endpoints da IA Nexa
+├── package.json                          # Dependências e Scripts
+├── tsconfig.json                         # Configuração do Compilador TypeScript
+└── vite.config.ts                        # Configuração do Vite
 ```
 
 ---
 
-## 🔧 Como Executar o Projeto Localmente
+## 🔧 Como Executar Localmente
 
-### Pré-requisitos
-- **Node.js** (versão 18 ou superior)
-- **npm** (ou yarn)
-
-### 1. Clonar o Repositório
+### 1. Clonar e Instalar
 ```bash
-git clone https://github.com/SEU_USUARIO/nexamed-plataforma.git
-cd nexamed-plataforma
-```
-
-### 2. Instalar as Dependências
-```bash
+git clone https://github.com/SEU_USUARIO/nexamed-srt.git
+cd nexamed-srt
 npm install
 ```
 
-### 3. Configurar Variáveis de Ambiente
-Crie o arquivo `.env` baseado no `.env.example`:
-```bash
-cp .env.example .env
+### 2. Configurar Variáveis de Ambiente
+Crie o arquivo `.env` na raiz:
+```env
+GEMINI_API_KEY=sua_chave_gemini_aqui
 ```
 
-### 4. Executar em Modo de Desenvolvimento
+### 3. Iniciar a Aplicação
 ```bash
 npm run dev
 ```
-Acesse a aplicação no seu navegador em: `http://localhost:3000`.
+Acesse no navegador: `http://localhost:3000`.
 
 ---
 
-## ⚙️ Configuração de Variáveis de Ambiente
+## ⚙️ Variáveis de Ambiente
 
-No arquivo `.env`, preencha as variáveis de acordo com suas credenciais:
-
-```env
-# Chave da API do Google Gemini (utilizada no backend server.ts)
-GEMINI_API_KEY=sua_chave_gemini_aqui
-
-# Configurações do Firebase Firestore (Opcional - se omitido, o app opera com persistência local)
-VITE_FIREBASE_PROJECT_ID=peta-sanctuary-898sv
-VITE_FIREBASE_APP_ID=seu_app_id
-VITE_FIREBASE_API_KEY=sua_chave_api
-VITE_FIREBASE_AUTH_DOMAIN=peta-sanctuary-898sv.firebaseapp.com
-VITE_FIREBASE_FIRESTORE_DATABASE_ID=ai-studio-nexamed-422bddbb-d440-4749-9e00-30c11a5ae67c
-```
+| Variável | Obrigatoriedade | Descrição |
+| :--- | :---: | :--- |
+| `GEMINI_API_KEY` | Recomendado | Chave de API do Google Gemini para respostas da Nexa IA e geração de SOAP. |
+| `VITE_FIREBASE_PROJECT_ID` | Opcional | ID do projeto Firebase para sincronização real-time. |
+| `VITE_FIREBASE_API_KEY` | Opcional | Chave de API do Firebase. |
 
 ---
 
 ## 📦 Scripts Disponíveis
 
-| Comando | Descrição |
-| :--- | :--- |
-| `npm run dev` | Inicia o servidor de desenvolvimento na porta 3000 com `tsx server.ts`. |
-| `npm run build` | Compila a aplicação Vite e gera o bundle do servidor backend `dist/server.cjs` via `esbuild`. |
-| `npm run start` | Inicia o servidor Node.js compilado para ambiente de produção (`node dist/server.cjs`). |
-| `npm run lint` | Executa a verificação estática de tipos do TypeScript (`tsc --noEmit`). |
-
----
-
-## 🐙 Guia de Atualização no GitHub
-
-Para enviar todas as atualizações e novos módulos para o repositório no GitHub:
-
-```bash
-# 1. Verificar o status dos arquivos modificados e criados
-git status
-
-# 2. Adicionar todas as alterações ao staging
-git add .
-
-# 3. Criar o commit com uma mensagem explicativa
-git commit -m "feat: painel de administracao de medicacao, cadastro de remedios no acolhimento, guia residencial e readme detalhado"
-
-# 4. Enviar as alterações para a branch principal
-git push origin main
-```
+- `npm run dev`: Executa a aplicação em modo de desenvolvimento na porta 3000.
+- `npm run build`: Gera o build estático do Vite e agrupa o servidor em `dist/server.cjs`.
+- `npm run start`: Inicia o servidor em produção executando `node dist/server.cjs`.
+- `npm run lint`: Executa a validação de tipos TypeScript (`tsc --noEmit`).
 
 ---
 
 ## 📄 Licença
 
-Este projeto é disponibilizado sob a licença **MIT**. Consulte o arquivo `LICENSE` para mais informações.
+Este projeto é protegido e distribuído sob a Licença **MIT**.

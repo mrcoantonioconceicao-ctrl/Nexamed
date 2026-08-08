@@ -49,23 +49,23 @@ export const NexaAssistantWidget: React.FC<NexaAssistantWidgetProps> = ({
     {
       id: 'msg-init',
       sender: 'nexa',
-      text: 'Olá! Sou a Nexa, sua assistente clínica inteligente na plataforma NexaMed. 👋\n\nPosso tirar **todas as suas dúvidas** sobre o sistema, explicar onde fica qualquer comando ou tela, e também **gerar todo tipo de trabalho** (redigir evoluções SOAP, resumir plantões, auditar medicações e relatórios de intercorrências)!\n\nComo posso te ajudar agora?',
+      text: 'Olá! Sou a **Nexa**, assistente técnica da Residência Terapêutica (SRT). 👋\n\nComo posso ajudar você agora?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       actions: [
         {
-          type: 'navigate',
-          payload: { path: '/dashboard' },
-          label: '❓ Onde achar todos os comandos?',
-        },
-        {
           type: 'create_evolution',
           payload: {},
-          label: '✍️ Gerar Evolução SOAP com IA',
+          label: '✍️ Evolução SOAP',
         },
         {
           type: 'navigate',
-          payload: { path: '/relatorios' },
-          label: '📊 Ver Relatórios & Intercorrências',
+          payload: { path: '/residentes' },
+          label: '👥 Residentes & PTS',
+        },
+        {
+          type: 'navigate',
+          payload: { path: '/medicacao' },
+          label: '💊 Aprazamento MAR 12/12h',
         }
       ]
     }

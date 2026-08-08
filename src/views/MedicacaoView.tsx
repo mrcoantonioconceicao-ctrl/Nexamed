@@ -8,23 +8,36 @@ import {
   ShieldAlert, 
   Package, 
   XCircle,
-  Filter
+  Filter,
+  Printer
 } from 'lucide-react';
-import { MedicationMAR, DoseStatus } from '../types';
+import { MedicationMAR, DoseStatus, Resident } from '../types';
+import { MedicationLabelPrinterModal } from '../components/MedicationLabelPrinterModal';
 
 interface MedicacaoViewProps {
   medications: MedicationMAR[];
+  residents?: Resident[];
   onUpdateDoseStatus: (medicationId: string, doseId: string, status: DoseStatus) => void;
   onNavigate?: (path: string) => void;
 }
 
 export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
   medications,
+  residents = [],
   onUpdateDoseStatus,
   onNavigate,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Todos' | 'Pendente' | 'Ministrado' | 'Atrasado'>('Todos');
+  
+  // Label printer state
+  const [isPrinterOpen, setIsPrinterOpen] = useState(false);
+  const [printerInitialResidentId, setPrinterInitialResidentId] = useState<string | undefined>();
+
+  const openPrinterForResident = (residentId?: string) => {
+    setPrinterInitialResidentId(residentId);
+    setIsPrinterOpen(true);
+  };
 
   const filteredMeds = medications.filter(m => {
     const matchesSearch = 
@@ -53,11 +66,19 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => openPrinterForResident()}
+            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-xs flex items-center gap-1.5 shadow-2xs transition-all"
+          >
+            <Printer className="w-4 h-4" />
+            <span>🖨️ Imprimir Etiquetas por Residente</span>
+          </button>
+
           {onNavigate && (
             <button
               onClick={() => onNavigate('/evolucao-medicacao')}
-              className="px-3.5 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-black text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
+              className="px-3.5 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-black text-xs flex items-center gap-1.5 shadow-2xs transition-colors"
             >
               <span>📋 Checagem por Residente (12/12h)</span>
             </button>
@@ -150,8 +171,17 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
                 </p>
               </div>
 
-              {/* Stock Warning */}
+              {/* Stock Warning & Quick Label Button */}
               <div className="flex items-center gap-2 text-xs">
+                <button
+                  onClick={() => openPrinterForResident(med.residentId)}
+                  className="px-2.5 py-1 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 font-bold flex items-center gap-1 transition-colors"
+                  title="Gerar etiquetas deste residente"
+                >
+                  <Printer className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Etiquetas Morador</span>
+                </button>
+
                 <div className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1.5 ${
                   med.stockDosesRemaining < 10
                     ? 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -232,6 +262,15 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Medication Label Printer Modal */}
+      <MedicationLabelPrinterModal
+        isOpen={isPrinterOpen}
+        onClose={() => setIsPrinterOpen(false)}
+        medications={medications}
+        residents={residents}
+        initialResidentId={printerInitialResidentId}
+      />
     </div>
   );
 };

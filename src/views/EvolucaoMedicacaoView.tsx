@@ -19,10 +19,12 @@ import {
   AlertOctagon,
   ChevronRight,
   MessageSquare,
-  Activity
+  Activity,
+  Printer
 } from 'lucide-react';
 import { Resident, MedicationMAR, DoseStatus, ClinicalEvolution, ClinicalRole } from '../types';
 import { MedicationDashboardPanel } from '../components/MedicationDashboardPanel';
+import { MedicationLabelPrinterModal } from '../components/MedicationLabelPrinterModal';
 
 interface EvolucaoMedicacaoViewProps {
   residents: Resident[];
@@ -58,6 +60,15 @@ export const EvolucaoMedicacaoView: React.FC<EvolucaoMedicacaoViewProps> = ({
   const [shiftFilter, setShiftFilter] = useState<'08:00' | '20:00' | 'Todos'>('08:00');
   const [searchQuery, setSearchQuery] = useState('');
   const [residentFilter, setResidentFilter] = useState<'Todos' | 'Pendentes' | 'ComRecusaParcial' | 'Criticos'>('Todos');
+  
+  // Label printer state
+  const [isPrinterOpen, setIsPrinterOpen] = useState(false);
+  const [printerResidentId, setPrinterResidentId] = useState<string | undefined>();
+
+  const openPrinterForResident = (resId?: string) => {
+    setPrinterResidentId(resId);
+    setIsPrinterOpen(true);
+  };
   
   // Modal state for Partial / Refusal Justification
   const [modalState, setModalState] = useState<JustificationModalState | null>(null);
@@ -294,6 +305,15 @@ export const EvolucaoMedicacaoView: React.FC<EvolucaoMedicacaoViewProps> = ({
           >
             <span>Todos</span>
           </button>
+
+          <button
+            onClick={() => openPrinterForResident()}
+            className="px-3 py-1.5 rounded-lg text-xs font-black bg-emerald-500 hover:bg-emerald-400 text-teal-950 transition-all flex items-center gap-1.5 shadow-2xs shrink-0 ml-1"
+            title="Abrir Central de Impressão de Etiquetas de Medicação"
+          >
+            <Printer className="w-3.5 h-3.5 text-teal-950" />
+            <span className="hidden md:inline">🖨️ Imprimir Etiquetas</span>
+          </button>
         </div>
       </div>
 
@@ -509,6 +529,15 @@ export const EvolucaoMedicacaoView: React.FC<EvolucaoMedicacaoViewProps> = ({
                       </span>
                     )}
                   </div>
+
+                  <button
+                    onClick={() => openPrinterForResident(resident.id)}
+                    className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1 shrink-0"
+                    title="Imprimir etiquetas de medicação deste residente"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-teal-600" />
+                    <span className="hidden sm:inline">Etiquetas</span>
+                  </button>
 
                   {onOpenNewEvolutionModal && (
                     <button
@@ -803,6 +832,15 @@ export const EvolucaoMedicacaoView: React.FC<EvolucaoMedicacaoViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Medication Label Printer Modal */}
+      <MedicationLabelPrinterModal
+        isOpen={isPrinterOpen}
+        onClose={() => setIsPrinterOpen(false)}
+        medications={medications}
+        residents={residents}
+        initialResidentId={printerResidentId}
+      />
     </div>
   );
 };

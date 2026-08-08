@@ -72,9 +72,10 @@ import { MedicacaoView } from './views/MedicacaoView';
 import { EscalasView } from './views/EscalasView';
 import { PlantaoView } from './views/PlantaoView';
 import { RelatoriosView } from './views/RelatoriosView';
-import { EnterpriseOpsView } from './views/EnterpriseOpsView';
 import { EvolucaoMedicacaoView } from './views/EvolucaoMedicacaoView';
 import { ResidencialGuiaView } from './views/ResidencialGuiaView';
+import { UsuariosView } from './views/UsuariosView';
+import { ConfiguracoesView } from './views/ConfiguracoesView';
 import { AuthView } from './views/AuthView';
 
 export default function App() {
@@ -530,6 +531,7 @@ export default function App() {
           {currentPath === '/medicacao' && (
             <MedicacaoView
               medications={medications}
+              residents={residents}
               onUpdateDoseStatus={handleUpdateDoseStatus}
               onNavigate={setCurrentPath}
             />
@@ -570,24 +572,13 @@ export default function App() {
             <ResidencialGuiaView />
           )}
 
-          {currentPath === '/operacoes' && (
-            <EnterpriseOpsView
-              residents={residents}
-              financialRecords={financialRecords}
-              inventoryItems={inventoryItems}
-              labResults={labResults}
-              ocrDocuments={ocrDocuments}
-              bpmnWorkflows={bpmnWorkflows}
-              qualityMetrics={qualityMetrics}
-              familyNotes={familyNotes}
-              staffTrainings={staffTrainings}
-              auditLogs={auditLogs}
-              onAddFamilyNoteResponse={(noteId, response) => {
-                setFamilyNotes(prev => prev.map(n => n.id === noteId ? { ...n, staffResponse: response } : n));
-              }}
-              onVerifyOCRDocument={(docId) => {
-                setOcrDocuments(prev => prev.map(d => d.id === docId ? { ...d, verifiedByStaff: true } : d));
-              }}
+          {currentPath === '/configuracoes' && (
+            <ConfiguracoesView />
+          )}
+
+          {currentPath === '/usuarios' && (
+            <UsuariosView
+              currentUserRoleCategory={getCurrentUser()?.roleCategory || 'DIRECAO'}
             />
           )}
 
@@ -640,6 +631,7 @@ export default function App() {
         residents={residents}
         initialResidentId={initialResidentIdForSOAP}
         onSaveEvolution={handleSaveEvolution}
+        evolutions={evolutions}
       />
 
       {/* Resident Detail Slide-Over Modal */}
