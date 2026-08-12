@@ -170,7 +170,7 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
       age: Number(age) || 45,
       cpf: cpf || '000.000.000-00',
       room,
-      unit: 'Unidade Jardim Paulista',
+      unit: 'Residencial Salomão - Blumenau/SC',
       dependenceLevel,
       primaryDiagnosis,
       status: 'Ativo',
@@ -243,7 +243,7 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
             </h1>
           </div>
           <p className="text-xs text-zinc-500 font-medium">
-            {residents.length} residentes cadastrados na Unidade Jardim Paulista
+            {residents.length} residentes cadastrados no Residencial Salomão (Blumenau/SC)
           </p>
         </div>
 

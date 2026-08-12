@@ -26,10 +26,10 @@ export const AuditLogViewerModal: React.FC<AuditLogViewerModalProps> = ({
   onClose,
   auditLogs
 }) => {
-  if (!isOpen) return null;
-
   const [searchQuery, setSearchQuery] = useState('');
   const [filterAction, setFilterAction] = useState<string>('all');
+
+  if (!isOpen) return null;
 
   const filteredLogs = auditLogs.filter(log => {
     const matchesSearch = 

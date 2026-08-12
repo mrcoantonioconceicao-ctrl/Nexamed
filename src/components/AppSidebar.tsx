@@ -22,7 +22,9 @@ import {
   Database,
   Terminal,
   Target,
-  Compass
+  Compass,
+  Rocket,
+  GraduationCap
 } from 'lucide-react';
 import { getCurrentUser } from '../config/auth-mode';
 
@@ -34,6 +36,7 @@ interface AppSidebarProps {
   openNexaChat: () => void;
   onOpenLGPD?: () => void;
   onOpenTour?: () => void;
+  onOpenDeploy?: () => void;
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({
@@ -44,6 +47,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   openNexaChat,
   onOpenLGPD,
   onOpenTour,
+  onOpenDeploy,
 }) => {
   const currentUser = getCurrentUser();
   const isDirecao = currentUser?.roleCategory === 'DIRECAO';
@@ -112,6 +116,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
     },
     {
+      path: '/micro-learning',
+      label: 'Micro-learning Equipe',
+      icon: GraduationCap,
+      badge: 'Nexa IA',
+      badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
+    },
+    {
       path: '/relatorios',
       label: 'Relatórios & Intercorrências',
       icon: BarChart3,
@@ -129,6 +140,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       icon: Terminal,
       badge: 'Bateria',
       badgeColor: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+    },
+    {
+      path: '/conformidade',
+      label: 'Conformidade & LGPD',
+      icon: ShieldCheck,
+      badge: 'RDC 502/CFM',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     },
     {
       path: '/guia-residencial',
@@ -229,6 +247,16 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           >
             <Compass className="w-3.5 h-3.5 text-teal-600" />
             <span>Tour Guiado NexaMed</span>
+          </button>
+        )}
+
+        {onOpenDeploy && (
+          <button
+            onClick={onOpenDeploy}
+            className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl border border-slate-800 transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+          >
+            <Rocket className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Deploy Automático CI/CD</span>
           </button>
         )}
 

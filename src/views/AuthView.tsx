@@ -2,28 +2,28 @@ import React, { useState } from 'react';
 import { 
   Building2, 
   Lock, 
-  User, 
   ShieldCheck, 
-  ArrowRight,
   Activity,
-  Users,
   Clock,
   UserPlus,
   Key,
   Mail,
-  HeartPulse,
-  Shield,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { 
   setCurrentUser, 
   UserSession, 
-  authenticateUser, 
   addRegisteredUser, 
-  INITIAL_REGISTERED_USERS, 
   getUserRoleCategory 
 } from '../config/auth-mode';
+import { 
+  loginWithEmailFirebase, 
+  registerWithEmailFirebase, 
+  loginWithGoogleFirebase, 
+  syncUserProfile 
+} from '../lib/firebase';
 
 interface AuthViewProps {
   onLoginSuccess: (user: UserSession) => void;
@@ -33,104 +33,180 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
   const [activeTab, setActiveTab] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
   // Context Selection
-  const [selectedShift, setSelectedShift] = useState('Manhã (07h às 13h)');
-  const [selectedUnit, setSelectedUnit] = useState('Unidade Jardim Paulista - SRT I');
+  const [selectedShift, setSelectedShift] = useState('Diurno (07h às 19h / Escala 12x36)');
+  const [selectedUnit, setSelectedUnit] = useState('Residencial Salomão - Rua Dr. Pedro Zimmermann, 2391 (CEP 89066-001 - Blumenau/SC)');
+
+  // Loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Login Form
-  const [loginEmail, setLoginEmail] = useState('enfermeira@nexamed.com.br');
-  const [loginPassword, setLoginPassword] = useState('123456');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
   // Register Form
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('123456');
+  const [regPassword, setRegPassword] = useState('');
   const [regRole, setRegRole] = useState('Cuidador de Saúde Mental');
   const [regDocumentId, setRegDocumentId] = useState('');
   const [regError, setRegError] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
 
-  // Fast Quick Access Profiles
-  const quickProfiles = INITIAL_REGISTERED_USERS;
-
-  const handleQuickLogin = (user: typeof INITIAL_REGISTERED_USERS[0]) => {
-    const session: UserSession = {
-      ...user,
-      shift: selectedShift,
-      unit: selectedUnit,
-      roleCategory: getUserRoleCategory(user.role)
-    };
-    setCurrentUser(session);
-    onLoginSuccess(session);
+  const mapAuthError = (err: any): string => {
+    const code = err?.code || '';
+    if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
+      return 'E-mail ou senha incorretos. Verifique suas credenciais.';
+    }
+    if (code === 'auth/email-already-in-use') {
+      return 'Este e-mail já está cadastrado no Firebase Auth.';
+    }
+    if (code === 'auth/weak-password') {
+      return 'A senha deve ter no mínimo 6 caracteres.';
+    }
+    if (code === 'auth/invalid-email') {
+      return 'Formato de e-mail inválido.';
+    }
+    if (code === 'auth/popup-closed-by-user') {
+      return 'A janela de autenticação do Google foi fechada.';
+    }
+    return err?.message || 'Erro ao comunicar com o servidor de autenticação Firebase.';
   };
 
-  const handleRealLogin = (e: React.FormEvent) => {
+  const handleGoogleLogin = async () => {
+    setLoginError('');
+    setIsSubmitting(true);
+    try {
+      const fbUser = await loginWithGoogleFirebase();
+      if (!fbUser) throw new Error('Não foi possível obter dados do Google Auth.');
+
+      const roleCategory = getUserRoleCategory('Enfermeiro Responsável Técnico (RT)');
+      const syncedUser = await syncUserProfile(fbUser, {
+        unit: selectedUnit,
+        shift: selectedShift,
+        role: 'Enfermeiro Responsável Técnico (RT)',
+        roleCategory: roleCategory
+      });
+
+      const session: UserSession = {
+        ...syncedUser,
+        unit: selectedUnit,
+        shift: selectedShift,
+        roleCategory: syncedUser.roleCategory || roleCategory
+      };
+
+      setCurrentUser(session);
+      onLoginSuccess(session);
+    } catch (err: any) {
+      console.error('Google login error:', err);
+      setLoginError(mapAuthError(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFirebaseLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
 
     if (!loginEmail.trim() || !loginPassword.trim()) {
-      setLoginError('Informe o e-mail e a senha de acesso.');
+      setLoginError('Informe o e-mail e a senha cadastrados.');
       return;
     }
 
-    const authResult = authenticateUser(loginEmail, loginPassword);
-    if (!authResult.success || !authResult.user) {
-      setLoginError(authResult.message || 'Credenciais inválidas.');
-      return;
-    }
+    setIsSubmitting(true);
+    try {
+      const fbUser = await loginWithEmailFirebase(loginEmail.trim(), loginPassword.trim());
+      if (!fbUser) throw new Error('Falha na autenticação.');
 
-    const session: UserSession = {
-      ...authResult.user,
-      shift: selectedShift,
-      unit: selectedUnit,
-      roleCategory: getUserRoleCategory(authResult.user.role)
-    };
-    setCurrentUser(session);
-    onLoginSuccess(session);
+      const syncedUser = await syncUserProfile(fbUser, {
+        unit: selectedUnit,
+        shift: selectedShift
+      });
+
+      const session: UserSession = {
+        ...syncedUser,
+        unit: selectedUnit,
+        shift: selectedShift,
+        roleCategory: syncedUser.roleCategory || getUserRoleCategory(syncedUser.role)
+      };
+
+      setCurrentUser(session);
+      onLoginSuccess(session);
+    } catch (err: any) {
+      console.error('Firebase login error:', err);
+      setLoginError(mapAuthError(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSelfRegister = (e: React.FormEvent) => {
+  const handleFirebaseRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError('');
     setRegSuccess('');
 
     if (!regName.trim() || !regEmail.trim() || !regPassword.trim()) {
-      setRegError('Preencha Nome, E-mail e Senha.');
+      setRegError('Preencha Nome, E-mail e Senha para continuar.');
       return;
     }
 
-    const res = addRegisteredUser({
-      name: regName.trim(),
-      email: regEmail.trim(),
-      password: regPassword.trim(),
-      role: regRole,
-      documentId: regDocumentId.trim() || 'Sem Registro',
-      unit: selectedUnit,
-      shift: selectedShift,
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80',
-      roleCategory: getUserRoleCategory(regRole)
-    });
+    if (regPassword.trim().length < 6) {
+      setRegError('A senha precisa ter no mínimo 6 caracteres.');
+      return;
+    }
 
-    if (!res.success) {
-      setRegError(res.message);
-    } else if (res.user) {
-      setRegSuccess('Cadastro realizado com sucesso! Conectando...');
+    setIsSubmitting(true);
+    try {
+      const fbUser = await registerWithEmailFirebase(regEmail.trim(), regPassword.trim(), regName.trim());
+      if (!fbUser) throw new Error('Erro ao criar conta no Firebase Auth.');
+
+      const roleCat = getUserRoleCategory(regRole);
+      const syncedUser = await syncUserProfile(fbUser, {
+        name: regName.trim(),
+        role: regRole,
+        roleCategory: roleCat,
+        documentId: regDocumentId.trim() || 'REGISTRO-001',
+        unit: selectedUnit,
+        shift: selectedShift
+      });
+
+      // Save user to local memory registered list too
+      addRegisteredUser({
+        name: regName.trim(),
+        email: regEmail.trim(),
+        password: regPassword.trim(),
+        role: regRole,
+        documentId: regDocumentId.trim() || 'REGISTRO-001',
+        unit: selectedUnit,
+        shift: selectedShift,
+        avatar: fbUser.photoURL || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80',
+        roleCategory: roleCat
+      });
+
+      setRegSuccess('Profissional cadastrado com sucesso no Firebase Auth! Acessando...');
+      
       setTimeout(() => {
         const session: UserSession = {
-          ...res.user!,
-          shift: selectedShift,
+          ...syncedUser,
           unit: selectedUnit,
-          roleCategory: getUserRoleCategory(res.user!.role)
+          shift: selectedShift,
+          roleCategory: roleCat
         };
         setCurrentUser(session);
         onLoginSuccess(session);
-      }, 700);
+      }, 600);
+    } catch (err: any) {
+      console.error('Firebase register error:', err);
+      setRegError(mapAuthError(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-white border border-zinc-200/90 rounded-3xl shadow-xl overflow-hidden">
+      <div className="w-full max-w-xl bg-white border border-zinc-200 rounded-3xl shadow-xl overflow-hidden">
         
         {/* Top Header Banner */}
         <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white text-center space-y-3">
@@ -139,18 +215,18 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
           </div>
           <div>
             <span className="px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/30 text-[10px] font-extrabold uppercase tracking-wider">
-              NexaMed SRT — Autenticação de Acesso
+              Autenticação Segura Firebase
             </span>
             <h1 className="text-xl font-black tracking-tight mt-1">
-              Login por Cargo: Cuidador, Enfermagem & Direção
+              Plataforma Clínica NexaMed SRT
             </h1>
             <p className="text-xs text-slate-300 font-medium mt-0.5">
-              Identificação técnica e perfil de permissão para Residência Terapêutica (SUS / RAPS).
+              Validação de identidade técnica para Residência Terapêutica (SUS / RAPS).
             </p>
           </div>
         </div>
 
-        <div className="p-6 space-y-6 text-xs">
+        <div className="p-6 space-y-5 text-xs">
 
           {/* Context Selector Bar */}
           <div className="p-4 bg-teal-50/70 border border-teal-200 rounded-2xl space-y-3">
@@ -168,11 +244,11 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                 <select
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
-                  className="w-full bg-white p-2 rounded-xl border border-teal-200 font-bold text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs text-xs"
+                  className="w-full bg-white p-2.5 rounded-xl border border-teal-200 font-bold text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs text-xs"
                 >
-                  <option value="Unidade Jardim Paulista - SRT I">Unidade Jardim Paulista - SRT I</option>
-                  <option value="Unidade Vila Mariana - SRT II">Unidade Vila Mariana - SRT II</option>
-                  <option value="CAPS III Central">CAPS III Central</option>
+                  <option value="Residencial Salomão - Rua Dr. Pedro Zimmermann, 2391 (CEP 89066-001 - Blumenau/SC)">
+                    Residencial Salomão — Rua Dr. Pedro Zimmermann, 2391, Blumenau/SC (CEP 89066-001)
+                  </option>
                 </select>
               </div>
 
@@ -184,63 +260,41 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                 <select
                   value={selectedShift}
                   onChange={(e) => setSelectedShift(e.target.value)}
-                  className="w-full bg-white p-2 rounded-xl border border-teal-200 font-bold text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs text-xs"
+                  className="w-full bg-white p-2.5 rounded-xl border border-teal-200 font-bold text-teal-950 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs text-xs"
                 >
-                  <option value="Manhã (07h às 13h)">Manhã (07h às 13h)</option>
-                  <option value="Tarde (13h às 19h)">Tarde (13h às 19h)</option>
-                  <option value="Noite (19h às 07h / 12x36)">Noite (19h às 07h / 12x36)</option>
-                  <option value="Horário Administrativo">Horário Administrativo</option>
+                  <option value="Diurno (07h às 19h / Escala 12x36)">Diurno (07h às 19h / Escala 12x36)</option>
+                  <option value="Noturno (19h às 07h / Escala 12x36)">Noturno (19h às 07h / Escala 12x36)</option>
+                  <option value="Horário Administrativo (08h às 17h)">Horário Administrativo (08h às 17h)</option>
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Quick Preset Login Buttons */}
-          <div>
-            <p className="text-[11px] font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-teal-600" /> Acesso Rápido com Login Real
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {quickProfiles.map((p) => {
-                const isCuidador = p.roleCategory === 'CUIDADOR';
-                const isEnf = p.roleCategory === 'ENFERMEIRA';
-                const isDir = p.roleCategory === 'DIRECAO';
+          {/* Quick Google Sign In */}
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isSubmitting}
+            className="w-full py-3 px-4 bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 font-bold text-xs rounded-2xl shadow-xs transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+            </svg>
+            <span>ENTRAR COM CONTA GOOGLE (OAUTH)</span>
+          </button>
 
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => handleQuickLogin(p)}
-                    className="p-3 bg-zinc-50 hover:bg-teal-50/90 rounded-2xl border border-zinc-200 hover:border-teal-400 flex flex-col justify-between transition-all group text-left space-y-2 shadow-2xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <img src={p.avatar} alt={p.name} className="w-9 h-9 rounded-xl object-cover border border-zinc-200 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-zinc-900 group-hover:text-teal-900 line-clamp-1">{p.name}</p>
-                        <p className="text-[10px] text-zinc-500 line-clamp-1">{p.role}</p>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-zinc-200/60 flex items-center justify-between text-[10px]">
-                      {isCuidador && <span className="font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">🟢 Cuidador</span>}
-                      {isEnf && <span className="font-bold text-teal-800 bg-teal-100 px-1.5 py-0.5 rounded">🔵 Enfermeira</span>}
-                      {isDir && <span className="font-bold text-purple-800 bg-purple-100 px-1.5 py-0.5 rounded">🟣 Direção</span>}
-
-                      <div className="flex items-center text-teal-600 font-bold group-hover:translate-x-1 transition-transform">
-                        <span>Entrar</span>
-                        <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-zinc-400 mt-1.5 font-mono text-center">
-              Senha padrão dos acessos rápidos: <strong className="text-zinc-600">123456</strong>
-            </p>
+          <div className="relative flex items-center justify-center my-2">
+            <div className="border-t border-zinc-200 w-full"></div>
+            <span className="bg-white px-3 text-[10px] font-bold text-zinc-400 uppercase tracking-wider absolute">
+              OU COM CONTA FIREBASE
+            </span>
           </div>
 
           {/* Form Switcher Tabs */}
-          <div className="pt-3 border-t border-zinc-100">
+          <div>
             <div className="flex items-center gap-2 bg-zinc-100 p-1 rounded-xl mb-4 font-bold text-xs">
               <button
                 type="button"
@@ -250,7 +304,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                 }`}
               >
                 <Key className="w-3.5 h-3.5 text-teal-600" />
-                <span>Entrar com E-mail e Senha</span>
+                <span>Acessar Conta</span>
               </button>
               <button
                 type="button"
@@ -260,13 +314,13 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                 }`}
               >
                 <UserPlus className="w-3.5 h-3.5 text-teal-600" />
-                <span>Cadastrar Novo Profissional</span>
+                <span>Novo Cadastro</span>
               </button>
             </div>
 
             {/* Login Tab Form */}
             {activeTab === 'LOGIN' && (
-              <form onSubmit={handleRealLogin} className="space-y-3">
+              <form onSubmit={handleFirebaseLogin} className="space-y-3">
                 {loginError && (
                   <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-bold flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -274,49 +328,59 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">E-mail Cadastrado</label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="email"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        placeholder="cuidador@nexamed.com.br"
-                        className="w-full bg-zinc-50 pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
-                      />
-                    </div>
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">E-mail Cadastrado</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      placeholder="seu.email@exemplo.com"
+                      className="w-full bg-zinc-50 pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
+                      required
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Senha de Acesso</label>
-                    <div className="relative">
-                      <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="password"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full bg-zinc-50 pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
-                      />
-                    </div>
+                <div>
+                  <label className="block text-zinc-700 font-bold mb-1">Senha de Acesso</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-zinc-50 pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
+                      required
+                    />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 mt-2"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                 >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>ENTRAR NA PLATAFORMA SRT</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>VALIDANDO NO FIREBASE AUTH...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>ENTRAR NA PLATAFORMA</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}
 
             {/* Self-Registration Tab Form */}
             {activeTab === 'REGISTER' && (
-              <form onSubmit={handleSelfRegister} className="space-y-3">
+              <form onSubmit={handleFirebaseRegister} className="space-y-3">
                 {regError && (
                   <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl font-bold flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
@@ -337,7 +401,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                     type="text"
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    placeholder="Ex: João Souza"
+                    placeholder="Ex: Dra. Juliana Santos"
                     className="w-full bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
                     required
                   />
@@ -350,19 +414,19 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                       type="email"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
-                      placeholder="seu.email@nexamed.com.br"
+                      placeholder="seu.email@exemplo.com"
                       className="w-full bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Senha *</label>
+                    <label className="block text-zinc-700 font-bold mb-1">Senha (Mín. 6 caracteres) *</label>
                     <input
                       type="password"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
-                      placeholder="Crie sua senha"
+                      placeholder="Crie uma senha segura"
                       className="w-full bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-xs"
                       required
                     />
@@ -387,12 +451,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
                   </div>
 
                   <div>
-                    <label className="block text-zinc-700 font-bold mb-1">Documento (COREN / CPF / Registro)</label>
+                    <label className="block text-zinc-700 font-bold mb-1">Documento (COREN / CPF)</label>
                     <input
                       type="text"
                       value={regDocumentId}
                       onChange={(e) => setRegDocumentId(e.target.value)}
-                      placeholder="Ex: CPF ou COREN"
+                      placeholder="Ex: COREN-SP 123456"
                       className="w-full bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
@@ -400,10 +464,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 mt-2"
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
                 >
-                  <UserPlus className="w-4 h-4" />
-                  <span>CONCLUIR CADASTRO E ENTRAR</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>CRIANDO CONTA NO FIREBASE AUTH...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      <span>CADASTRAR E ACESSAR</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}
@@ -415,5 +489,3 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLoginSuccess }) => {
     </div>
   );
 };
-
-

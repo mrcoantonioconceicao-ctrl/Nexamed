@@ -31,8 +31,6 @@ export const TelehealthModal: React.FC<TelehealthModalProps> = ({
   resident,
   onSaveSOAPNote
 }) => {
-  if (!isOpen || !resident) return null;
-
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isRecording, setIsRecording] = useState(true);
@@ -51,7 +49,7 @@ export const TelehealthModal: React.FC<TelehealthModalProps> = ({
 
   // Simulate incoming transcription lines
   useEffect(() => {
-    if (!isRecording) return;
+    if (!isOpen || !resident || !isRecording) return;
     const timer = setTimeout(() => {
       setLiveTranscription(prev => [
         ...prev,
@@ -59,7 +57,9 @@ export const TelehealthModal: React.FC<TelehealthModalProps> = ({
       ]);
     }, 4000);
     return () => clearTimeout(timer);
-  }, [isRecording]);
+  }, [isOpen, resident, isRecording]);
+
+  if (!isOpen || !resident) return null;
 
   const handleFinishConsultation = () => {
     if (onSaveSOAPNote && resident) {

@@ -13,7 +13,8 @@ import {
   Building2, 
   ChevronRight,
   Radio,
-  Video
+  Video,
+  GraduationCap
 } from 'lucide-react';
 
 interface CommandPaletteModalProps {
@@ -39,18 +40,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenNewEvolution,
   onOpenTelehealth
 }) => {
-  if (!isOpen) return null;
-
   const [query, setQuery] = useState('');
 
   // Keyboard shortcut ESC
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const filteredResidents = residents.filter(r => 
     r.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -140,6 +142,23 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-purple-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onNavigate('/micro-learning');
+                  }}
+                  className="p-3 bg-zinc-800/80 hover:bg-emerald-950/60 hover:border-emerald-700/60 border border-zinc-700/60 rounded-xl transition-all flex items-center justify-between text-left group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <GraduationCap className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <div>
+                      <strong className="block text-white">Micro-learning Equipe (Nexa IA)</strong>
+                      <span className="text-[10px] text-zinc-400">Aulas curtas baseadas em pendências</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400" />
                 </button>
               </div>
             </div>

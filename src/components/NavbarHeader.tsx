@@ -11,9 +11,11 @@ import {
   ChevronDown,
   Activity,
   Layers,
-  Compass
+  Compass,
+  Rocket
 } from 'lucide-react';
 import { getCurrentUser, isAuthEnabled, setCurrentUser } from '../config/auth-mode';
+import { logoutFirebase } from '../lib/firebase';
 import { ClinicalAlert } from '../types';
 
 interface NavbarHeaderProps {
@@ -30,6 +32,7 @@ interface NavbarHeaderProps {
   onSendTestNotificationAlert?: () => void;
   criticalResidentsCount?: number;
   onOpenTour?: () => void;
+  onOpenDeploy?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -45,6 +48,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onSendTestNotificationAlert,
   criticalResidentsCount = 0,
   onOpenTour,
+  onOpenDeploy,
 }) => {
   const currentUser = getCurrentUser();
   const demoMode = !isAuthEnabled();
@@ -52,7 +56,12 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   const [showAlertsDropdown, setShowAlertsDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutFirebase();
+    } catch (e) {
+      console.warn('Logout error:', e);
+    }
     setCurrentUser(null);
     onNavigate('/auth');
   };
@@ -72,7 +81,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
             </div>
             <span className="text-[11px] text-zinc-500 flex items-center gap-1 font-medium">
               <Building2 className="w-3 h-3 text-teal-600" />
-              Unidade Jardim Paulista
+              Residencial Salomão - Blumenau
             </span>
           </div>
         </div>
@@ -116,6 +125,18 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           >
             <Compass className="w-3.5 h-3.5 text-teal-600" />
             <span>Tour Guiado</span>
+          </button>
+        )}
+
+        {/* Auto Deploy Trigger Button */}
+        {onOpenDeploy && (
+          <button
+            onClick={onOpenDeploy}
+            className="hidden xl:flex items-center gap-1.5 py-2 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl border border-slate-800 transition-all shadow-2xs"
+            title="Preparar e Gerenciar Deploy Automático CI/CD"
+          >
+            <Rocket className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Deploy CI/CD</span>
           </button>
         )}
 

@@ -14,7 +14,9 @@ import {
   QualityMetric,
   FamilyNote,
   StaffTraining,
-  AuditLogEntry
+  AuditLogEntry,
+  MicroLearningModule,
+  StaffMicroLearningProfile
 } from '../types';
 
 export const INITIAL_RESIDENTS: Resident[] = [
@@ -25,7 +27,7 @@ export const INITIAL_RESIDENTS: Resident[] = [
     age: 68,
     cpf: '214.890.312-08',
     room: 'Suíte 101 - Leito A',
-    unit: 'Unidade Jardim Paulista',
+    unit: 'Residencial Salomão - Blumenau',
     dependenceLevel: 'Grau II',
     primaryDiagnosis: 'Transtorno Afetivo Bipolar I com Episódios Depressivos Misto',
     secondaryDiagnoses: ['Hipertensão Arterial Sistêmica', 'Osteoartrose leve'],
@@ -99,7 +101,7 @@ export const INITIAL_RESIDENTS: Resident[] = [
     age: 54,
     cpf: '098.432.115-44',
     room: 'Suíte 102 - Leito B',
-    unit: 'Unidade Jardim Paulista',
+    unit: 'Residencial Salomão - Blumenau',
     dependenceLevel: 'Grau I',
     primaryDiagnosis: 'Reabilitação Neurocognitiva pós-Traumatismo Cranioencefálico (TCE)',
     secondaryDiagnoses: ['Déficit de Memória Recente', 'Hemiparesia Direita Leve'],
@@ -162,7 +164,7 @@ export const INITIAL_RESIDENTS: Resident[] = [
     age: 82,
     cpf: '334.112.987-12',
     room: 'Suíte 201 - Leito A',
-    unit: 'Unidade Jardim Paulista',
+    unit: 'Residencial Salomão - Blumenau',
     dependenceLevel: 'Grau III',
     primaryDiagnosis: 'Demência de Alzheimer em Estágio Moderado a Avançado',
     secondaryDiagnoses: ['Hipertensão Arterial', 'Disfagia Leve para Líquidos'],
@@ -236,7 +238,7 @@ export const INITIAL_RESIDENTS: Resident[] = [
     age: 41,
     cpf: '123.987.654-00',
     room: 'Suíte 202 - Leito A',
-    unit: 'Unidade Jardim Paulista',
+    unit: 'Residencial Salomão - Blumenau',
     dependenceLevel: 'Grau I',
     primaryDiagnosis: 'Esquizofrenia Paranóide em Fase de Remissão e Reabilitação Psicossocial',
     secondaryDiagnoses: ['Transtorno de Ansiedade Generalizada'],
@@ -435,13 +437,47 @@ export const INITIAL_MEDICATIONS: MedicationMAR[] = [
 ];
 
 export const INITIAL_ROSTER: StaffRoster[] = [
-  { id: 'rost-1', date: '01/08/2026', dayOfWeek: 'Segunda', shiftType: 'Manhã (07h-13h)', roleRequired: 'Enfermeiro RT', assignedStaffName: 'Enf. Bruno Costa', status: 'Confirmado' },
-  { id: 'rost-2', date: '01/08/2026', dayOfWeek: 'Segunda', shiftType: 'Tarde (13h-19h)', roleRequired: 'Enfermeiro RT', assignedStaffName: 'Enf. Mariana Duarte', status: 'Confirmado' },
-  { id: 'rost-3', date: '01/08/2026', dayOfWeek: 'Segunda', shiftType: 'Noturno (19h-07h)', roleRequired: 'Enfermeiro RT', assignedStaffName: 'Enf. Thiago Ramos', status: 'Confirmado' },
-  { id: 'rost-4', date: '02/08/2026', dayOfWeek: 'Terça', shiftType: 'Manhã (07h-13h)', roleRequired: 'Enfermeiro RT', assignedStaffName: 'Enf. Bruno Costa', status: 'Confirmado' },
-  { id: 'rost-5', date: '02/08/2026', dayOfWeek: 'Terça', shiftType: 'Tarde (13h-19h)', roleRequired: 'Terapeuta Ocupacional', assignedStaffName: 'Dra. Juliana Prado', status: 'Confirmado' },
-  { id: 'rost-6', date: '02/08/2026', dayOfWeek: 'Terça', shiftType: 'Noturno (19h-07h)', roleRequired: 'Enfermeiro RT', assignedStaffName: undefined, status: 'Vago', notes: 'LACUNA CRÍTICA: Plantão noturno sem enfermeiro responsável!' },
-  { id: 'rost-7', date: '03/08/2026', dayOfWeek: 'Quarta', shiftType: 'Manhã (07h-13h)', roleRequired: 'Psiquiatra', assignedStaffName: 'Dr. Fernando Alencar', status: 'Confirmado' },
+  // SEGUNDA 03/08/2026
+  { id: 'rost-1', date: '03/08/2026', dayOfWeek: 'Segunda', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Ana Souza', status: 'Confirmado' },
+  { id: 'rost-2', date: '03/08/2026', dayOfWeek: 'Segunda', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Maria Oliveira', status: 'Confirmado' },
+  { id: 'rost-3', date: '03/08/2026', dayOfWeek: 'Segunda', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Carlos Silva', status: 'Confirmado' },
+  { id: 'rost-4', date: '03/08/2026', dayOfWeek: 'Segunda', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Fernando Dias', status: 'Confirmado' },
+
+  // TERÇA 04/08/2026
+  { id: 'rost-5', date: '04/08/2026', dayOfWeek: 'Terça', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidador Roberto Mendes', status: 'Confirmado' },
+  { id: 'rost-6', date: '04/08/2026', dayOfWeek: 'Terça', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidadora Juliana Lima', status: 'Confirmado' },
+  { id: 'rost-7', date: '04/08/2026', dayOfWeek: 'Terça', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidadora Patricia Ramos', status: 'Confirmado' },
+  { id: 'rost-8', date: '04/08/2026', dayOfWeek: 'Terça', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidador Marcos Vinicius', status: 'Confirmado' },
+
+  // QUARTA 05/08/2026
+  { id: 'rost-9', date: '05/08/2026', dayOfWeek: 'Quarta', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Ana Souza', status: 'Confirmado' },
+  { id: 'rost-10', date: '05/08/2026', dayOfWeek: 'Quarta', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Maria Oliveira', status: 'Confirmado' },
+  { id: 'rost-11', date: '05/08/2026', dayOfWeek: 'Quarta', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Carlos Silva', status: 'Confirmado' },
+  { id: 'rost-12', date: '05/08/2026', dayOfWeek: 'Quarta', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Ana Souza', status: 'Sobreposição', notes: 'VIOLAÇÃO 12/36: Cuidadora Ana Souza escalada no Diurno e no Noturno sem interjornada de 36h!' },
+
+  // QUINTA 06/08/2026
+  { id: 'rost-13', date: '06/08/2026', dayOfWeek: 'Quinta', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidador Roberto Mendes', status: 'Confirmado' },
+  { id: 'rost-14', date: '06/08/2026', dayOfWeek: 'Quinta', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidadora Juliana Lima', status: 'Confirmado' },
+  { id: 'rost-15', date: '06/08/2026', dayOfWeek: 'Quinta', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidadora Patricia Ramos', status: 'Confirmado' },
+  { id: 'rost-16', date: '06/08/2026', dayOfWeek: 'Quinta', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidador Marcos Vinicius', status: 'Confirmado' },
+
+  // SEXTA 07/08/2026
+  { id: 'rost-17', date: '07/08/2026', dayOfWeek: 'Sexta', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Ana Souza', status: 'Confirmado' },
+  { id: 'rost-18', date: '07/08/2026', dayOfWeek: 'Sexta', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Maria Oliveira', status: 'Confirmado' },
+  { id: 'rost-19', date: '07/08/2026', dayOfWeek: 'Sexta', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Carlos Silva', status: 'Confirmado' },
+  { id: 'rost-20', date: '07/08/2026', dayOfWeek: 'Sexta', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Fernando Dias', status: 'Confirmado' },
+
+  // SÁBADO 08/08/2026
+  { id: 'rost-21', date: '08/08/2026', dayOfWeek: 'Sábado', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidador Roberto Mendes', status: 'Confirmado' },
+  { id: 'rost-22', date: '08/08/2026', dayOfWeek: 'Sábado', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidadora Juliana Lima', status: 'Confirmado' },
+  { id: 'rost-23', date: '08/08/2026', dayOfWeek: 'Sábado', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: 'Cuidadora Patricia Ramos', status: 'Confirmado' },
+  { id: 'rost-24', date: '08/08/2026', dayOfWeek: 'Sábado', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe B)', assignedStaffName: undefined, status: 'Vago', notes: 'DÉFICIT 12/36: Falta 1 cuidador noturno na Equipe B para o Sábado!' },
+
+  // DOMINGO 09/08/2026
+  { id: 'rost-25', date: '09/08/2026', dayOfWeek: 'Domingo', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Ana Souza', status: 'Confirmado' },
+  { id: 'rost-26', date: '09/08/2026', dayOfWeek: 'Domingo', shiftType: 'Diurno (07h-19h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidadora Maria Oliveira', status: 'Confirmado' },
+  { id: 'rost-27', date: '09/08/2026', dayOfWeek: 'Domingo', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Carlos Silva', status: 'Confirmado' },
+  { id: 'rost-28', date: '09/08/2026', dayOfWeek: 'Domingo', shiftType: 'Noturno (19h-07h)', roleRequired: 'Cuidador Residencial (Equipe A)', assignedStaffName: 'Cuidador Fernando Dias', status: 'Confirmado' },
 ];
 
 export const INITIAL_HANDOVERS: HandoverLog[] = [
@@ -587,7 +623,7 @@ export const INITIAL_FINANCIAL_RECORDS: FinancialRecord[] = [
     dueDate: '05/08/2026',
     status: 'Pago',
     paymentMethod: 'PIX',
-    costCenter: 'Unidade Jardim Paulista',
+    costCenter: 'Residencial Salomão - Blumenau',
   },
   {
     id: 'fin-2',
@@ -598,7 +634,7 @@ export const INITIAL_FINANCIAL_RECORDS: FinancialRecord[] = [
     dueDate: '10/08/2026',
     status: 'Pendente',
     paymentMethod: 'SUS/Guia',
-    costCenter: 'Unidade Jardim Paulista',
+    costCenter: 'Residencial Salomão - Blumenau',
   },
   {
     id: 'fin-3',
@@ -609,7 +645,7 @@ export const INITIAL_FINANCIAL_RECORDS: FinancialRecord[] = [
     dueDate: '01/08/2026',
     status: 'Atrasado',
     paymentMethod: 'Boleto',
-    costCenter: 'Unidade Jardim Paulista',
+    costCenter: 'Residencial Salomão - Blumenau',
   },
   {
     id: 'fin-4',
@@ -854,5 +890,310 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
     reason: 'Solicitação Formal do Responsável Legal'
   }
 ];
+
+export const INITIAL_MICRO_LEARNING_MODULES: MicroLearningModule[] = [
+  {
+    id: 'ml-101',
+    title: 'Boas Práticas e Checagem Tripla na Aprazamento de Insulina e Anticoagulantes (MAR)',
+    description: 'Vídeo prático de 3 minutos sobre dupla checagem na administração de medicamentos de alto risco e redução de divergências nos horários do Kardex.',
+    durationMinutes: 3,
+    type: 'video',
+    category: 'Administração MAR',
+    staffName: 'Enf. Bruno Costa',
+    targetRole: 'Enfermeiro / Técnico de Enfermagem',
+    clinicalTrigger: '2 doses de NPH 10UI marcadas como pendentes além do horário limite de 30 minutos no Kardex MAR.',
+    aiReasoning: 'Nexa IA detectou divergências temporais nos aprazamentos de insulina da Sra. Helena Vasconcelos no plantão diurno.',
+    youtubeId: 'E91mK4w4fCg',
+    youtubeUrl: 'https://www.youtube.com/watch?v=E91mK4w4fCg',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-doctor-checking-a-patients-medical-chart-41551-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Sempre verificar o Nome, Leito e Prontuário antes de aspirar a insulina.',
+      'Efetuar o registro imediato do horário real da checagem no aplicativo NexaMed.',
+      'Justificar atrasos >15 minutos no campo de observação com o motivo clínico (ex: recusa ou exame externo).'
+    ],
+    quiz: [
+      {
+        id: 'q-101-1',
+        question: 'Qual a conduta recomendada pelo NexaMed quando houver um atraso na administração de dose crítica?',
+        options: [
+          'Ignorar o atraso e marcar como administrado no horário planejado.',
+          'Registrar o horário real da administração e incluir a justificativa do atraso no Kardex.',
+          'Cancelar a dose sem avisar o enfermeiro RT.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'O registro com horário real e justificativa assegura rastreabilidade total no prontuário do residente e conformidade com a Anvisa.'
+      },
+      {
+        id: 'q-101-2',
+        question: 'Quantos pontos de checagem obrigatória (regra dos 5 certos) devem ser checados no MAR?',
+        options: [
+          'Apenas o nome do remédio.',
+          'Medicamento certo, Dose certa, Via certa, Horário certo e Residente certo.',
+          'Via de administração apenas.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'A regra dos 5 certos é fundamental para prevenção de eventos adversos na medicação gerontológica.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-102',
+    title: 'Guia Rápido POP: Protocolo SOAP Estruturado e Aferição NEWS2',
+    description: 'Guia prático em texto e infográfico explicando a separação correta dos tópicos S (Subjetivo), O (Objetivo), A (Avaliação) e P (Plano) com inclusão do NEWS2.',
+    durationMinutes: 4,
+    type: 'guide',
+    category: 'Protocolo SOAP',
+    staffName: 'Enf. Bruno Costa',
+    targetRole: 'Enfermeiro / Cuidador',
+    clinicalTrigger: 'Evoluções em texto livre sem preenchimento dos campos A (Avaliação) e P (Plano de Cuidado).',
+    aiReasoning: 'Nexa IA identificou que 35% das evoluções do plantão anterior continham relatos informais sem pontuação de risco NEWS2.',
+    guideContent: `### Guia Operacional Padrão (POP) - Evolução SOAP NexaMed
+1. **Subjetivo (S)**: Relato direto do residente ou acompanhante sobre sintomas, sono, dor, humor e aceitação alimentar.
+2. **Objetivo (O)**: Dados aferidos (PA, FC, SpO2, Temp, Glicemia, diurese, aspecto da lesão) e cálculo automático do NEWS2.
+3. **Avaliação (A)**: Impressão clínica diagnóstica e nível de estresse/estabilidade psiquiátrica.
+4. **Plano (P)**: Intervenções imediatas, aprazamentos e metas para o próximo plantão.`,
+    keyTakeaways: [
+      'Nunca misturar dados objetivos (ex: PA 120/80) no campo Subjetivo.',
+      'O escore NEWS2 >= 5 exige comunicação imediata ao médico responsável.',
+      'Revisar o rascunho com o corretor IA antes de assinar a evolução.'
+    ],
+    quiz: [
+      {
+        id: 'q-102-1',
+        question: 'Onde deve ser inserido o relato do residente "Sinto um leve cansaço ao caminhar"?',
+        options: [
+          'No campo Subjetivo (S).',
+          'No campo Objetivo (O).',
+          'No Plano de Cuidado (P).'
+        ],
+        correctAnswerIndex: 0,
+        explanation: 'Queixas verbais e percepções subjetivas do residente pertencem estritamente ao campo Subjetivo (S).'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-103',
+    title: 'Manejamento Humanizado de Desorientação e Agitação em Idosos com Demência',
+    description: 'Vídeo demonstrativo de 5 minutos sobre validação emocional, ambiente calmo e técnicas de desescalada verbal na residência terapêutica.',
+    durationMinutes: 5,
+    type: 'video',
+    category: 'Manejamento de Crise',
+    staffName: 'Tec. Carlos Alberto',
+    targetRole: 'Cuidador / Acompanhante',
+    clinicalTrigger: 'Registro de agitação noturna no leito 12B (Sr. Antônio Siqueira) durante o plantão noturno.',
+    aiReasoning: 'Nexa IA correlacionou o aumento de intercorrências noturnas com a necessidade de reciclagem em técnicas de desescalada não farmacológica.',
+    youtubeId: 'P3-b8yZ9A3o',
+    youtubeUrl: 'https://www.youtube.com/watch?v=P3-b8yZ9A3o',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-senior-man-talking-to-a-nurse-in-a-nursing-home-41549-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1581579438747-108c52309192?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Evitar confrontar a realidade contada pelo idoso desorientado; utilizar a técnica da validação.',
+      'Manter tom de voz suave, postura corporal receptiva e contato visual no nível dos olhos.',
+      'Reduzir estímulos sonoros e luminosos excessivos antes da medicação indutora de sono.'
+    ],
+    quiz: [
+      {
+        id: 'q-103-1',
+        question: 'Qual a melhor atitude do cuidador diante de uma fala desconexa do residente com Alzheimer no início da noite?',
+        options: [
+          'Corrigir firmemente o idoso explicando que ele está no residencial.',
+          'Acolher com empatia, validar o sentimento e redirecionar a conversa calmamente.',
+          'Contentar o idoso e isolá-lo no quarto imediatamente.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'A validação empática reduz o cortisol e a ansiedade sem gerar conflitos e agitação secundária.'
+      }
+    ],
+    status: 'Concluído',
+    scorePercentage: 100,
+    completedAt: '11/08/2026 14:20',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-104',
+    title: 'Prevenção e Tratamento de Lesões por Pressão: Mudança de Decúbito 2h/2h',
+    description: 'Guia prático e demonstração em vídeo sobre posicionamento no leito, uso de protetores de calcâneo e escala de Braden.',
+    durationMinutes: 4,
+    type: 'video',
+    category: 'Lesão por Pressão',
+    staffName: 'Tec. Ana Paula Silva',
+    targetRole: 'Técnico de Enfermagem / Cuidador',
+    clinicalTrigger: 'Relatório de feridas apontando vermelhidão incipiente (grau I) na região sacra da Sra. Nair Ribeiro.',
+    aiReasoning: 'Nexa IA sinalizou risco iminente de ulceração e recomendou treinamento focado em técnica correta de mudança de decúbito.',
+    youtubeId: 'L84XyJ8gB9g',
+    youtubeUrl: 'https://www.youtube.com/watch?v=L84XyJ8gB9g',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-nurse-measuring-patient-blood-pressure-41552-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Realizar mudança de decúbito rigorosa a cada 2 horas (Dorsal -> Lateral Esquerdo -> Lateral Direito).',
+      'Manter lençóis da cama secos e sem dobras ou frestas que promovam cisalhamento.',
+      'Aplicar AGE (Ácidos Graxos Essenciais) em proeminências ósseas íntegras.'
+    ],
+    quiz: [
+      {
+        id: 'q-104-1',
+        question: 'De quanto em quanto tempo deve ser realizada a mudança de decúbito do residente restrito ao leito?',
+        options: [
+          'A cada 6 horas.',
+          'A cada 2 horas.',
+          'Apenas uma vez por turno.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'A alternância de decúbito a cada 2 horas alivia a isquemia tissular contínua nas proeminências sacras e trocantéricas.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-105',
+    title: 'Protocolo de Prevenção de Quedas em Geriatria (Escala de Morse & ILPI)',
+    description: 'Vídeo aula oficial sobre avaliação de marcha, iluminação de vigília e contenção não física em residências terapêuticas.',
+    durationMinutes: 6,
+    type: 'video',
+    category: 'Prevenção de Quedas',
+    staffName: 'Enf. Bruno Costa',
+    targetRole: 'Equipe de Enfermagem e Cuidadores',
+    clinicalTrigger: 'Registro de vertigem postural e marcha vacilante na Sra. Helena Santos ao se levantar de madrugada.',
+    aiReasoning: 'Sinalização automática Nexa IA de risco moderado/alto na Escala de Morse, indicando treinamento obrigatório de prevenção de quedas.',
+    youtubeId: 'v5cT4zC2Gso',
+    youtubeUrl: 'https://www.youtube.com/watch?v=v5cT4zC2Gso',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Garantir iluminação de vigília em corredores e banheiros durante o período noturno.',
+      'Instalar barras de apoio e piso antiderrapante antes do banho.',
+      'Manter grades de proteção elevadas no leito de residentes com mobilidade reduzida.'
+    ],
+    quiz: [
+      {
+        id: 'q-105-1',
+        question: 'O que deve ser feito imediatamente ao identificar um idoso com marcha vacilante ao tentar caminhar sozinho?',
+        options: [
+          'Acompanhar o idoso oferecendo apoio físico lateral e registrar na passagem de plantão.',
+          'Deixar o idoso caminhar sozinho sem interferência.',
+          'Solicitar contenção química prescrita.'
+        ],
+        correctAnswerIndex: 0,
+        explanation: 'O acompanhamento ativo previne quedas sem restringir a mobilidade do residente.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-106',
+    title: 'Aferição de Sinais Vitais Padronizada e Cálculo Automático NEWS2',
+    description: 'Treinamento prático no YouTube cobrindo oximetria de pulso, frequência respiratória e identificação precocíssima de sepse/deterioração.',
+    durationMinutes: 4,
+    type: 'video',
+    category: 'Aferição NEWS2 & Vitais',
+    staffName: 'Tec. Ana Paula Silva',
+    targetRole: 'Técnicos e Cuidadores',
+    clinicalTrigger: 'Alteração nos valores de oximetria de pulso (SpO2 91%) detectada na leitura prévia.',
+    aiReasoning: 'Gatilho de deterioração clínica do NEWS2 exigindo recalibração das técnicas de aferição rápida.',
+    youtubeId: '_S8e8M-pA10',
+    youtubeUrl: 'https://www.youtube.com/watch?v=_S8e8M-pA10',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Contar a frequência respiratória por 60 segundos completos sem avisar previamente o idoso.',
+      'Aguardar a estabilização da curva do oxímetro de pulso antes de anotar a SpO2.',
+      'Valores de NEWS2 >= 5 indicam gatilho imediato para avaliação médica presencial.'
+    ],
+    quiz: [
+      {
+        id: 'q-106-1',
+        question: 'Qual o tempo mínimo recomendado para contagem precisa da frequência respiratória em idosos fragilizados?',
+        options: [
+          '10 segundos multiplicados por 6.',
+          '60 segundos completos.',
+          '5 segundos.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'Idosos costumam apresentar ritmos respiratórios irregulares, exigindo observação contínua de 60 segundos.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  }
+];
+
+export const INITIAL_STAFF_MICRO_PROFILES: StaffMicroLearningProfile[] = [
+  {
+    staffId: 'usr-1',
+    staffName: 'Enf. Bruno Costa',
+    role: 'Enfermeiro RT',
+    shift: 'Diurno',
+    avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=200&q=80',
+    pendingClinicalGapsCount: 2,
+    completedTrainingsCount: 5,
+    totalAssignedCount: 7,
+    readinessScore: 82,
+    recentGapsFound: [
+      'Atraso recorrente na checagem do Kardex MAR de Insulina (Helena Vasconcelos)',
+      'Evoluções SOAP sem pontuação de escore NEWS2 nos finais de semana'
+    ],
+    assignedModules: [
+      INITIAL_MICRO_LEARNING_MODULES[0],
+      INITIAL_MICRO_LEARNING_MODULES[1]
+    ]
+  },
+  {
+    staffId: 'usr-2',
+    staffName: 'Tec. Carlos Alberto',
+    role: 'Cuidador Sênior',
+    shift: 'Noturno',
+    avatarUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=200&q=80',
+    pendingClinicalGapsCount: 0,
+    completedTrainingsCount: 6,
+    totalAssignedCount: 6,
+    readinessScore: 100,
+    recentGapsFound: [
+      'Manejamento de agitação noturna concluído com êxito'
+    ],
+    assignedModules: [
+      INITIAL_MICRO_LEARNING_MODULES[2]
+    ]
+  },
+  {
+    staffId: 'usr-3',
+    staffName: 'Tec. Ana Paula Silva',
+    role: 'Técnico de Enfermagem',
+    shift: 'Diurno',
+    avatarUrl: 'https://images.unsplash.com/photo-1594824813571-28a77885d07f?auto=format&fit=crop&w=200&q=80',
+    pendingClinicalGapsCount: 1,
+    completedTrainingsCount: 4,
+    totalAssignedCount: 5,
+    readinessScore: 88,
+    recentGapsFound: [
+      'Observação de risco de lesão sacra na Sra. Nair Ribeiro'
+    ],
+    assignedModules: [
+      INITIAL_MICRO_LEARNING_MODULES[3]
+    ]
+  },
+  {
+    staffId: 'usr-4',
+    staffName: 'Dr. Fernando Alencar',
+    role: 'Médico Psiquiatra',
+    shift: 'Plantonista',
+    avatarUrl: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=200&q=80',
+    pendingClinicalGapsCount: 1,
+    completedTrainingsCount: 8,
+    totalAssignedCount: 9,
+    readinessScore: 94,
+    recentGapsFound: [
+      'Validação de prescrição com alertas de duplicidade de ansiolítico'
+    ],
+    assignedModules: [
+      INITIAL_MICRO_LEARNING_MODULES[1]
+    ]
+  }
+];
+
 
 

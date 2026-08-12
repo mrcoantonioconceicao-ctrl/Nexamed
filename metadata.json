@@ -1,6 +1,8 @@
 {
   "name": "NexaMed",
   "description": "Plataforma Inteligente para Gestão de Terapias Residenciais com IA Nexa",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "microphone"
+  ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

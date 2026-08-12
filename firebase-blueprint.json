@@ -1,8 +1,22 @@
 {
   "entities": {
+    "residents": {
+      "title": "Residentes",
+      "description": "Prontuários e dados cadastrais dos residentes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "room": { "type": "string" },
+        "bed": { "type": "string" },
+        "age": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
     "evolutions": {
       "title": "Evoluções Clínicas",
-      "description": "Registros de evoluções SOAP dos residentes",
+      "description": "Registros de evoluções SOAP e exames clínicos dos residentes",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
@@ -14,21 +28,37 @@
         "role": { "type": "string" },
         "soap": { "type": "object" },
         "tags": { "type": "array" },
-        "status": { "type": "string" },
         "vitals": { "type": "object" }
       },
       "required": ["id", "residentId", "residentName", "date", "soap"]
     },
-    "residents": {
-      "title": "Residentes",
-      "description": "Prontuários e dados dos residentes",
+    "medication_administrations": {
+      "title": "Administração de Medicamentos (MAR)",
+      "description": "Cartão e registro de checagem e administração de medicamentos dos residentes",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "room": { "type": "string" }
+        "residentId": { "type": "string" },
+        "residentName": { "type": "string" },
+        "medicationName": { "type": "string" },
+        "scheduledDoses": { "type": "array" }
       },
-      "required": ["id", "name"]
+      "required": ["id", "residentId"]
+    },
+    "audit_logs": {
+      "title": "Logs de Auditoria",
+      "description": "Registros de auditoria e rastreabilidade de ações clínicas e administrativas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userRole": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "action", "timestamp"]
     },
     "handovers": {
       "title": "Trocas de Plantão",
@@ -40,15 +70,47 @@
       },
       "required": ["id", "date"]
     },
-    "medications": {
-      "title": "Medicamentos MAR",
-      "description": "Cartão de medicação do residente",
+    "users": {
+      "title": "Usuários e Profissionais",
+      "description": "Perfis de usuários registrados na plataforma NexaMed",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "residentId": { "type": "string" }
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" }
       },
-      "required": ["id", "residentId"]
+      "required": ["id", "name", "email"]
+    }
+  },
+  "firestore": {
+    "/residents/{residentId}": {
+      "schema": { "$ref": "#/entities/residents" },
+      "description": "Coleção de residentes do residencial"
+    },
+    "/evolutions/{evolutionId}": {
+      "schema": { "$ref": "#/entities/evolutions" },
+      "description": "Coleção de evoluções clínicas SOAP"
+    },
+    "/medication_administrations/{medicationId}": {
+      "schema": { "$ref": "#/entities/medication_administrations" },
+      "description": "Coleção de cartões de medicação MAR"
+    },
+    "/medications/{medicationId}": {
+      "schema": { "$ref": "#/entities/medication_administrations" },
+      "description": "Alias para cartões de medicação MAR"
+    },
+    "/audit_logs/{auditLogId}": {
+      "schema": { "$ref": "#/entities/audit_logs" },
+      "description": "Coleção de logs de auditoria"
+    },
+    "/handovers/{handoverId}": {
+      "schema": { "$ref": "#/entities/handovers" },
+      "description": "Coleção de passagens de plantão"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/users" },
+      "description": "Coleção de perfis de usuários"
     }
   }
 }

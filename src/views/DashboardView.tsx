@@ -137,7 +137,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
               Painel Clínico
             </span>
-            <span className="text-xs text-zinc-500 font-medium">Unidade Jardim Paulista • 24 Horas</span>
+            <span className="text-xs text-zinc-500 font-medium">Residencial Salomão - Blumenau/SC • 24 Horas</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight">
             Gestão Integrada de Terapias Residenciais

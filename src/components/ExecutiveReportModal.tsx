@@ -87,7 +87,7 @@ export const ExecutiveReportModal: React.FC<ExecutiveReportModalProps> = ({
                 NexaMed Enterprise ILPI & Saúde Mental
               </h1>
               <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                Unidade Jardim Paulista • Responsabilidade Técnica: Dra. Camila Meireles (CRM/Coren)
+                Residencial Salomão (Rua Dr. Pedro Zimmermann, 2391 - Blumenau/SC) • Responsabilidade Técnica: Dra. Camila Meireles (CRM/Coren)
               </p>
             </div>
             <div className="text-right">

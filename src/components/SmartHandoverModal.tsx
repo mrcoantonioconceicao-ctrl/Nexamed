@@ -82,14 +82,12 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
   onCompleteOutboundHandover,
   onResolvePendingDirectly
 }) => {
-  if (!isOpen) return null;
-
   const currentUser: UserSession = getCurrentUser() || {
     id: 'usr-1',
     name: 'Enf. Bruno Costa',
     role: 'Enfermeiro Responsável Técnico (RT)',
     email: 'bruno.costa@nexamed.com.br',
-    unit: 'Unidade Jardim Paulista - SRT I',
+    unit: 'Residencial Salomão - Blumenau/SC',
     shift: 'Manhã',
     team: 'Equipe A - Plantão Diurno',
     avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=120&auto=format&fit=crop&q=80'
@@ -100,7 +98,7 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
   const [understoodCheck, setUnderstoodCheck] = useState(false);
   const [responsibilityCheck, setResponsibilityCheck] = useState(false);
   const [signaturePin, setSignaturePin] = useState('1234');
-  const [shiftName, setShiftName] = useState<'Manhã' | 'Tarde' | 'Noite'>('Manhã');
+  const [shiftName, setShiftName] = useState<'Diurno' | 'Noturno'>('Diurno');
 
   // Outbound Shift Handover Audit State
   const [pendingItems, setPendingItems] = useState<PendingAuditItem[]>([]);
@@ -113,6 +111,7 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
 
   // Sync shiftName with currentUser.shift
   useEffect(() => {
+    if (!isOpen) return;
     if (currentUser?.shift && ['Manhã', 'Tarde', 'Noite'].includes(currentUser.shift)) {
       setShiftName(currentUser.shift as 'Manhã' | 'Tarde' | 'Noite');
     }
@@ -120,10 +119,13 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
 
   // Run Automatic Audit on Open or Data Change
   useEffect(() => {
+    if (!isOpen) return;
     if (mode === 'ENCERRAR_PLANTAO') {
       runAutomaticShiftAudit();
     }
-  }, [mode, residents, evolutions, medications, alerts]);
+  }, [isOpen, mode, residents, evolutions, medications, alerts]);
+
+  if (!isOpen) return null;
 
   const runAutomaticShiftAudit = () => {
     setIsAuditing(true);
@@ -320,9 +322,8 @@ export const SmartHandoverModal: React.FC<SmartHandoverModalProps> = ({
               onChange={(e) => setShiftName(e.target.value as any)}
               className="bg-white border border-teal-200 rounded-lg px-2.5 py-1 font-bold text-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-500 shadow-2xs"
             >
-              <option value="Manhã">Manhã (07h às 13h)</option>
-              <option value="Tarde">Tarde (13h às 19h)</option>
-              <option value="Noite">Noite (19h às 07h / 12x36)</option>
+              <option value="Diurno">Diurno (07h às 19h / 12x36)</option>
+              <option value="Noturno">Noturno (19h às 07h / 12x36)</option>
             </select>
           </div>
         </div>

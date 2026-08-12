@@ -4,42 +4,206 @@ import {
   collection, 
   doc, 
   setDoc, 
+  getDoc,
+  deleteDoc,
   onSnapshot,
+  getDocFromServer,
   Firestore
 } from 'firebase/firestore';
-import { ClinicalEvolution, Resident, HandoverLog, MedicationMAR } from '../types';
-
-const config = {
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-};
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  onAuthStateChanged,
+  updateProfile,
+  Auth,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { 
+  ClinicalEvolution, 
+  Resident, 
+  HandoverLog, 
+  MedicationMAR, 
+  AuditLogEntry, 
+  PASRecord, 
+  AppointmentRecord, 
+  FunctionalScaleAssessment 
+} from '../types';
+import { RegisteredUser } from '../config/auth-mode';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 let app: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
+let firebaseAuth: Auth | null = null;
 
-if (config.apiKey && config.projectId) {
-  try {
-    app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
-    firestoreDb = config.firestoreDatabaseId
-      ? getFirestore(app, config.firestoreDatabaseId)
-      : getFirestore(app);
-  } catch (e) {
-    console.warn('Firebase initialization failed, falling back to local state:', e);
-  }
+try {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  firestoreDb = firebaseConfig.firestoreDatabaseId
+    ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+    : getFirestore(app);
+  firebaseAuth = getAuth(app);
+} catch (e) {
+  console.warn('Firebase initialization failed, falling back to local state:', e);
 }
 
 export const db = firestoreDb;
+export const auth = firebaseAuth;
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth?.currentUser?.uid,
+      email: auth?.currentUser?.email,
+      emailVerified: auth?.currentUser?.emailVerified,
+      isAnonymous: auth?.currentUser?.isAnonymous,
+      tenantId: auth?.currentUser?.tenantId,
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error Details:', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
+
+async function testConnection() {
+  if (!db) return;
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Please check your Firebase configuration: client is offline.");
+    }
+  }
+}
+testConnection();
+
+/**
+ * Firebase Auth Helper: Login with Email & Password
+ */
+export async function loginWithEmailFirebase(email: string, pass: string) {
+  if (!auth) throw new Error('Firebase Auth não inicializado.');
+  const userCred = await signInWithEmailAndPassword(auth, email, pass);
+  return userCred.user;
+}
+
+/**
+ * Firebase Auth Helper: Register with Email & Password
+ */
+export async function registerWithEmailFirebase(email: string, pass: string, name: string) {
+  if (!auth) throw new Error('Firebase Auth não inicializado.');
+  const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+  if (userCred.user) {
+    await updateProfile(userCred.user, { displayName: name });
+  }
+  return userCred.user;
+}
+
+/**
+ * Firebase Auth Helper: Login with Google Popup
+ */
+export async function loginWithGoogleFirebase() {
+  if (!auth) throw new Error('Firebase Auth não inicializado.');
+  const provider = new GoogleAuthProvider();
+  const userCred = await signInWithPopup(auth, provider);
+  return userCred.user;
+}
+
+/**
+ * Firebase Auth Helper: Sign Out
+ */
+export async function logoutFirebase() {
+  if (!auth) return;
+  await firebaseSignOut(auth);
+}
+
+/**
+ * Sync or retrieve User Profile from Firestore `users` collection
+ */
+export async function syncUserProfile(
+  fbUser: FirebaseUser, 
+  additionalFields?: Partial<RegisteredUser>
+): Promise<RegisteredUser> {
+  const fallback: RegisteredUser = {
+    id: fbUser.uid,
+    name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Profissional',
+    email: fbUser.email || '',
+    password: '',
+    role: additionalFields?.role || 'Enfermeiro Responsável Técnico (RT)',
+    roleCategory: additionalFields?.roleCategory || 'ENFERMEIRA',
+    documentId: additionalFields?.documentId || 'REGISTRO-001',
+    unit: additionalFields?.unit || 'Residencial Salomão - Rua Dr. Pedro Zimmermann, 2391 (CEP 89066-001 - Blumenau/SC)',
+    shift: additionalFields?.shift || 'Diurno (07h às 19h / 12x36)',
+    avatar: fbUser.photoURL || 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=120&auto=format&fit=crop&q=80',
+    createdAt: new Date().toISOString().split('T')[0],
+    status: 'Ativo',
+    ...(additionalFields || {})
+  };
+
+  if (!db) {
+    return fallback;
+  }
+
+  const userDocRef = doc(db, 'users', fbUser.uid);
+  try {
+    const snap = await getDoc(userDocRef);
+    if (snap.exists()) {
+      const existingData = snap.data() as RegisteredUser;
+      const updated: RegisteredUser = {
+        ...existingData,
+        name: fbUser.displayName || existingData.name || fallback.name,
+        email: fbUser.email || existingData.email || fallback.email,
+        avatar: fbUser.photoURL || existingData.avatar || fallback.avatar,
+        ...(additionalFields || {})
+      };
+      await setDoc(userDocRef, sanitizeForFirestore(updated), { merge: true });
+      return updated;
+    } else {
+      await setDoc(userDocRef, sanitizeForFirestore(fallback));
+      return fallback;
+    }
+  } catch (err) {
+    console.error('Error syncing user profile in Firestore:', err);
+    return fallback;
+  }
+}
 
 // Collection References
+const USERS_COL = 'users';
 const EVOLUTIONS_COL = 'evolutions';
 const RESIDENTS_COL = 'residents';
 const HANDOVERS_COL = 'handovers';
 const MEDICATIONS_COL = 'medications';
+const MED_ADMINISTRATIONS_COL = 'medication_administrations';
+const AUDIT_LOGS_COL = 'audit_logs';
+const PAS_COL = 'pas_records';
+const APPOINTMENTS_COL = 'appointments';
+const SCALES_COL = 'functional_scales';
 
 function sanitizeForFirestore<T>(data: T): Record<string, any> {
   if (data === null || data === undefined) return {};
@@ -47,12 +211,67 @@ function sanitizeForFirestore<T>(data: T): Record<string, any> {
 }
 
 /**
+ * Subscribe to Users / Staff collection
+ */
+export function subscribeUsers(
+  callback: (data: RegisteredUser[]) => void,
+  initialFallback: RegisteredUser[] = []
+) {
+  if (!db) {
+    return () => {};
+  }
+  const colRef = collection(db, USERS_COL);
+
+  return onSnapshot(colRef, async (snapshot) => {
+    if (snapshot.empty && initialFallback.length > 0) {
+      for (const item of initialFallback) {
+        await setDoc(doc(db, USERS_COL, item.id), sanitizeForFirestore(item));
+      }
+      callback(initialFallback);
+    } else if (!snapshot.empty) {
+      const list: RegisteredUser[] = [];
+      snapshot.forEach((d) => list.push(d.data() as RegisteredUser));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore users error:', err);
+    handleFirestoreError(err, OperationType.GET, USERS_COL);
+  });
+}
+
+export async function saveUserToDb(user: RegisteredUser) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, USERS_COL, user.id), sanitizeForFirestore(user), { merge: true });
+  } catch (err) {
+    console.error('Error saving user to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `users/${user.id}`);
+  }
+}
+
+export const saveFirestoreUser = saveUserToDb;
+
+export async function deleteUserFromDb(userId: string) {
+  if (!db) return;
+  try {
+    await deleteDoc(doc(db, USERS_COL, userId));
+  } catch (err) {
+    console.error('Error deleting user from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, `users/${userId}`);
+  }
+}
+
+export const deleteFirestoreUser = deleteUserFromDb;
+
+/**
  * Subscribe to Evolutions collection with real-time updates.
  * If database is empty, seeds initial fallback data.
  */
 export function subscribeEvolutions(
   callback: (data: ClinicalEvolution[]) => void,
-  initialFallback: ClinicalEvolution[]
+  initialFallback: ClinicalEvolution[] = []
 ) {
   if (!db) {
     return () => {};
@@ -61,7 +280,6 @@ export function subscribeEvolutions(
 
   return onSnapshot(colRef, async (snapshot) => {
     if (snapshot.empty && initialFallback.length > 0) {
-      // Seed Firestore with initial evolutions
       for (const item of initialFallback) {
         await setDoc(doc(db, EVOLUTIONS_COL, item.id), sanitizeForFirestore(item));
       }
@@ -69,12 +287,14 @@ export function subscribeEvolutions(
     } else if (!snapshot.empty) {
       const list: ClinicalEvolution[] = [];
       snapshot.forEach((d) => list.push(d.data() as ClinicalEvolution));
-      // Sort newest first
       list.sort((a, b) => new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime());
       callback(list);
+    } else {
+      callback([]);
     }
   }, (err) => {
-    console.warn('Firestore evolutions error, keeping local state:', err);
+    console.warn('Firestore evolutions error:', err);
+    handleFirestoreError(err, OperationType.GET, EVOLUTIONS_COL);
   });
 }
 
@@ -84,6 +304,7 @@ export async function saveEvolutionToDb(evolution: ClinicalEvolution) {
     await setDoc(doc(db, EVOLUTIONS_COL, evolution.id), sanitizeForFirestore(evolution), { merge: true });
   } catch (err) {
     console.error('Error saving evolution to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `evolutions/${evolution.id}`);
   }
 }
 
@@ -92,7 +313,7 @@ export async function saveEvolutionToDb(evolution: ClinicalEvolution) {
  */
 export function subscribeResidents(
   callback: (data: Resident[]) => void,
-  initialFallback: Resident[]
+  initialFallback: Resident[] = []
 ) {
   if (!db) {
     return () => {};
@@ -109,9 +330,12 @@ export function subscribeResidents(
       const list: Resident[] = [];
       snapshot.forEach((d) => list.push(d.data() as Resident));
       callback(list);
+    } else {
+      callback([]);
     }
   }, (err) => {
     console.warn('Firestore residents error:', err);
+    handleFirestoreError(err, OperationType.GET, RESIDENTS_COL);
   });
 }
 
@@ -121,6 +345,7 @@ export async function saveResidentToDb(resident: Resident) {
     await setDoc(doc(db, RESIDENTS_COL, resident.id), sanitizeForFirestore(resident), { merge: true });
   } catch (err) {
     console.error('Error saving resident to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `residents/${resident.id}`);
   }
 }
 
@@ -129,7 +354,7 @@ export async function saveResidentToDb(resident: Resident) {
  */
 export function subscribeHandovers(
   callback: (data: HandoverLog[]) => void,
-  initialFallback: HandoverLog[]
+  initialFallback: HandoverLog[] = []
 ) {
   if (!db) {
     return () => {};
@@ -146,9 +371,12 @@ export function subscribeHandovers(
       const list: HandoverLog[] = [];
       snapshot.forEach((d) => list.push(d.data() as HandoverLog));
       callback(list);
+    } else {
+      callback([]);
     }
   }, (err) => {
     console.warn('Firestore handovers error:', err);
+    handleFirestoreError(err, OperationType.GET, HANDOVERS_COL);
   });
 }
 
@@ -158,15 +386,16 @@ export async function saveHandoverToDb(handover: HandoverLog) {
     await setDoc(doc(db, HANDOVERS_COL, handover.id), sanitizeForFirestore(handover), { merge: true });
   } catch (err) {
     console.error('Error saving handover to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `handovers/${handover.id}`);
   }
 }
 
 /**
- * Subscribe to Medications collection.
+ * Subscribe to Medications & Medication Administrations MAR collections.
  */
 export function subscribeMedications(
   callback: (data: MedicationMAR[]) => void,
-  initialFallback: MedicationMAR[]
+  initialFallback: MedicationMAR[] = []
 ) {
   if (!db) {
     return () => {};
@@ -176,24 +405,224 @@ export function subscribeMedications(
   return onSnapshot(colRef, async (snapshot) => {
     if (snapshot.empty && initialFallback.length > 0) {
       for (const item of initialFallback) {
-        await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitizeForFirestore(item));
+        const sanitized = sanitizeForFirestore(item);
+        await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitized);
+        await setDoc(doc(db, MED_ADMINISTRATIONS_COL, item.id), sanitized);
       }
       callback(initialFallback);
     } else if (!snapshot.empty) {
       const list: MedicationMAR[] = [];
       snapshot.forEach((d) => list.push(d.data() as MedicationMAR));
       callback(list);
+    } else {
+      callback([]);
     }
   }, (err) => {
     console.warn('Firestore medications error:', err);
+    handleFirestoreError(err, OperationType.GET, MEDICATIONS_COL);
+  });
+}
+
+export function subscribeMedicationAdministrations(
+  callback: (data: MedicationMAR[]) => void,
+  initialFallback: MedicationMAR[] = []
+) {
+  if (!db) {
+    return () => {};
+  }
+  const colRef = collection(db, MED_ADMINISTRATIONS_COL);
+
+  return onSnapshot(colRef, async (snapshot) => {
+    if (snapshot.empty && initialFallback.length > 0) {
+      for (const item of initialFallback) {
+        const sanitized = sanitizeForFirestore(item);
+        await setDoc(doc(db, MED_ADMINISTRATIONS_COL, item.id), sanitized);
+        await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitized);
+      }
+      callback(initialFallback);
+    } else if (!snapshot.empty) {
+      const list: MedicationMAR[] = [];
+      snapshot.forEach((d) => list.push(d.data() as MedicationMAR));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore medication_administrations error:', err);
+    handleFirestoreError(err, OperationType.GET, MED_ADMINISTRATIONS_COL);
   });
 }
 
 export async function saveMedicationToDb(medication: MedicationMAR) {
   if (!db) return;
   try {
-    await setDoc(doc(db, MEDICATIONS_COL, medication.id), sanitizeForFirestore(medication), { merge: true });
+    const sanitized = sanitizeForFirestore(medication);
+    await setDoc(doc(db, MEDICATIONS_COL, medication.id), sanitized, { merge: true });
+    await setDoc(doc(db, MED_ADMINISTRATIONS_COL, medication.id), sanitized, { merge: true });
   } catch (err) {
     console.error('Error saving medication to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `medications/${medication.id}`);
   }
 }
+
+export const saveMedicationAdministrationToDb = saveMedicationToDb;
+
+/**
+ * Subscribe to Audit Logs collection in Cloud Firestore.
+ */
+export function subscribeAuditLogs(
+  callback: (data: AuditLogEntry[]) => void,
+  initialFallback: AuditLogEntry[] = []
+) {
+  if (!db) {
+    return () => {};
+  }
+  const colRef = collection(db, AUDIT_LOGS_COL);
+
+  return onSnapshot(colRef, async (snapshot) => {
+    if (snapshot.empty && initialFallback.length > 0) {
+      for (const item of initialFallback) {
+        await setDoc(doc(db, AUDIT_LOGS_COL, item.id), sanitizeForFirestore(item));
+      }
+      callback(initialFallback);
+    } else if (!snapshot.empty) {
+      const list: AuditLogEntry[] = [];
+      snapshot.forEach((d) => list.push(d.data() as AuditLogEntry));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore audit_logs error:', err);
+    handleFirestoreError(err, OperationType.GET, AUDIT_LOGS_COL);
+  });
+}
+
+export async function saveAuditLogToDb(auditLog: AuditLogEntry) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, AUDIT_LOGS_COL, auditLog.id), sanitizeForFirestore(auditLog), { merge: true });
+  } catch (err) {
+    console.error('Error saving audit log to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `audit_logs/${auditLog.id}`);
+  }
+}
+
+/**
+ * Subscribe to PAS Records collection.
+ */
+export function subscribePASRecords(
+  callback: (data: PASRecord[]) => void,
+  initialFallback: PASRecord[] = []
+) {
+  if (!db) {
+    return () => {};
+  }
+  const colRef = collection(db, PAS_COL);
+
+  return onSnapshot(colRef, async (snapshot) => {
+    if (snapshot.empty && initialFallback.length > 0) {
+      for (const item of initialFallback) {
+        await setDoc(doc(db, PAS_COL, item.id), sanitizeForFirestore(item));
+      }
+      callback(initialFallback);
+    } else if (!snapshot.empty) {
+      const list: PASRecord[] = [];
+      snapshot.forEach((d) => list.push(d.data() as PASRecord));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore pas_records error:', err);
+  });
+}
+
+export async function savePASRecordToDb(record: PASRecord) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, PAS_COL, record.id), sanitizeForFirestore(record), { merge: true });
+  } catch (err) {
+    console.error('Error saving PAS record to Firestore:', err);
+  }
+}
+
+/**
+ * Subscribe to Appointments collection.
+ */
+export function subscribeAppointments(
+  callback: (data: AppointmentRecord[]) => void,
+  initialFallback: AppointmentRecord[] = []
+) {
+  if (!db) {
+    return () => {};
+  }
+  const colRef = collection(db, APPOINTMENTS_COL);
+
+  return onSnapshot(colRef, async (snapshot) => {
+    if (snapshot.empty && initialFallback.length > 0) {
+      for (const item of initialFallback) {
+        await setDoc(doc(db, APPOINTMENTS_COL, item.id), sanitizeForFirestore(item));
+      }
+      callback(initialFallback);
+    } else if (!snapshot.empty) {
+      const list: AppointmentRecord[] = [];
+      snapshot.forEach((d) => list.push(d.data() as AppointmentRecord));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore appointments error:', err);
+  });
+}
+
+export async function saveAppointmentToDb(record: AppointmentRecord) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, APPOINTMENTS_COL, record.id), sanitizeForFirestore(record), { merge: true });
+  } catch (err) {
+    console.error('Error saving appointment to Firestore:', err);
+  }
+}
+
+/**
+ * Subscribe to Functional Scales collection.
+ */
+export function subscribeFunctionalScales(
+  callback: (data: FunctionalScaleAssessment[]) => void,
+  initialFallback: FunctionalScaleAssessment[] = []
+) {
+  if (!db) {
+    return () => {};
+  }
+  const colRef = collection(db, SCALES_COL);
+
+  return onSnapshot(colRef, async (snapshot) => {
+    if (snapshot.empty && initialFallback.length > 0) {
+      for (const item of initialFallback) {
+        await setDoc(doc(db, SCALES_COL, item.id), sanitizeForFirestore(item));
+      }
+      callback(initialFallback);
+    } else if (!snapshot.empty) {
+      const list: FunctionalScaleAssessment[] = [];
+      snapshot.forEach((d) => list.push(d.data() as FunctionalScaleAssessment));
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore functional_scales error:', err);
+  });
+}
+
+export async function saveFunctionalScaleToDb(assessment: FunctionalScaleAssessment) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, SCALES_COL, assessment.id), sanitizeForFirestore(assessment), { merge: true });
+  } catch (err) {
+    console.error('Error saving scale assessment to Firestore:', err);
+  }
+}
+
+

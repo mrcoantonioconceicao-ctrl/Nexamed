@@ -13,8 +13,6 @@ export const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
   onClose,
   onAdd
 }) => {
-  if (!isOpen) return null;
-
   const [code, setCode] = useState(`INS-${Math.floor(100 + Math.random() * 900)}`);
   const [name, setName] = useState('');
   const [category, setCategory] = useState<InventoryItem['category']>('Medicamento');
@@ -26,6 +24,8 @@ export const AddInventoryModal: React.FC<AddInventoryModalProps> = ({
   const [estimatedConsumptionDays, setEstimatedConsumptionDays] = useState<number>(20);
   const [suggestedPurchaseQty, setSuggestedPurchaseQty] = useState<number>(100);
   const [supplier, setSupplier] = useState('Distribuidora Eurofarma / EMS');
+
+  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -18,6 +18,14 @@ import {
   INITIAL_HANDOVERS,
   INITIAL_AUDIT_LOGS
 } from '../data/mockData';
+import { 
+  saveResidentToDb, 
+  saveEvolutionToDb, 
+  saveAuditLogToDb, 
+  savePASRecordToDb, 
+  saveAppointmentToDb, 
+  saveFunctionalScaleToDb 
+} from '../lib/firebase';
 
 // Storage Keys
 const KEY_RESIDENTS = 'nexamed_residents_v2';
@@ -204,6 +212,7 @@ export function saveSingleResident(resident: Resident): void {
     current.unshift(resident);
   }
   saveStoredResidents(current);
+  saveResidentToDb(resident);
 }
 
 // --- EVOLUTIONS CRUD ---
@@ -253,6 +262,7 @@ export function addOrUpdateEvolution(evolution: ClinicalEvolution, auditReason?:
     current.unshift(finalEvolution);
   }
   saveStoredEvolutions(current);
+  saveEvolutionToDb(finalEvolution);
 
   // Auto record system audit entry
   addAuditLogEntry({
@@ -290,6 +300,7 @@ export function savePASRecord(record: PASRecord): void {
     current.unshift(record);
   }
   localStorage.setItem(KEY_PAS, JSON.stringify(current));
+  savePASRecordToDb(record);
 }
 
 // --- APPOINTMENTS CRUD ---
@@ -313,6 +324,7 @@ export function saveAppointmentRecord(record: AppointmentRecord): void {
     current.unshift(record);
   }
   localStorage.setItem(KEY_APPOINTMENTS, JSON.stringify(current));
+  saveAppointmentToDb(record);
 }
 
 // --- SCALES (KATZ & LAWTON) CRUD ---
@@ -331,6 +343,7 @@ export function saveScaleAssessment(assessment: FunctionalScaleAssessment): void
   const current = getStoredScaleAssessments();
   current.unshift(assessment);
   localStorage.setItem(KEY_SCALES, JSON.stringify(current));
+  saveFunctionalScaleToDb(assessment);
 }
 
 // --- PENDING CLINICAL TASKS CRUD ---
@@ -370,6 +383,7 @@ export function addAuditLogEntry(entry: AuditLogEntry): void {
   const current = getStoredAuditLogs();
   current.unshift(entry);
   localStorage.setItem(KEY_AUDIT_LOGS, JSON.stringify(current));
+  saveAuditLogToDb(entry);
 }
 
 // --- MIGRATION REPORTS ---

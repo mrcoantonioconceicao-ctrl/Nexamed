@@ -41,8 +41,10 @@ import {
 import { calculateNEWS2Risk } from './utils/news2Calculator';
 import { parseBloodPressure, extractFirstKeyword } from './utils/textParser';
 import { useCriticalAlertNotifications } from './hooks/useCriticalAlertNotifications';
-import { getCurrentUser, isAuthEnabled } from './config/auth-mode';
+import { getCurrentUser, isAuthEnabled, setCurrentUser, UserSession, getUserRoleCategory } from './config/auth-mode';
 import { 
+  auth,
+  syncUserProfile,
   subscribeEvolutions, 
   saveEvolutionToDb, 
   subscribeResidents, 
@@ -50,8 +52,12 @@ import {
   subscribeHandovers, 
   saveHandoverToDb, 
   subscribeMedications, 
-  saveMedicationToDb 
+  saveMedicationToDb,
+  subscribeAuditLogs,
+  saveAuditLogToDb,
+  subscribeMedicationAdministrations
 } from './lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 import { NavbarHeader } from './components/NavbarHeader';
 import { AppSidebar } from './components/AppSidebar';
@@ -65,6 +71,8 @@ import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TelehealthModal } from './components/TelehealthModal';
 import { SmartHandoverModal, PendingAuditItem } from './components/SmartHandoverModal';
 import { GuidedTourModal } from './components/GuidedTourModal';
+import { AutoDeployModal } from './components/AutoDeployModal';
+import { AuditLogViewerModal } from './components/AuditLogViewerModal';
 
 import { DashboardView } from './views/DashboardView';
 import { ResidentesView } from './views/ResidentesView';
@@ -83,51 +91,86 @@ import { PendenciasView } from './views/PendenciasView';
 import { GiterMigrationView } from './views/GiterMigrationView';
 import { ClinicalTestSuiteView } from './views/ClinicalTestSuiteView';
 import { DailyHuddleView } from './views/DailyHuddleView';
+import { MicroLearningView } from './views/MicroLearningView';
+import { ConformidadeView } from './views/ConformidadeView';
 
 export default function App() {
   // Navigation State
   const [currentPath, setCurrentPath] = useState<string>('/dashboard');
 
+  // Auth State
+  const [currentUser, setCurrentUserSession] = useState<UserSession | null>(() => getCurrentUser());
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (!auth) {
+      setIsAuthChecking(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        try {
+          const synced = await syncUserProfile(fbUser);
+          const session: UserSession = {
+            ...synced,
+            roleCategory: synced.roleCategory || getUserRoleCategory(synced.role)
+          };
+          setCurrentUserSession(session);
+          setCurrentUser(session);
+        } catch (e) {
+          console.error('Error syncing user profile on auth change:', e);
+        }
+      } else {
+        setCurrentUserSession(null);
+        setCurrentUser(null);
+      }
+      setIsAuthChecking(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Core Data States with localStorage persistence fallback
   const [residents, setResidents] = useState<Resident[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_residents');
-      return saved ? JSON.parse(saved) : INITIAL_RESIDENTS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_RESIDENTS;
+      return [];
     }
   });
 
   const [evolutions, setEvolutions] = useState<ClinicalEvolution[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_evolutions');
-      return saved ? JSON.parse(saved) : INITIAL_EVOLUTIONS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_EVOLUTIONS;
+      return [];
     }
   });
 
   const [medications, setMedications] = useState<MedicationMAR[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_medications');
-      return saved ? JSON.parse(saved) : INITIAL_MEDICATIONS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_MEDICATIONS;
+      return [];
     }
   });
 
-  const [roster, setRoster] = useState<StaffRoster[]>(INITIAL_ROSTER);
+  const [roster, setRoster] = useState<StaffRoster[]>([]);
 
   const [handovers, setHandovers] = useState<HandoverLog[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_handovers');
-      return saved ? JSON.parse(saved) : INITIAL_HANDOVERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_HANDOVERS;
+      return [];
     }
   });
 
-  const [alerts, setAlerts] = useState<ClinicalAlert[]>(INITIAL_ALERTS);
+  const [alerts, setAlerts] = useState<ClinicalAlert[]>([]);
 
   // Sync state changes to localStorage
   useEffect(() => {
@@ -164,16 +207,22 @@ export default function App() {
 
   // Firestore Real-time Persistence Effect
   useEffect(() => {
-    const unsubEvo = subscribeEvolutions(setEvolutions, residents.length > 0 ? [] : INITIAL_EVOLUTIONS);
-    const unsubRes = subscribeResidents(setResidents, residents.length > 0 ? [] : INITIAL_RESIDENTS);
-    const unsubHan = subscribeHandovers(setHandovers, handovers.length > 0 ? [] : INITIAL_HANDOVERS);
-    const unsubMed = subscribeMedications(setMedications, medications.length > 0 ? [] : INITIAL_MEDICATIONS);
+    const unsubEvo = subscribeEvolutions(setEvolutions, []);
+    const unsubRes = subscribeResidents(setResidents, []);
+    const unsubHan = subscribeHandovers(setHandovers, []);
+    const unsubMed = subscribeMedications(setMedications, []);
+    const unsubMedAdmin = subscribeMedicationAdministrations((data) => {
+      if (data && data.length > 0) setMedications(data);
+    }, []);
+    const unsubAudit = subscribeAuditLogs(setAuditLogs, []);
 
     return () => {
       unsubEvo();
       unsubRes();
       unsubHan();
       unsubMed();
+      unsubMedAdmin();
+      unsubAudit();
     };
   }, []);
   const [timelineEvents, setTimelineEvents] = useState<Timeline360Event[]>(INITIAL_TIMELINE_360);
@@ -193,6 +242,8 @@ export default function App() {
   const [isSOAPModalOpen, setIsSOAPModalOpen] = useState(false);
   const [isLGPDModalOpen, setIsLGPDModalOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
+  const [isAuditLogModalOpen, setIsAuditLogModalOpen] = useState(false);
   const [initialResidentIdForSOAP, setInitialResidentIdForSOAP] = useState<string | undefined>();
   const [selectedResidentForDetail, setSelectedResidentForDetail] = useState<Resident | null>(null);
   const [selectedResidentFor360, setSelectedResidentFor360] = useState<Resident | null>(null);
@@ -424,6 +475,7 @@ export default function App() {
         reason: 'Consumo de Dose Registrado no Kardex Eletrônico (MAR)'
       };
       setAuditLogs(prev => [newAuditLog, ...prev]);
+      saveAuditLogToDb(newAuditLog);
 
       // Timeline 360 Event
       const newTimelineEvt: Timeline360Event = {
@@ -521,6 +573,32 @@ export default function App() {
     setIsSOAPModalOpen(true);
   };
 
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-white font-sans">
+        <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center mb-4 text-teal-400 animate-pulse">
+          <Sparkles className="w-7 h-7 stroke-[2.5]" />
+        </div>
+        <p className="text-sm font-bold text-slate-200">Validando sessão no Firebase Auth...</p>
+        <p className="text-xs text-slate-400 mt-1">NexaMed SRT — Segurança & Residências Terapêuticas</p>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-zinc-100/90 flex flex-col justify-center py-6 font-sans">
+        <AuthView
+          onLoginSuccess={(user) => {
+            setCurrentUserSession(user);
+            setCurrentPath('/dashboard');
+            handleOpenInboundHandover();
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-100/80 text-zinc-900 flex flex-col font-sans selection:bg-teal-600 selection:text-white">
       {/* Top Navigation Bar */}
@@ -538,6 +616,7 @@ export default function App() {
         onSendTestNotificationAlert={sendTestNotificationAlert}
         criticalResidentsCount={criticalResidentsCount}
         onOpenTour={() => setIsTourOpen(true)}
+        onOpenDeploy={() => setIsDeployModalOpen(true)}
       />
 
       {/* Main Body Shell */}
@@ -552,6 +631,7 @@ export default function App() {
             openNexaChat={() => setIsNexaChatOpen(true)}
             onOpenLGPD={() => setIsLGPDModalOpen(true)}
             onOpenTour={() => setIsTourOpen(true)}
+            onOpenDeploy={() => setIsDeployModalOpen(true)}
           />
         )}
 
@@ -670,6 +750,15 @@ export default function App() {
             />
           )}
 
+          {currentPath === '/micro-learning' && (
+            <MicroLearningView
+              residents={residents}
+              evolutions={evolutions}
+              medications={medications}
+              alerts={alerts}
+            />
+          )}
+
           {currentPath === '/relatorios' && (
             <RelatoriosView
               residents={residents}
@@ -677,6 +766,16 @@ export default function App() {
               evolutions={evolutions}
               medications={medications}
               qualityMetrics={qualityMetrics}
+            />
+          )}
+
+          {currentPath === '/conformidade' && (
+            <ConformidadeView
+              residents={residents}
+              evolutions={evolutions}
+              auditLogs={auditLogs}
+              onOpenAuditLogsModal={() => setIsAuditLogModalOpen(true)}
+              onOpenLGPDModal={() => setIsLGPDModalOpen(true)}
             />
           )}
 
@@ -863,6 +962,19 @@ export default function App() {
           setCurrentPath(path);
           setIsTourOpen(false);
         }}
+      />
+
+      {/* Auto Deploy & CI/CD Modal */}
+      <AutoDeployModal
+        isOpen={isDeployModalOpen}
+        onClose={() => setIsDeployModalOpen(false)}
+      />
+
+      {/* Audit Log Viewer Modal */}
+      <AuditLogViewerModal
+        isOpen={isAuditLogModalOpen}
+        onClose={() => setIsAuditLogModalOpen(false)}
+        auditLogs={auditLogs}
       />
     </div>
   );

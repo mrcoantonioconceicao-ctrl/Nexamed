@@ -436,7 +436,7 @@ export interface MedicationMAR {
   prescribedBy: string;
 }
 
-export type ShiftType = 'Manhã (07h-13h)' | 'Tarde (13h-19h)' | 'Noturno (19h-07h)';
+export type ShiftType = 'Diurno (07h-19h)' | 'Noturno (19h-07h)' | 'Manhã (07h-13h)' | 'Tarde (13h-19h)';
 
 export interface StaffRoster {
   id: string;
@@ -565,3 +565,59 @@ export interface NexaMessage {
   contextPage?: string;
   isThinking?: boolean;
 }
+
+export type MicroLearningCategory = 
+  | 'Administração MAR'
+  | 'Aferição NEWS2 & Vitais'
+  | 'Protocolo SOAP'
+  | 'Prevenção de Quedas'
+  | 'Lesão por Pressão'
+  | 'Manejamento de Crise'
+  | 'Biossegurança & Higiene';
+
+export interface MicroLearningQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswerIndex: number;
+  explanation: string;
+}
+
+export interface MicroLearningModule {
+  id: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  type: 'video' | 'guide' | 'interactive_case';
+  category: MicroLearningCategory;
+  targetRole?: string;
+  staffName?: string;
+  clinicalTrigger: string;
+  aiReasoning: string;
+  videoUrl?: string;
+  youtubeId?: string;
+  youtubeUrl?: string;
+  thumbnailUrl?: string;
+  guideContent?: string;
+  keyTakeaways: string[];
+  quiz: MicroLearningQuizQuestion[];
+  status: 'Pendente' | 'Em Andamento' | 'Concluído';
+  scorePercentage?: number;
+  completedAt?: string;
+  suggestedByNexa: boolean;
+}
+
+export interface StaffMicroLearningProfile {
+  staffId: string;
+  staffName: string;
+  role: string;
+  shift: string;
+  avatarUrl?: string;
+  pendingClinicalGapsCount: number;
+  completedTrainingsCount: number;
+  totalAssignedCount: number;
+  readinessScore: number; // 0 to 100%
+  recentGapsFound: string[];
+  assignedModules: MicroLearningModule[];
+}
+

@@ -17,7 +17,13 @@ import {
   Moon,
   ShieldCheck,
   PlusCircle,
-  AlertCircle
+  AlertCircle,
+  Mic,
+  MicOff,
+  Volume2,
+  Square,
+  Radio,
+  Loader2
 } from 'lucide-react';
 import { 
   Resident, 
@@ -81,6 +87,153 @@ export const SOAPEditorModal: React.FC<SOAPEditorModalProps> = ({
 
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Voice Command & Speech Recognition States
+  const [isListening, setIsListening] = useState(false);
+  const [listeningTarget, setListeningTarget] = useState<'subjective' | 'objective' | 'assessment' | 'plan' | 'ai' | null>(null);
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const [speechSupported, setSpeechSupported] = useState(true);
+  const recognitionRef = React.useRef<any>(null);
+
+  // Check speech recognition support on mount
+  useEffect(() => {
+    const SpeechAPI = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+    if (!SpeechAPI) {
+      setSpeechSupported(false);
+    }
+  }, []);
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.warn('Error stopping speech recognition:', e);
+      }
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+    setListeningTarget(null);
+    setInterimTranscript('');
+  };
+
+  // Cleanup speech recognition on unmount or when modal closes
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.warn('Error stopping speech recognition:', e);
+        }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen && isListening) {
+      stopListening();
+    }
+  }, [isOpen]);
+
+  const startListening = (targetField: 'subjective' | 'objective' | 'assessment' | 'plan' | 'ai') => {
+    const SpeechAPI = typeof window !== 'undefined' && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+    
+    if (!SpeechAPI) {
+      showToast('Reconhecimento de voz não suportado neste navegador. Utilize o Chrome, Edge ou Safari.');
+      return;
+    }
+
+    if (isListening) {
+      stopListening();
+      if (listeningTarget === targetField) {
+        return; // Clicked same field mic button to stop
+      }
+    }
+
+    try {
+      const recognition = new SpeechAPI();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'pt-BR';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        setListeningTarget(targetField);
+        setInterimTranscript('');
+        const fieldNameMap = {
+          subjective: 'Subjetivo (S)',
+          objective: 'Objetivo (O)',
+          assessment: 'Avaliação (A)',
+          plan: 'Plano (P)',
+          ai: 'Rascunho Nexa IA'
+        };
+        showToast(`🎙️ Gravando voz para: ${fieldNameMap[targetField]}`);
+      };
+
+      recognition.onresult = (event: any) => {
+        let finalChunk = '';
+        let currentInterim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcriptChunk = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalChunk += transcriptChunk;
+          } else {
+            currentInterim += transcriptChunk;
+          }
+        }
+
+        setInterimTranscript(currentInterim);
+
+        if (finalChunk) {
+          // Process voice commands for punctuation and formatting
+          let formattedText = finalChunk
+            .replace(/\bponto final\b/gi, '.')
+            .replace(/\bv\u00edrgula\b|\bvirgula\b/gi, ',')
+            .replace(/\bnovo par\u00e1grafo\b|\bnovo paragrafo\b/gi, '\n')
+            .replace(/\bdois pontos\b/gi, ':');
+
+          // Append to selected field
+          if (targetField === 'subjective') {
+            setSubjective(prev => appendText(prev, formattedText));
+          } else if (targetField === 'objective') {
+            setObjective(prev => appendText(prev, formattedText));
+          } else if (targetField === 'assessment') {
+            setAssessment(prev => appendText(prev, formattedText));
+          } else if (targetField === 'plan') {
+            setPlan(prev => appendText(prev, formattedText));
+          } else if (targetField === 'ai') {
+            setAiObservations(prev => appendText(prev, formattedText));
+          }
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Speech recognition error:', event.error);
+        if (event.error === 'not-allowed') {
+          showToast('Permissão de microfone negada. Permita o uso do microfone no seu navegador.');
+        } else if (event.error !== 'no-speech') {
+          showToast(`Aviso de voz: ${event.error}`);
+        }
+        stopListening();
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+        setListeningTarget(null);
+        setInterimTranscript('');
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+
+    } catch (err) {
+      console.error('Failed to start speech recognition:', err);
+      showToast('Não foi possível iniciar a captação de áudio.');
+      stopListening();
+    }
+  };
 
   // Auto assign default Turno based on current hour
   useEffect(() => {
@@ -453,6 +606,15 @@ export const SOAPEditorModal: React.FC<SOAPEditorModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowAiBox(!showAiBox)}
+                    className="px-2.5 py-1.5 bg-gradient-to-r from-teal-800 to-indigo-900 hover:from-teal-700 hover:to-indigo-800 text-white font-extrabold text-[11px] rounded-xl shadow-2xs transition-all flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>{showAiBox ? 'Ocultar IA' : 'Sintetizador IA'}</span>
+                  </button>
+
                   {latestEvo && (
                     <button
                       type="button"
@@ -476,6 +638,87 @@ export const SOAPEditorModal: React.FC<SOAPEditorModalProps> = ({
               </div>
             )}
           </div>
+
+          {/* SINTETIZADOR DE EVOLUÇÃO COM IA NEXA & DITADO */}
+          {showAiBox && (
+            <div className="p-4 bg-slate-900 text-white rounded-2xl border border-teal-800 shadow-xl space-y-3 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span className="font-extrabold text-xs text-teal-200">
+                    Sintetizador SOAP com IA Nexa — Dite suas observações soltas por voz
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAiBox(false)}
+                  className="text-zinc-400 hover:text-white text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-zinc-300">
+                    Pontos brutos ou relato falado pelo profissional:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => isListening && listeningTarget === 'ai' ? stopListening() : startListening('ai')}
+                    className={`px-2.5 py-1 rounded-xl font-extrabold text-[11px] transition-all flex items-center gap-1.5 ${
+                      isListening && listeningTarget === 'ai'
+                        ? 'bg-rose-600 text-white animate-pulse shadow-xs'
+                        : 'bg-teal-800 hover:bg-teal-700 text-teal-100 border border-teal-600'
+                    }`}
+                  >
+                    {isListening && listeningTarget === 'ai' ? (
+                      <>
+                        <Square className="w-3 h-3 fill-current" />
+                        <span>Parar Voz</span>
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-3 h-3 text-teal-300" />
+                        <span>Ditar para IA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <textarea
+                  value={aiObservations}
+                  onChange={(e) => setAiObservations(e.target.value)}
+                  placeholder="Ex: Residente calmo pela manhã, aceitou café da manhã todo, PA 120x80, relatou dor de cabeça leve à tarde, sem queixas psiquiátricas graves..."
+                  rows={3}
+                  className={`w-full bg-slate-950 text-white text-xs p-3 rounded-xl border focus:outline-none transition-all ${
+                    isListening && listeningTarget === 'ai'
+                      ? 'border-rose-500 ring-2 ring-rose-500/40 bg-rose-950/20'
+                      : 'border-slate-800 focus:border-teal-500'
+                  }`}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleGenerateAiSoap}
+                  disabled={isGeneratingAi || !aiObservations.trim()}
+                  className="w-full py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  {isGeneratingAi ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sintetizando SOAP com IA Nexa...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 text-amber-300" />
+                      <span>Converter Notas Soltas em Evolução SOAP Estruturada</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* EVOLUÇÃO NOTURNA & QUALIDADE DO SONO (0 a 10) */}
           {(evolutionType === 'Noturna' || turno === 'Noite') && (
@@ -611,71 +854,301 @@ export const SOAPEditorModal: React.FC<SOAPEditorModalProps> = ({
             </div>
           </div>
 
+          {/* PAINEL DE DITADO POR VOZ EM TEMPO REAL */}
+          <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-white p-4 rounded-2xl border border-teal-800 shadow-md space-y-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-xl flex items-center justify-center transition-all ${
+                  isListening 
+                    ? 'bg-rose-500 text-white animate-pulse shadow-lg ring-4 ring-rose-500/30' 
+                    : 'bg-teal-800/80 text-teal-300 border border-teal-700'
+                }`}>
+                  <Mic className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-white">Ditado de Voz Clínico (Speech-to-Text)</span>
+                    {isListening && (
+                      <span className="text-[10px] bg-rose-600 text-white font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                        <Radio className="w-3 h-3" /> Gravando Áudio...
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-teal-200/90 font-medium">
+                    Fale em português para preencher automaticamente a evolução assistencial sem digitar
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {isListening ? (
+                  <button
+                    type="button"
+                    onClick={stopListening}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 animate-pulse"
+                  >
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    <span>Parar Gravador</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-teal-300 font-bold uppercase tracking-wide mr-1">Ditar para:</span>
+                    <button
+                      type="button"
+                      onClick={() => startListening('subjective')}
+                      className="px-2.5 py-1.5 bg-teal-800 hover:bg-teal-700 text-teal-100 font-bold text-[11px] rounded-xl border border-teal-600 transition-all flex items-center gap-1"
+                    >
+                      <Mic className="w-3 h-3 text-teal-300" />
+                      <span>Subjetivo (S)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => startListening('objective')}
+                      className="px-2.5 py-1.5 bg-teal-800 hover:bg-teal-700 text-teal-100 font-bold text-[11px] rounded-xl border border-teal-600 transition-all flex items-center gap-1"
+                    >
+                      <Mic className="w-3 h-3 text-teal-300" />
+                      <span>Objetivo (O)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => startListening('assessment')}
+                      className="px-2.5 py-1.5 bg-teal-800 hover:bg-teal-700 text-teal-100 font-bold text-[11px] rounded-xl border border-teal-600 transition-all flex items-center gap-1"
+                    >
+                      <Mic className="w-3 h-3 text-teal-300" />
+                      <span>Avaliação (A)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => startListening('plan')}
+                      className="px-2.5 py-1.5 bg-teal-800 hover:bg-teal-700 text-teal-100 font-bold text-[11px] rounded-xl border border-teal-600 transition-all flex items-center gap-1"
+                    >
+                      <Mic className="w-3 h-3 text-teal-300" />
+                      <span>Plano (P)</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Live Recording Feedback & Interim Transcript */}
+            {isListening && (
+              <div className="p-3 bg-slate-950/90 rounded-xl border border-rose-500/40 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-teal-300 font-bold text-[11px]">
+                  <span className="flex items-center gap-1.5 text-rose-400">
+                    <Volume2 className="w-3.5 h-3.5 animate-bounce" />
+                    <span>Microfone Ativo — Capturando Voz para: <strong className="text-white uppercase">{
+                      listeningTarget === 'subjective' ? 'Subjetivo (S)' :
+                      listeningTarget === 'objective' ? 'Objetivo (O)' :
+                      listeningTarget === 'assessment' ? 'Avaliação (A)' :
+                      listeningTarget === 'plan' ? 'Plano (P)' : 'Rascunho IA'
+                    }</strong></span>
+                  </span>
+                  <span className="text-[10px] text-zinc-400">Diga "ponto final", "vírgula" ou "novo parágrafo"</span>
+                </div>
+                <div className="text-zinc-200 font-mono text-xs bg-slate-900 p-2 rounded-lg border border-slate-800 min-h-[36px] flex items-center">
+                  {interimTranscript ? (
+                    <span className="text-teal-300 italic animate-pulse">"{interimTranscript}"</span>
+                  ) : (
+                    <span className="text-zinc-500 italic">Escutando fala em tempo real... Transcrevendo texto para o campo selecionado...</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {!speechSupported && (
+              <div className="p-2.5 bg-amber-950/80 border border-amber-800/80 rounded-xl text-amber-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Navegador sem suporte direto a Web Speech. Recomendamos Google Chrome ou Edge para ditado por voz.</span>
+              </div>
+            )}
+          </div>
+
           {/* QUADRANT 1: S - SUBJETIVO */}
-          <div className="space-y-1.5 bg-zinc-50/60 p-3 rounded-2xl border border-zinc-200">
+          <div className={`space-y-1.5 p-3 rounded-2xl border transition-all ${
+            isListening && listeningTarget === 'subjective'
+              ? 'bg-rose-50/40 border-rose-400 ring-2 ring-rose-500/30'
+              : 'bg-zinc-50/60 border-zinc-200'
+          }`}>
             <div className="flex items-center justify-between">
               <label className="block text-xs font-black text-teal-800 flex items-center gap-1.5 uppercase tracking-wide">
                 <span>S — Subjetivo (Queixas e relatos do residente/família)</span>
               </label>
+
+              <button
+                type="button"
+                onClick={() => isListening && listeningTarget === 'subjective' ? stopListening() : startListening('subjective')}
+                className={`px-2.5 py-1 rounded-xl font-extrabold text-[11px] transition-all flex items-center gap-1.5 ${
+                  isListening && listeningTarget === 'subjective'
+                    ? 'bg-rose-600 text-white animate-pulse shadow-xs'
+                    : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300'
+                }`}
+              >
+                {isListening && listeningTarget === 'subjective' ? (
+                  <>
+                    <Square className="w-3 h-3 fill-current" />
+                    <span>Parar Voz</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-3 h-3 text-teal-700" />
+                    <span>Ditar Voz</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <textarea
               value={subjective}
               onChange={(e) => setSubjective(e.target.value)}
-              placeholder="Relatos verbais, humor, queixas, relatos familiares..."
+              placeholder="Relatos verbais, humor, queixas, relatos familiares (ou ditar por voz)..."
               rows={2}
-              className="w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:border-teal-500 shadow-2xs"
+              className={`w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border focus:outline-none shadow-2xs transition-all ${
+                isListening && listeningTarget === 'subjective'
+                  ? 'border-rose-500 ring-2 ring-rose-500/40 bg-rose-50/20'
+                  : 'border-zinc-200 focus:border-teal-500'
+              }`}
             />
           </div>
 
           {/* QUADRANT 2: O - OBJETIVO */}
-          <div className="space-y-1.5 bg-zinc-50/60 p-3 rounded-2xl border border-zinc-200">
+          <div className={`space-y-1.5 p-3 rounded-2xl border transition-all ${
+            isListening && listeningTarget === 'objective'
+              ? 'bg-rose-50/40 border-rose-400 ring-2 ring-rose-500/30'
+              : 'bg-zinc-50/60 border-zinc-200'
+          }`}>
             <div className="flex items-center justify-between">
               <label className="block text-xs font-black text-teal-800 flex items-center gap-1.5 uppercase tracking-wide">
                 <span>O — Objetivo (Exame físico, dados mensuráveis, comportamento)</span>
               </label>
+
+              <button
+                type="button"
+                onClick={() => isListening && listeningTarget === 'objective' ? stopListening() : startListening('objective')}
+                className={`px-2.5 py-1 rounded-xl font-extrabold text-[11px] transition-all flex items-center gap-1.5 ${
+                  isListening && listeningTarget === 'objective'
+                    ? 'bg-rose-600 text-white animate-pulse shadow-xs'
+                    : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300'
+                }`}
+              >
+                {isListening && listeningTarget === 'objective' ? (
+                  <>
+                    <Square className="w-3 h-3 fill-current" />
+                    <span>Parar Voz</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-3 h-3 text-teal-700" />
+                    <span>Ditar Voz</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <textarea
               value={objective}
               onChange={(e) => setObjective(e.target.value)}
-              placeholder="Exame físico, marcha, higiene, aceitação de dieta, checagem MAR..."
+              placeholder="Exame físico, marcha, higiene, aceitação de dieta, checagem MAR (ou ditar por voz)..."
               rows={2}
-              className="w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:border-teal-500 shadow-2xs"
+              className={`w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border focus:outline-none shadow-2xs transition-all ${
+                isListening && listeningTarget === 'objective'
+                  ? 'border-rose-500 ring-2 ring-rose-500/40 bg-rose-50/20'
+                  : 'border-zinc-200 focus:border-teal-500'
+              }`}
             />
           </div>
 
           {/* QUADRANT 3: A - AVALIAÇÃO */}
-          <div className="space-y-1.5 bg-zinc-50/60 p-3 rounded-2xl border border-zinc-200">
+          <div className={`space-y-1.5 p-3 rounded-2xl border transition-all ${
+            isListening && listeningTarget === 'assessment'
+              ? 'bg-rose-50/40 border-rose-400 ring-2 ring-rose-500/30'
+              : 'bg-zinc-50/60 border-zinc-200'
+          }`}>
             <div className="flex items-center justify-between">
               <label className="block text-xs font-black text-teal-800 flex items-center gap-1.5 uppercase tracking-wide">
                 <span>A — Avaliação (Análise clínica e estabilidade do quadro)</span>
               </label>
+
+              <button
+                type="button"
+                onClick={() => isListening && listeningTarget === 'assessment' ? stopListening() : startListening('assessment')}
+                className={`px-2.5 py-1 rounded-xl font-extrabold text-[11px] transition-all flex items-center gap-1.5 ${
+                  isListening && listeningTarget === 'assessment'
+                    ? 'bg-rose-600 text-white animate-pulse shadow-xs'
+                    : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300'
+                }`}
+              >
+                {isListening && listeningTarget === 'assessment' ? (
+                  <>
+                    <Square className="w-3 h-3 fill-current" />
+                    <span>Parar Voz</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-3 h-3 text-teal-700" />
+                    <span>Ditar Voz</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <textarea
               value={assessment}
               onChange={(e) => setAssessment(e.target.value)}
-              placeholder="Análise do quadro clínico/psiquiátrico, progresso do PTS..."
+              placeholder="Análise do quadro clínico/psiquiátrico, progresso do PTS (ou ditar por voz)..."
               rows={2}
-              className="w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:border-teal-500 shadow-2xs"
+              className={`w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border focus:outline-none shadow-2xs transition-all ${
+                isListening && listeningTarget === 'assessment'
+                  ? 'border-rose-500 ring-2 ring-rose-500/40 bg-rose-50/20'
+                  : 'border-zinc-200 focus:border-teal-500'
+              }`}
             />
           </div>
 
           {/* QUADRANT 4: P - PLANO */}
-          <div className="space-y-1.5 bg-zinc-50/60 p-3 rounded-2xl border border-zinc-200">
+          <div className={`space-y-1.5 p-3 rounded-2xl border transition-all ${
+            isListening && listeningTarget === 'plan'
+              ? 'bg-rose-50/40 border-rose-400 ring-2 ring-rose-500/30'
+              : 'bg-zinc-50/60 border-zinc-200'
+          }`}>
             <div className="flex items-center justify-between">
               <label className="block text-xs font-black text-teal-800 flex items-center gap-1.5 uppercase tracking-wide">
                 <span>P — Plano (Condutas, prescrições e orientações)</span>
               </label>
+
+              <button
+                type="button"
+                onClick={() => isListening && listeningTarget === 'plan' ? stopListening() : startListening('plan')}
+                className={`px-2.5 py-1 rounded-xl font-extrabold text-[11px] transition-all flex items-center gap-1.5 ${
+                  isListening && listeningTarget === 'plan'
+                    ? 'bg-rose-600 text-white animate-pulse shadow-xs'
+                    : 'bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300'
+                }`}
+              >
+                {isListening && listeningTarget === 'plan' ? (
+                  <>
+                    <Square className="w-3 h-3 fill-current" />
+                    <span>Parar Voz</span>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-3 h-3 text-teal-700" />
+                    <span>Ditar Voz</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <textarea
               value={plan}
               onChange={(e) => setPlan(e.target.value)}
-              placeholder="Próximas ações, condutas, encaminhamentos, aprazamento MAR..."
+              placeholder="Próximas ações, condutas, encaminhamentos, aprazamento MAR (ou ditar por voz)..."
               rows={2}
-              className="w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border border-zinc-200 focus:outline-none focus:border-teal-500 shadow-2xs"
+              className={`w-full bg-white text-zinc-900 text-xs p-2.5 rounded-xl border focus:outline-none shadow-2xs transition-all ${
+                isListening && listeningTarget === 'plan'
+                  ? 'border-rose-500 ring-2 ring-rose-500/40 bg-rose-50/20'
+                  : 'border-zinc-200 focus:border-teal-500'
+              }`}
             />
           </div>
 

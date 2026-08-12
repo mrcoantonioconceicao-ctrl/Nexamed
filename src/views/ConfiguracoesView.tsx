@@ -572,7 +572,7 @@ export const ConfiguracoesView: React.FC = () => {
               <label className="block text-xs font-bold text-zinc-700 mb-1">Nome da Unidade SRT</label>
               <input
                 type="text"
-                defaultValue="SRT Jardim Paulista - Unidade Central"
+                defaultValue="Residencial Salomão - Rua Dr. Pedro Zimmermann, 2391 - CEP 89066-001 (Blumenau/SC)"
                 className="w-full bg-zinc-50 p-2.5 rounded-xl border border-zinc-200 text-xs font-bold text-zinc-800"
               />
             </div>

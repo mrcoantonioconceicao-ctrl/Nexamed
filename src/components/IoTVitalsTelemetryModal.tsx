@@ -39,8 +39,6 @@ export const IoTVitalsTelemetryModal: React.FC<IoTVitalsTelemetryModalProps> = (
   onClose,
   onUpdateVitals
 }) => {
-  if (!resident) return null;
-
   // Local state for interactive live simulation
   const [spO2, setSpO2] = useState<number>(97);
   const [heartRate, setHeartRate] = useState<number>(76);
@@ -51,6 +49,8 @@ export const IoTVitalsTelemetryModal: React.FC<IoTVitalsTelemetryModalProps> = (
   const [consciousness, setConsciousness] = useState<'Alerta' | 'Voz' | 'Dor' | 'Inconsciente'>('Alerta');
   const [supplementalO2, setSupplementalO2] = useState<boolean>(false);
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
+
+  if (!resident) return null;
 
   // NEWS2 calculation using official utility
   const news2Result = calculateNEWS2Risk({

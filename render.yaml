@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: nexamed-platform
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: VITE_AUTH_ENABLED
+        value: "false"
+      - key: GEMINI_API_KEY
+        sync: false

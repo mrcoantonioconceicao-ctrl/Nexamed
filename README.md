@@ -20,6 +20,7 @@
    - [9. Relatórios Gerenciais, Ocorrências e Indicadores SRT](#9-relatórios-gerenciais-ocorrências-e-indicadores-srt)
    - [10. Segurança, Privacidade, LGPD e Logs de Auditoria](#10-segurança-privacidade-lgpd-e-logs-de-auditoria)
 11. [Daily Huddle Clínico & Alinhamento Operacional](#11-daily-huddle-clínico--alinhamento-operacional)
+12. [Micro-Learning Integrado ao YouTube & Sintetizador de IA](#12-micro-learning-integrado-ao-youtube--sintetizador-de-ia)
 4. [📊 Status dos Módulos SRT](#-status-dos-módulos-srt)
 5. [🛠️ Arquitetura Tecnológica](#️-arquitetura-tecnológica)
 6. [📂 Estrutura de Arquivos da Aplicação](#-estrutura-de-arquivos-da-aplicação)
@@ -112,12 +113,19 @@ O sistema abandona estruturas hospitalares generalistas ou burocracias corporati
 - **Agenda e Controle de Capacitações:** Cronograma de cursos e certificações (BLS, descalonamento de crise, biossegurança NR32) com controle de vagas e inscrições em tempo real.
 - **Exportação e Compartilhamento:** Botão de cópia rápida formatada para o WhatsApp/Chat da equipe e impressão da folha de huddle do turno.
 
+### 12. Micro-Learning Integrado ao YouTube & Sintetizador de IA
+- **Player de Vídeo Embutido (YouTube Integrado):** Reprodução contínua e sem falhas de vídeo-aulas educacionais usando embed seguro (`youtube-nocookie.com`), eliminando erros de compatibilidade e otimizando a experiência no navegador.
+- **Importador Rápido por URL/ID do YouTube:** Campo direto para colagem de links do YouTube de treinamentos de enfermagem, geriatria e saúde mental.
+- **Sintetizador de Conteúdo Clínico Nexa IA:** A inteligência artificial analisa o vídeo importado e gera automaticamente resumos dos pontos-chave de conduta, boas práticas do COFEN/Anvisa e questionários de fixação.
+- **Capítulos & Marcadores de Tempo Interativos:** Acesso instantâneo a trechos específicos do treinamento com um clique.
+
 ---
 
 ## 📊 Status dos Módulos SRT
 
 | Módulo / Funcionalidade | Status | Aplicação na Residência Terapêutica |
 | :--- | :---: | :--- |
+| **Micro-Learning & Player YouTube** | ✅ 100% Concluído | Capacitação contínua com player do YouTube embutido, síntese de IA e testes. |
 | **Daily Huddle Clínico & Briefings** | ✅ 100% Concluído | Alinhamento de 5m por turno, atribuição de focos e agenda de treinamentos. |
 | **Prontuário SOAP com Sugestões do Histórico** | ✅ 100% Concluído | Agiliza o preenchimento reaproveitando histórico anterior do morador. |
 | **Assistente Nexa (Curta & Objetiva)** | ✅ 100% Concluído | Respostas diretas ao ponto, sem prolixidade, focadas na rotina da SRT. |
@@ -162,10 +170,12 @@ O sistema abandona estruturas hospitalares generalistas ou burocracias corporati
 │   │   ├── AppSidebar.tsx                # Navegação Lateral Ajustada para SRT
 │   │   ├── CommandPaletteModal.tsx       # Paleta de Comandos (⌘K)
 │   │   ├── IoTVitalsTelemetryModal.tsx   # Telemetria de Sinais Vitais Beira-Leito
+│   │   ├── MicroLearningPlayerModal.tsx  # Player do YouTube e Leitor de Guias POP
 │   │   ├── TelehealthModal.tsx           # Módulo de Telemedicina / Teleconsulta CAPS
 │   │   └── LGPDAndCookieManager.tsx      # Gerenciador de Consentimento LGPD
 │   ├── views/
 │   │   ├── DashboardView.tsx             # Dashboard Residencial Principal
+│   │   ├── MicroLearningView.tsx         # Central de Micro-Learning & Importador YouTube
 │   │   ├── DailyHuddleView.tsx           # Daily Huddle Clínico, Briefings e Treinamentos
 │   │   ├── ResidentesView.tsx            # Gestão de Moradores e PTS
 │   │   ├── ProntuariosView.tsx           # Prontuários e Evoluções Clínicas
@@ -223,6 +233,33 @@ Acesse no navegador: `http://localhost:3000`.
 | `GEMINI_API_KEY` | Recomendado | Chave de API do Google Gemini para respostas da Nexa IA e geração de SOAP. |
 | `VITE_FIREBASE_PROJECT_ID` | Opcional | ID do projeto Firebase para sincronização real-time. |
 | `VITE_FIREBASE_API_KEY` | Opcional | Chave de API do Firebase. |
+
+---
+
+## 🚀 Deploy Automático & Pipeline CI/CD
+
+A plataforma **NexaMed** possui suporte nativo para **implantação automática** em produção através de contêineres Docker, GitHub Actions, Google Cloud Run, Render e Fly.io.
+
+### 1. Build & Containerização Docker
+O projeto utiliza uma estratégia **multi-stage Docker build** para garantir imagens leves e seguras:
+```bash
+# Compilar a imagem Docker da plataforma
+docker build -t nexamed-platform:latest .
+
+# Executar o contêiner em ambiente de produção local
+docker run -d -p 3000:3000 -e GEMINI_API_KEY="sua_chave" nexamed-platform:latest
+```
+
+### 2. Pipeline GitHub Actions (CI/CD)
+O arquivo `.github/workflows/deploy.yml` executa automaticamente a cada `push` na branch `main` ou `master`:
+1. 🧪 **Validação**: Instalação e verificação de linting (`npm run lint`).
+2. 🚀 **Build**: Compilação do frontend Vite e do servidor Express (`npm run build`).
+3. 🐳 **Docker Check**: Build de imagem de validação.
+4. ☁️ **Deploy Cloud Run**: Publicação automática da imagem no Google Artifact Registry / Cloud Run.
+
+### 3. Deploy em 1 Clique (Render & Fly.io)
+- **Render.com**: Suporte automático via `render.yaml`. Bastar conectar o repositório GitHub ao Render.
+- **Fly.io**: Suporte direto via `fly.toml` (`fly launch` e `fly deploy`).
 
 ---
 

@@ -87,7 +87,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
     setTimeout(() => {
       const text = `
 RELATÓRIO CLÍNICO EXECUTIVO DE INTERCORRÊNCIAS E EVOLUÇÕES
-Gerado pela NexaMed IA • Unidade Jardim Paulista
+Gerado pela NexaMed IA • Residencial Salomão (Blumenau/SC)
 Data de Emissão: ${new Date().toLocaleDateString('pt-BR')}
 
 1. SÍNTESE EPIDEMIOLÓGICA E OPERACIONAL
