@@ -17,12 +17,14 @@ import {
 import { getCurrentUser, isAuthEnabled, setCurrentUser } from '../config/auth-mode';
 import { logoutFirebase } from '../lib/firebase';
 import { ClinicalAlert } from '../types';
+import { OfflineIndicator } from './OfflineIndicator';
 
 interface NavbarHeaderProps {
   alerts: ClinicalAlert[];
   onOpenCommandBar: () => void;
   onOpenAssistant?: () => void;
   onNavigate: (path: string) => void;
+  onLogout?: () => void;
   activePath: string;
   onMarkAlertsRead: () => void;
   onOpenOutboundHandover?: () => void;
@@ -33,6 +35,21 @@ interface NavbarHeaderProps {
   criticalResidentsCount?: number;
   onOpenTour?: () => void;
   onOpenDeploy?: () => void;
+  offlineState?: {
+    isOnline: boolean;
+    isServiceWorkerActive: boolean;
+    lastSyncedAt: string | null;
+    counts: {
+      residents: number;
+      evolutions: number;
+      medications: number;
+    };
+    forceSync: () => Promise<boolean>;
+    showOfflineToast?: boolean;
+    showOnlineToast?: boolean;
+    dismissOfflineToast?: () => void;
+    dismissOnlineToast?: () => void;
+  };
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -40,6 +57,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onOpenCommandBar,
   onOpenAssistant,
   onNavigate,
+  onLogout,
   onMarkAlertsRead,
   onOpenOutboundHandover,
   onOpenInboundHandover,
@@ -49,6 +67,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   criticalResidentsCount = 0,
   onOpenTour,
   onOpenDeploy,
+  offlineState,
 }) => {
   const currentUser = getCurrentUser();
   const demoMode = !isAuthEnabled();
@@ -63,7 +82,11 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
       console.warn('Logout error:', e);
     }
     setCurrentUser(null);
-    onNavigate('/auth');
+    if (onLogout) {
+      onLogout();
+    } else {
+      onNavigate('/auth');
+    }
   };
 
   return (
@@ -91,6 +114,23 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
             <span>Modo Demo (Acesso Livre)</span>
+          </div>
+        )}
+
+        {/* Offline Cache Status Badge */}
+        {offlineState && (
+          <div className="hidden sm:block">
+            <OfflineIndicator
+              isOnline={offlineState.isOnline}
+              isServiceWorkerActive={offlineState.isServiceWorkerActive}
+              lastSyncedAt={offlineState.lastSyncedAt}
+              counts={offlineState.counts}
+              onForceSync={offlineState.forceSync}
+              showOfflineToast={offlineState.showOfflineToast}
+              showOnlineToast={offlineState.showOnlineToast}
+              onDismissOfflineToast={offlineState.dismissOfflineToast}
+              onDismissOnlineToast={offlineState.dismissOnlineToast}
+            />
           </div>
         )}
       </div>
@@ -348,36 +388,32 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     <span>Troca de Plantão / Auditoria</span>
                   </button>
                 )}
-                <button
-                  onClick={() => {
-                    onNavigate('/auth');
-                    setShowUserDropdown(false);
-                  }}
-                  className="w-full text-left px-2.5 py-1.5 text-xs text-zinc-700 hover:bg-zinc-100 rounded-lg flex items-center gap-2 font-medium"
-                >
-                  <User className="w-3.5 h-3.5 text-teal-600" />
-                  <span>Alternar Usuário / Login</span>
-                </button>
               </div>
-              <div className="pt-1">
+              <div className="pt-1 space-y-1">
                 <button
                   onClick={() => {
                     setShowUserDropdown(false);
-                    if (onOpenOutboundHandover) {
-                      onOpenOutboundHandover();
-                    } else {
-                      handleLogout();
-                    }
+                    handleLogout();
                   }}
-                  className="w-full text-left px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 font-bold"
+                  className="w-full text-left px-2.5 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 font-extrabold"
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Encerrar Plantão e Sair</span>
+                  <span>Sair do Sistema (Logout)</span>
                 </button>
               </div>
             </div>
           )}
         </div>
+
+        {/* Quick Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="p-2 sm:px-2.5 sm:py-1.5 text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100/80 rounded-xl border border-rose-200 transition-colors flex items-center gap-1.5 text-xs font-extrabold"
+          title="Encerrar Sessão e Sair do Sistema"
+        >
+          <LogOut className="w-4 h-4 text-rose-600" />
+          <span className="hidden lg:inline">Sair</span>
+        </button>
       </div>
     </header>
   );

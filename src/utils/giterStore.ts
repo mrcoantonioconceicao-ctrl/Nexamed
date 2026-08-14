@@ -191,8 +191,7 @@ export function getStoredResidents(): Resident[] {
   } catch (e) {
     console.error('Error loading stored residents:', e);
   }
-  saveStoredResidents(INITIAL_RESIDENTS);
-  return INITIAL_RESIDENTS;
+  return [];
 }
 
 export function saveStoredResidents(residents: Resident[]): void {
@@ -223,8 +222,7 @@ export function getStoredEvolutions(): ClinicalEvolution[] {
   } catch (e) {
     console.error('Error loading stored evolutions:', e);
   }
-  saveStoredEvolutions(INITIAL_EVOLUTIONS);
-  return INITIAL_EVOLUTIONS;
+  return [];
 }
 
 export function saveStoredEvolutions(evolutions: ClinicalEvolution[]): void {
@@ -287,8 +285,7 @@ export function getStoredPASRecords(): PASRecord[] {
   } catch (e) {
     console.error('Error loading PAS records:', e);
   }
-  localStorage.setItem(KEY_PAS, JSON.stringify(INITIAL_PAS));
-  return INITIAL_PAS;
+  return [];
 }
 
 export function savePASRecord(record: PASRecord): void {
@@ -311,8 +308,7 @@ export function getStoredAppointments(): AppointmentRecord[] {
   } catch (e) {
     console.error('Error loading appointments:', e);
   }
-  localStorage.setItem(KEY_APPOINTMENTS, JSON.stringify(INITIAL_APPOINTMENTS));
-  return INITIAL_APPOINTMENTS;
+  return [];
 }
 
 export function saveAppointmentRecord(record: AppointmentRecord): void {
@@ -335,8 +331,7 @@ export function getStoredScaleAssessments(): FunctionalScaleAssessment[] {
   } catch (e) {
     console.error('Error loading scales:', e);
   }
-  localStorage.setItem(KEY_SCALES, JSON.stringify(INITIAL_SCALES));
-  return INITIAL_SCALES;
+  return [];
 }
 
 export function saveScaleAssessment(assessment: FunctionalScaleAssessment): void {
@@ -354,8 +349,7 @@ export function getStoredPendingTasks(): PendingClinicalTask[] {
   } catch (e) {
     console.error('Error loading pending tasks:', e);
   }
-  localStorage.setItem(KEY_PENDING_TASKS, JSON.stringify(INITIAL_PENDING_TASKS));
-  return INITIAL_PENDING_TASKS;
+  return [];
 }
 
 export function savePendingTasks(tasks: PendingClinicalTask[]): void {
@@ -375,8 +369,7 @@ export function getStoredAuditLogs(): AuditLogEntry[] {
   } catch (e) {
     console.error('Error loading audit logs:', e);
   }
-  localStorage.setItem(KEY_AUDIT_LOGS, JSON.stringify(INITIAL_AUDIT_LOGS));
-  return INITIAL_AUDIT_LOGS;
+  return [];
 }
 
 export function addAuditLogEntry(entry: AuditLogEntry): void {
@@ -401,6 +394,17 @@ export function saveMigrationReport(report: GiterMigrationReport): void {
   const current = getStoredMigrationReports();
   current.unshift(report);
   localStorage.setItem(KEY_MIGRATION_REPORTS, JSON.stringify(current));
+}
+
+export function clearAllGiterStorage(): void {
+  localStorage.removeItem(KEY_RESIDENTS);
+  localStorage.removeItem(KEY_EVOLUTIONS);
+  localStorage.removeItem(KEY_PAS);
+  localStorage.removeItem(KEY_APPOINTMENTS);
+  localStorage.removeItem(KEY_SCALES);
+  localStorage.removeItem(KEY_PENDING_TASKS);
+  localStorage.removeItem(KEY_AUDIT_LOGS);
+  localStorage.removeItem(KEY_MIGRATION_REPORTS);
 }
 
 // Composite Store Export

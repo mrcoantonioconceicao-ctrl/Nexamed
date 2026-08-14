@@ -37,6 +37,8 @@ interface ResidentesViewProps {
   onOpenResident: (id: string) => void;
   onOpenNewEvolution: (residentId: string) => void;
   onAddResident: (resident: Resident, medications?: MedicationMAR[]) => void;
+  onDeleteResident?: (id: string) => void;
+  onPurgeSimulatedData?: () => void;
 }
 
 export const ResidentesView: React.FC<ResidentesViewProps> = ({
@@ -44,6 +46,8 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
   onOpenResident,
   onOpenNewEvolution,
   onAddResident,
+  onDeleteResident,
+  onPurgeSimulatedData,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dependenceFilter, setDependenceFilter] = useState<string>('Todos');
@@ -247,13 +251,30 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Cadastrar Novo Residente</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {onPurgeSimulatedData && residents.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm('Tem certeza que deseja limpar todos os dados simulados para iniciar o piloto com prontuários reais?')) {
+                  onPurgeSimulatedData();
+                }
+              }}
+              className="py-2.5 px-3 bg-zinc-100 hover:bg-rose-50 hover:text-rose-700 text-zinc-700 font-bold text-xs rounded-xl border border-zinc-200 hover:border-rose-200 transition-colors flex items-center gap-1.5"
+              title="Limpar todos os residentes e dados para iniciar o piloto"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Limpar Dados de Demonstração</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Cadastrar Novo Residente</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
@@ -291,8 +312,29 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
 
       {/* Residents Grid */}
       {filteredResidents.length === 0 ? (
-        <div className="p-8 bg-white rounded-2xl text-center border border-zinc-200 text-xs text-zinc-500 shadow-xs">
-          Nenhum residente encontrado para os critérios selecionados.
+        <div className="p-12 bg-white rounded-3xl text-center border border-zinc-200 shadow-xs flex flex-col items-center justify-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center">
+            <Users className="w-8 h-8" />
+          </div>
+          <div className="max-w-md">
+            <h3 className="text-base font-bold text-zinc-900">
+              {residents.length === 0 ? 'Nenhum residente cadastrado no piloto' : 'Nenhum residente encontrado'}
+            </h3>
+            <p className="text-xs text-zinc-500 mt-1">
+              {residents.length === 0 
+                ? 'O sistema está limpo e pronto para o piloto em produção. Cadastre os residentes reais do residencial terapêutico para iniciar o prontuário e aprazamento.'
+                : 'Tente alterar os termos da busca ou os filtros de grau de dependência.'}
+            </p>
+          </div>
+          {residents.length === 0 && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="py-2.5 px-5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Cadastrar Primeiro Residente</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -314,6 +356,21 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
                       <h3 className="text-sm font-bold text-zinc-900 truncate group-hover:text-teal-700">
                         {res.name}
                       </h3>
+                      {onDeleteResident && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(`Deseja realmente remover o residente ${res.name}?`)) {
+                              onDeleteResident(res.id);
+                            }
+                          }}
+                          className="text-zinc-400 hover:text-rose-600 p-1 rounded-lg transition-colors"
+                          title="Excluir Residente"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                     <p className="text-xs text-teal-700 font-bold truncate">{res.room}</p>
                     <p className="text-[11px] text-zinc-500 truncate mt-0.5">{res.primaryDiagnosis}</p>

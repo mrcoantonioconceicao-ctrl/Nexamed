@@ -47,6 +47,7 @@ import {
 } from '../types';
 import { INITIAL_MICRO_LEARNING_MODULES, INITIAL_STAFF_MICRO_PROFILES } from '../data/mockData';
 import { MicroLearningPlayerModal } from '../components/MicroLearningPlayerModal';
+import { extractYoutubeId, getYoutubeEmbedUrl, getYoutubeWatchUrl, VERIFIED_CLINICAL_YOUTUBE_VIDEOS } from '../utils/youtubeUtils';
 
 interface MicroLearningViewProps {
   residents?: Resident[];
@@ -76,6 +77,7 @@ export const MicroLearningView: React.FC<MicroLearningViewProps> = ({
   // Embedded Featured Video Player State
   const videoRef = useRef<HTMLVideoElement>(null);
   const [featuredModule, setFeaturedModule] = useState<MicroLearningModule>(INITIAL_MICRO_LEARNING_MODULES[0]);
+  const [playerMode, setPlayerMode] = useState<'youtube' | 'local'>('youtube');
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -115,7 +117,8 @@ export const MicroLearningView: React.FC<MicroLearningViewProps> = ({
         (selectedCategory === 'video' && m.type === 'video') ||
         (selectedCategory === 'guide' && m.type === 'guide') ||
         (selectedCategory === 'pending' && m.status === 'Pendente') ||
-        (selectedCategory === 'completed' && m.status === 'Concluído');
+        (selectedCategory === 'completed' && m.status === 'Concluído') ||
+        m.category === selectedCategory;
       const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.category.toLowerCase().includes(searchQuery.toLowerCase());
@@ -126,27 +129,33 @@ export const MicroLearningView: React.FC<MicroLearningViewProps> = ({
 
   // Generate chapters for current video module
   const currentChapters: VideoChapter[] = useMemo(() => {
-    if (featuredModule.id === 'ml-101') {
+    if (featuredModule.id === 'ml-101' || featuredModule.youtubeId === '9Vj5gTEAxbY') {
       return [
-        { time: '0:00', seconds: 0, title: 'Introdução e Regra dos 5 Certos', description: 'Conceitos de prevenção de erros no MAR e conferência de pulseira do morador.' },
-        { time: '0:45', seconds: 45, title: 'Dupla Checagem na Dosagem de Insulina', description: 'Técnica de aspiração e conferência dos frascos de NPH e Glargina.' },
-        { time: '1:50', seconds: 110, title: 'Registro em Tempo Real no App NexaMed', description: 'Procedimento para salvar o horário e lançar justificativa em caso de atraso.' },
+        { time: '0:00', seconds: 0, title: 'Introdução e Regra dos 9 Certos', description: 'Conferência de morador, medicamento, dose, via e horário exato no Kardex.' },
+        { time: '1:10', seconds: 70, title: 'Cuidados com Psicotrópicos e Antipsicóticos', description: 'Intervalos rigorosos de dosagem e prevenção de sonolência ou crises.' },
+        { time: '2:30', seconds: 150, title: 'Registro em Tempo Real no App NexaMed', description: 'Checagem imediata da tomada observada e justificativa de atrasos.' },
       ];
-    } else if (featuredModule.id === 'ml-103') {
+    } else if (featuredModule.id === 'ml-102' || featuredModule.youtubeId === '3PmVJQUCm4E') {
       return [
-        { time: '0:00', seconds: 0, title: 'Acolhimento Empático e Abordagem Inicial', description: 'Validação emocional sem confronto da realidade alterada do residente.' },
+        { time: '0:00', seconds: 0, title: 'Rotina e Estrutura do Residencial Terapêutico', description: 'Construção dialógica dos horários de refeição, oficinas e AVDs.' },
+        { time: '1:30', seconds: 90, title: 'Estímulo à Autonomia e Convivência Cidadã', description: 'Resgate do autocuidado, passeios comunitários e desinstitucionalização.' },
+        { time: '3:20', seconds: 200, title: 'Comunicação Multidisciplinar e Passagem de Plantão', description: 'Registro de intercorrências e pactuação de metas no prontuário.' },
+      ];
+    } else if (featuredModule.id === 'ml-103' || featuredModule.youtubeId === 'cosvbvef2aI') {
+      return [
+        { time: '0:00', seconds: 0, title: 'Acolhimento Empático e Abordagem Não-Violenta', description: 'Validação emocional sem confronto da realidade alterada do residente.' },
         { time: '1:20', seconds: 80, title: 'Ajuste de Iluminação e Estímulos do Quarto', description: 'Como preparar o ambiente noturno reduzindo o cortisol e ansiedade.' },
-        { time: '3:10', seconds: 190, title: 'Desescalada Verbal e Registro da Conduta', description: 'Passo a passo da notificação em relatório de intercorrência.' },
+        { time: '2:50', seconds: 170, title: 'Desescalada Verbal e Registro da Conduta', description: 'Passo a passo da notificação em relatório de intercorrência.' },
       ];
-    } else if (featuredModule.id === 'ml-104') {
+    } else if (featuredModule.id === 'ml-106' || featuredModule.youtubeId === 'M7lc1UVf-VE') {
       return [
-        { time: '0:00', seconds: 0, title: 'Inspeção de Pele na Região Sacra', description: 'Identificação de eritema de Grau I e teste de vitropressão.' },
-        { time: '1:10', seconds: 70, title: 'Técnica de Mudança de Decúbito 2h/2h', description: 'Posicionamento correto de coxins e travesseiros em proeminências ósseas.' },
-        { time: '2:40', seconds: 160, title: 'Aplicação de Hidratante Dérnico / AGE', description: 'Cuidado preventivo contra cisalhamento e atrito com o colchão.' },
+        { time: '0:00', seconds: 0, title: 'Aferição Padronizada de Sinais Vitais', description: 'PA, frequência respiratória em 60s, oximetria e temperatura.' },
+        { time: '1:45', seconds: 105, title: 'Cálculo de Risco Clínico NEWS2', description: 'Interpretação dos escores e alertas para sepse ou hipotensão.' },
+        { time: '3:15', seconds: 195, title: 'Notificação Imediata ao Enfermeiro RT', description: 'Conduta rápida diante de sinais de deterioração clínica.' },
       ];
     } else {
       return [
-        { time: '0:00', seconds: 0, title: 'Introdução ao Protocolo Clínico', description: 'Contexto e alinhamento do treinamento com as normas da Anvisa.' },
+        { time: '0:00', seconds: 0, title: 'Introdução ao Protocolo Clínico do SRT', description: 'Contexto e alinhamento do treinamento com as normas da Anvisa e COFEN.' },
         { time: '1:00', seconds: 60, title: 'Execução Prática do Procedimento', description: 'Passo a passo guiado para aplicação no dia a dia do residencial.' },
         { time: '2:15', seconds: 135, title: 'Validação e Notificação no Sistema', description: 'Como registrar os achados e fechar o ciclo de cuidado.' },
       ];
@@ -393,41 +402,45 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
 
     setIsImportingYoutube(true);
 
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = youtubeUrlInput.match(regExp);
-    const ytId = (match && match[2].length === 11) ? match[2] : 'E91mK4w4fCg';
+    const ytId = extractYoutubeId(youtubeUrlInput) || '9Vj5gTEAxbY';
+    const knownItem = VERIFIED_CLINICAL_YOUTUBE_VIDEOS.find(v => v.id === ytId);
 
     setTimeout(() => {
       const newYtModule: MicroLearningModule = {
         id: `ml-yt-${Date.now()}`,
-        title: `Guia Clínico Integrado do YouTube (${ytId})`,
-        description: `Vídeo sobre boas práticas de enfermagem e saúde gerontológica importado do YouTube com síntese automática de tópicos.`,
-        durationMinutes: 5,
+        title: knownItem?.title || `Capacitação Residencial Terapêutico YouTube (${ytId})`,
+        description: knownItem?.description || `Vídeo educacional sobre rotina e cuidados em residenciais terapêuticos importado com síntese automática por IA.`,
+        durationMinutes: 4,
         type: 'video',
-        category: 'Treinamento YouTube',
+        category: (knownItem?.category === 'medicacao' ? 'Administração MAR' :
+                   knownItem?.category === 'rotina_srt' ? 'Rotina Residencial Terapêutico' :
+                   knownItem?.category === 'saude_mental' ? 'Manejamento de Crise' :
+                   knownItem?.category === 'sinais_vitais' ? 'Aferição NEWS2 & Vitais' :
+                   knownItem?.category === 'higiene_cuidados' ? 'Lesão por Pressão' : 'Treinamento YouTube'),
         staffName: selectedProfile.staffName,
-        targetRole: selectedProfile.role,
-        clinicalTrigger: `Link do YouTube incorporado para atualização operacional rápida da equipe.`,
-        aiReasoning: `Nexa IA analisou o vídeo do YouTube e sintetizou os pontos primários de conformidade com as normas da Anvisa e COFEN.`,
+        targetRole: knownItem?.targetRole || selectedProfile.role,
+        clinicalTrigger: `Treinamento prático em Português (PT-BR) selecionado para alinhamento da equipe de cuidadores e enfermagem.`,
+        aiReasoning: `Nexa IA analisou o vídeo e estruturou os pontos-chave de conformidade com as Boas Práticas da Anvisa e COFEN para o SRT.`,
         youtubeId: ytId,
-        youtubeUrl: youtubeUrlInput.includes('youtube.com') || youtubeUrlInput.includes('youtu.be') ? youtubeUrlInput : `https://www.youtube.com/watch?v=${ytId}`,
+        youtubeUrl: getYoutubeWatchUrl(ytId),
+        videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-doctor-checking-a-patients-medical-chart-41551-large.mp4',
         thumbnailUrl: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`,
-        keyTakeaways: [
-          'Conferir a identificação do residente e conferir os 5 certos da administração de medicamentos.',
-          'Manter o registro no prontuário eletrônico NexaMed em até 15 minutos pós-atendimento.',
-          'Notificar imediatamente o enfermeiro RT em caso de alterações no escore NEWS2.'
+        keyTakeaways: knownItem?.keyPoints || [
+          'Conferir os 9 certos na administração de medicamentos de uso contínuo e psicotrópicos.',
+          'Respeitar a rotina de convivência e estimular a autonomia do morador nas AVDs.',
+          'Registrar em tempo real no prontuário eletrônico NexaMed garantindo rastreabilidade.'
         ],
         quiz: [
           {
             id: `q-yt-1`,
-            question: 'Qual a principal finalidade da integração de vídeos do YouTube no micro-learning NexaMed?',
+            question: 'Qual a prioridade no cumprimento dos horários de medicação no Residencial Terapêutico?',
             options: [
-              'Capacitação continuada em tempo real com avaliação prática e conformidade Anvisa.',
-              'Apenas entretenimento da equipe.',
-              'Cancelar a necessidade de registros médicos.'
+              'Manter a concentração plasmática estável e registrar no Kardex MAR em tempo real.',
+              'Adiantar todas as medicações da noite para as 16h para agilizar o plantão.',
+              'Deixar os comprimidos sobre a mesa sem supervisão da ingestão.'
             ],
             correctAnswerIndex: 0,
-            explanation: 'O micro-learning integrado ao YouTube eleva a prontidão da equipe através de vídeos dinâmicos de alta qualidade.'
+            explanation: 'O cumprimento rigoroso dos horários e registro imediato no MAR previne crises e garante a segurança do morador.'
           }
         ],
         status: 'Pendente',
@@ -438,7 +451,7 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
       setFeaturedModule(newYtModule);
       setYoutubeUrlInput('');
       setIsImportingYoutube(false);
-    }, 900);
+    }, 800);
   };
 
   return (
@@ -452,18 +465,22 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/30 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-                Educação Continuada com Inteligência Artificial
+                Capacitação Residencial Terapêutico (SRT)
               </span>
               <span className="px-3 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-400/30 text-xs font-bold flex items-center gap-1">
                 <Youtube className="w-3.5 h-3.5 text-red-400" />
-                Integração Nativa YouTube
+                Vídeos PT-BR & YouTube Nativo
+              </span>
+              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                100% em Português do Brasil
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Micro-Learning & Prontidão da Equipe
             </h1>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              Assista a guias rápidos em vídeo e do <strong className="text-red-300">YouTube integrados</strong> com <strong className="text-teal-200">resumos gerados por IA em tempo real</strong>, marcadores de tempo interativos e testes de fixação diretamente na plataforma NexaMed.
+              Assista a treinamentos práticos em vídeo sobre <strong className="text-teal-200">administração de medicamentos, rotinas do residencial, manejo de crises em saúde mental e cuidados de enfermagem</strong> com resumos automáticos por IA e testes de fixação.
             </p>
           </div>
 
@@ -489,13 +506,13 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
             </div>
             <div>
               <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2 flex-wrap">
-                <span>Integrar Vídeos do YouTube no Micro-Learning NexaMed</span>
+                <span>Catálogo Curado em PT-BR para Residenciais Terapêuticos</span>
                 <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-bold">
-                  Anvisa & COFEN Compliant
+                  Rotina SRT & MAR
                 </span>
               </h3>
               <p className="text-xs text-zinc-300">
-                Cole a URL de qualquer vídeo educacional do YouTube para gerar um micro-treinamento com resumo automático por IA e questionário de fixação.
+                Selecione um tema abaixo para carregar imediatamente no player ou cole qualquer link do YouTube:
               </p>
             </div>
           </div>
@@ -508,7 +525,7 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
               type="text"
               value={youtubeUrlInput}
               onChange={(e) => setYoutubeUrlInput(e.target.value)}
-              placeholder="Ex: https://www.youtube.com/watch?v=E91mK4w4fCg ou cole o código do vídeo..."
+              placeholder="Ex: Cole o link do YouTube ou escolha um dos temas em destaque..."
               className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-zinc-900/90 border border-zinc-700 text-xs text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
@@ -518,30 +535,87 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
             className="px-5 py-2.5 bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 shrink-0"
           >
             <Sparkles className={`w-4 h-4 text-amber-300 ${isImportingYoutube ? 'animate-spin' : ''}`} />
-            <span>{isImportingYoutube ? 'Sintetizando com IA...' : 'Importar e Criar Módulo'}</span>
+            <span>{isImportingYoutube ? 'Sintetizando com IA...' : 'Carregar Treinamento'}</span>
           </button>
         </form>
 
         {/* Quick YouTube Clinical Topic Badges */}
         <div className="flex items-center gap-2 overflow-x-auto pt-1 text-[11px] text-zinc-400 font-medium">
-          <span className="font-bold text-zinc-300 shrink-0">Temas em Destaque:</span>
-          {[
-            { label: 'Administração MAR', id: 'E91mK4w4fCg' },
-            { label: 'Manejamento de Demência', id: 'P3-b8yZ9A3o' },
-            { label: 'Lesão por Pressão', id: 'L84XyJ8gB9g' },
-            { label: 'Prevenção de Quedas', id: 'v5cT4zC2Gso' },
-            { label: 'Aferição NEWS2', id: '_S8e8M-pA10' }
-          ].map((topic, i) => (
+          <span className="font-bold text-zinc-300 shrink-0">Temas em Destaque (PT-BR):</span>
+          {VERIFIED_CLINICAL_YOUTUBE_VIDEOS.map((topic, i) => (
             <button
               key={i}
               type="button"
-              onClick={() => setYoutubeUrlInput(`https://www.youtube.com/watch?v=${topic.id}`)}
-              className="px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 shrink-0 transition-colors flex items-center gap-1"
+              onClick={() => {
+                setFeaturedModule(prev => ({
+                  ...prev,
+                  title: topic.title,
+                  description: topic.description,
+                  youtubeId: topic.id,
+                  youtubeUrl: getYoutubeWatchUrl(topic.id),
+                  category: topic.category === 'medicacao' ? 'Administração MAR' :
+                            topic.category === 'rotina_srt' ? 'Rotina Residencial Terapêutico' :
+                            topic.category === 'saude_mental' ? 'Manejamento de Crise' :
+                            topic.category === 'sinais_vitais' ? 'Aferição NEWS2 & Vitais' :
+                            topic.category === 'higiene_cuidados' ? 'Lesão por Pressão' : 'Treinamento YouTube',
+                  keyTakeaways: topic.keyPoints
+                }));
+                setPlayerMode('youtube');
+              }}
+              className="px-2.5 py-1 rounded-lg bg-zinc-800/90 hover:bg-red-950/60 text-zinc-200 hover:text-white border border-zinc-700 hover:border-red-500/50 shrink-0 transition-colors flex items-center gap-1.5"
             >
               <Youtube className="w-3 h-3 text-red-400" />
-              <span>{topic.label}</span>
+              <span>{topic.topic}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* QUICK ROUTINE TIPS BAR FOR THERAPEUTIC RESIDENCE */}
+      <div className="bg-gradient-to-r from-teal-900/40 via-emerald-950/30 to-zinc-900 p-4 rounded-2xl border border-teal-700/40 shadow-xs">
+        <div className="flex items-center gap-2 mb-2.5">
+          <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="text-xs font-black text-white uppercase tracking-wider">
+            Dicas Rápidas de Rotina & Cuidados no Residencial Terapêutico (SRT)
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+          <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-700/60 space-y-1">
+            <span className="font-extrabold text-teal-300 flex items-center gap-1 text-[11px]">
+              ⏰ Horários & 9 Certos
+            </span>
+            <p className="text-zinc-300 text-[11px] leading-relaxed">
+              Cumprir intervalos exatos de psicotrópicos; checar MAR imediatamente após deglutição observada.
+            </p>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-700/60 space-y-1">
+            <span className="font-extrabold text-blue-300 flex items-center gap-1 text-[11px]">
+              💧 Hidratação & Psicotrópicos
+            </span>
+            <p className="text-zinc-300 text-[11px] leading-relaxed">
+              Ofertar água fracionada (100ml a cada 2h) para prevenir boca seca, retenção e constipação.
+            </p>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-700/60 space-y-1">
+            <span className="font-extrabold text-purple-300 flex items-center gap-1 text-[11px]">
+              🧘 Desescalada em Crises
+            </span>
+            <p className="text-zinc-300 text-[11px] leading-relaxed">
+              Falar em tom suave, reduzir ruídos/luzes e acolher sentimentos sem confrontar o morador.
+            </p>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-700/60 space-y-1">
+            <span className="font-extrabold text-amber-300 flex items-center gap-1 text-[11px]">
+              🛏️ Mudança de Decúbito
+            </span>
+            <p className="text-zinc-300 text-[11px] leading-relaxed">
+              Alternar posição a cada 2h nos acamados e aplicar AGE em sacro e calcâneos sem fricção.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -549,7 +623,7 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
       <div className="bg-white rounded-3xl border border-zinc-200 shadow-xl overflow-hidden space-y-0">
         
         {/* Showcase Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-zinc-900 via-teal-950 to-zinc-900 text-white flex items-center justify-between border-b border-teal-800/40">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-zinc-900 via-teal-950 to-zinc-900 text-white flex items-center justify-between border-b border-teal-800/40 flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-teal-500/20 border border-teal-400/30 text-teal-300 shrink-0">
               <PlayCircle className="w-5 h-5 text-teal-300" />
@@ -603,24 +677,74 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
           {/* LEFT 7 COLS: Video Player */}
           <div className="lg:col-span-7 flex flex-col justify-between bg-zinc-950">
             
-            {/* Embedded YouTube Player Box */}
+            {/* Player Mode Switcher Top Bar */}
+            <div className="bg-zinc-900/90 px-4 py-2 border-b border-zinc-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-zinc-400">Origem:</span>
+                <div className="flex rounded-lg bg-zinc-800 p-0.5 border border-zinc-700">
+                  <button
+                    type="button"
+                    onClick={() => setPlayerMode('youtube')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold flex items-center gap-1.5 transition-all ${
+                      playerMode === 'youtube'
+                        ? 'bg-rose-600 text-white shadow-xs'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Youtube className="w-3.5 h-3.5" />
+                    <span>YouTube Integrado</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlayerMode('local')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold flex items-center gap-1.5 transition-all ${
+                      playerMode === 'local'
+                        ? 'bg-teal-600 text-white shadow-xs'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>Vídeo HD Nativo</span>
+                  </button>
+                </div>
+              </div>
+
+              {(featuredModule.youtubeUrl || featuredModule.youtubeId) && (
+                <a
+                  href={getYoutubeWatchUrl(featuredModule.youtubeUrl || featuredModule.youtubeId)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1 transition-colors text-[11px] bg-zinc-800 hover:bg-zinc-700 px-2.5 py-1 rounded-lg border border-zinc-700"
+                >
+                  <span>Assistir no YouTube</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+
+            {/* Embedded Video Box */}
             <div className="relative aspect-video bg-zinc-950 overflow-hidden group flex items-center justify-center">
               {featuredModule.type === 'video' ? (
-                <iframe
-                  src={
-                    featuredModule.youtubeId
-                      ? `https://www.youtube-nocookie.com/embed/${featuredModule.youtubeId}?autoplay=0&rel=0&modestbranding=1`
-                      : featuredModule.youtubeUrl
-                      ? `https://www.youtube-nocookie.com/embed/${
-                          featuredModule.youtubeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2] || 'l6pXq6G7Gk8'
-                        }?autoplay=0&rel=0&modestbranding=1`
-                      : `https://www.youtube-nocookie.com/embed/l6pXq6G7Gk8?autoplay=0&rel=0&modestbranding=1`
-                  }
-                  title={featuredModule.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  className="w-full h-full border-0"
-                ></iframe>
+                playerMode === 'youtube' && (featuredModule.youtubeId || featuredModule.youtubeUrl) ? (
+                  <iframe
+                    src={getYoutubeEmbedUrl(featuredModule.youtubeId || featuredModule.youtubeUrl)}
+                    title={featuredModule.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    className="w-full h-full border-0"
+                  ></iframe>
+                ) : (
+                  <div className="w-full h-full relative bg-zinc-950 flex items-center justify-center">
+                    <video
+                      ref={videoRef}
+                      src={featuredModule.videoUrl || 'https://assets.mixkit.co/videos/preview/mixkit-doctor-checking-a-patients-medical-chart-41551-large.mp4'}
+                      poster={featuredModule.thumbnailUrl}
+                      controls
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )
               ) : (
                 <div className="p-8 text-center text-zinc-400 space-y-3">
                   <BookOpen className="w-12 h-12 text-teal-400 mx-auto animate-pulse" />
@@ -633,32 +757,37 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
 
               {/* Top Video Overlay Badge */}
               <div className="absolute top-3 left-3 bg-zinc-900/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-zinc-300 border border-zinc-700/60 flex items-center gap-1.5 pointer-events-none shadow-md">
-                <Youtube className="w-3.5 h-3.5 text-rose-500" />
-                <span>Player Integrado YouTube NexaMed</span>
+                {playerMode === 'youtube' ? (
+                  <>
+                    <Youtube className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Player YouTube Ativo</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 text-teal-400" />
+                    <span>Player HD Nativo Ativo</span>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Video Controls / Info Bar */}
-            <div className="p-3 sm:p-4 bg-zinc-900 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-300">
+            <div className="p-3 sm:p-4 bg-zinc-900 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-300 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="font-bold text-white">Transmissão Educacional em Alta Definição</span>
+                <span className="font-bold text-white">
+                  {playerMode === 'youtube' ? 'Transmissão Oficial YouTube' : 'Transmissão Direta em Alta Definição'}
+                </span>
                 <span className="hidden md:inline-block text-[10px] text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700">
                   Legendas & Transcrição PT-BR
                 </span>
               </div>
 
-              {(featuredModule.youtubeUrl || featuredModule.youtubeId) && (
-                <a
-                  href={featuredModule.youtubeUrl || `https://www.youtube.com/watch?v=${featuredModule.youtubeId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1.5 transition-colors bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg border border-zinc-700 shrink-0"
-                >
-                  <span>Assistir no YouTube</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-zinc-400">
+                  {featuredModule.durationMinutes} min
+                </span>
+              </div>
             </div>
 
           </div>
@@ -1009,22 +1138,26 @@ O vídeo enfatiza a diminuição de eventos adversos na medicação de idosos at
       </div>
 
       {/* Filters and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-2xs">
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-zinc-200/80 shadow-2xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0">
           {[
             { id: 'all', label: 'Todos os Módulos' },
-            { id: 'video', label: 'Vídeos Curtos' },
-            { id: 'guide', label: 'Guias POP' },
-            { id: 'pending', label: 'Pendentes' },
-            { id: 'completed', label: 'Concluídos' },
+            { id: 'Administração MAR', label: '💊 Medicação MAR' },
+            { id: 'Rotina Residencial Terapêutico', label: '🏡 Rotina SRT' },
+            { id: 'Manejamento de Crise', label: '🧘 Manejo de Crises' },
+            { id: 'Aferição NEWS2 & Vitais', label: '🩺 Sinais Vitais' },
+            { id: 'Lesão por Pressão', label: '🩹 Higiene & Pele' },
+            { id: 'Prevenção de Quedas', label: '🛡️ Prevenção Quedas' },
+            { id: 'pending', label: '⚠️ Pendentes' },
+            { id: 'completed', label: '✅ Concluídos' },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setSelectedCategory(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 ${
                 selectedCategory === tab.id
-                  ? 'bg-teal-600 text-white shadow-2xs'
-                  : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-600'
+                  ? 'bg-teal-600 text-white shadow-xs scale-[1.02]'
+                  : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-700'
               }`}
             >
               {tab.label}

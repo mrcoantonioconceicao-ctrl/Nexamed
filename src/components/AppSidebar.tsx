@@ -24,13 +24,15 @@ import {
   Target,
   Compass,
   Rocket,
-  GraduationCap
+  GraduationCap,
+  LogOut
 } from 'lucide-react';
 import { getCurrentUser } from '../config/auth-mode';
 
 interface AppSidebarProps {
   currentPath: string;
   onNavigate: (path: string) => void;
+  onLogout?: () => void;
   pendingMedsCount: number;
   activeAlertsCount: number;
   openNexaChat: () => void;
@@ -42,6 +44,7 @@ interface AppSidebarProps {
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   currentPath,
   onNavigate,
+  onLogout,
   pendingMedsCount,
   activeAlertsCount,
   openNexaChat,
@@ -257,6 +260,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           >
             <Rocket className="w-3.5 h-3.5 text-emerald-400" />
             <span>Deploy Automático CI/CD</span>
+          </button>
+        )}
+
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-xs rounded-xl border border-rose-200 transition-colors flex items-center justify-center gap-2 shadow-2xs"
+            title="Encerrar Sessão e Sair do Sistema"
+          >
+            <LogOut className="w-3.5 h-3.5 text-rose-600" />
+            <span>Encerrar Sessão / Sair</span>
           </button>
         )}
 

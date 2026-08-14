@@ -21,9 +21,12 @@ import {
   Lightbulb,
   ShieldCheck,
   Youtube,
-  ExternalLink
+  ExternalLink,
+  Film,
+  RefreshCw
 } from 'lucide-react';
 import { MicroLearningModule } from '../types';
+import { extractYoutubeId, getYoutubeEmbedUrl, getYoutubeWatchUrl } from '../utils/youtubeUtils';
 
 interface MicroLearningPlayerModalProps {
   isOpen: boolean;
@@ -40,6 +43,7 @@ export const MicroLearningPlayerModal: React.FC<MicroLearningPlayerModalProps> =
 }) => {
   // 1. All hooks must be declared unconditionally at the very top level
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [playerMode, setPlayerMode] = useState<'youtube' | 'local'>('youtube');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -245,28 +249,74 @@ export const MicroLearningPlayerModal: React.FC<MicroLearningPlayerModalProps> =
             <div className="space-y-4">
               {module.type === 'video' ? (
                 <div className="rounded-2xl overflow-hidden bg-zinc-950 border border-zinc-800 shadow-lg relative space-y-0">
+                  
+                  {/* Player Engine Switcher Bar */}
+                  <div className="bg-zinc-900/95 px-4 py-2 border-b border-zinc-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold text-zinc-400">Modo de Exibição:</span>
+                      <div className="flex rounded-lg bg-zinc-800 p-0.5 border border-zinc-700">
+                        <button
+                          type="button"
+                          onClick={() => setPlayerMode('youtube')}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold flex items-center gap-1.5 transition-all ${
+                            playerMode === 'youtube'
+                              ? 'bg-rose-600 text-white shadow-xs'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <Youtube className="w-3.5 h-3.5" />
+                          <span>YouTube Oficial</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPlayerMode('local')}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-extrabold flex items-center gap-1.5 transition-all ${
+                            playerMode === 'local'
+                              ? 'bg-teal-600 text-white shadow-xs'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <Film className="w-3.5 h-3.5" />
+                          <span>Vídeo HD Local</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {(module.youtubeUrl || module.youtubeId) && (
+                      <a
+                        href={getYoutubeWatchUrl(module.youtubeUrl || module.youtubeId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1 transition-colors text-[11px] bg-zinc-800/80 hover:bg-zinc-700 px-2.5 py-1 rounded-lg border border-zinc-700"
+                      >
+                        <span>Abrir no YouTube</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Video Box */}
                   <div className="aspect-video relative bg-zinc-950 flex items-center justify-center overflow-hidden">
-                    {module.youtubeId || module.youtubeUrl || module.videoUrl ? (
+                    {playerMode === 'youtube' && (module.youtubeId || module.youtubeUrl) ? (
                       <iframe
-                        src={
-                          module.youtubeId
-                            ? `https://www.youtube-nocookie.com/embed/${module.youtubeId}?autoplay=0&rel=0&modestbranding=1`
-                            : module.youtubeUrl
-                            ? `https://www.youtube-nocookie.com/embed/${
-                                module.youtubeUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2] || 'l6pXq6G7Gk8'
-                              }?autoplay=0&rel=0&modestbranding=1`
-                            : `https://www.youtube-nocookie.com/embed/l6pXq6G7Gk8?autoplay=0&rel=0&modestbranding=1`
-                        }
+                        src={getYoutubeEmbedUrl(module.youtubeId || module.youtubeUrl)}
                         title={module.title}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
+                        referrerPolicy="strict-origin-when-cross-origin"
                         className="w-full h-full border-0"
                       ></iframe>
                     ) : (
-                      <div className="text-center p-6 text-zinc-400">
-                        <GraduationCap className="w-12 h-12 text-teal-400 mx-auto mb-2 animate-bounce" />
-                        <p className="text-sm font-bold text-zinc-200">Vídeo Micro-learning Nexa IA</p>
-                        <p className="text-xs text-zinc-400 mt-1">Treinamento prático de vídeo aulas de 3 minutos</p>
+                      <div className="w-full h-full relative bg-zinc-950 flex items-center justify-center">
+                        <video
+                          ref={videoRef}
+                          src={module.videoUrl || 'https://assets.mixkit.co/videos/preview/mixkit-doctor-checking-a-patients-medical-chart-41551-large.mp4'}
+                          poster={module.thumbnailUrl}
+                          onTimeUpdate={handleTimeUpdate}
+                          onLoadedMetadata={handleTimeUpdate}
+                          controls
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                     )}
                   </div>
@@ -274,24 +324,22 @@ export const MicroLearningPlayerModal: React.FC<MicroLearningPlayerModalProps> =
                   {/* YouTube Player Metadata Controls */}
                   <div className="bg-zinc-900 px-4 py-3 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-300">
                     <div className="flex items-center gap-2">
-                      <Youtube className="w-4 h-4 text-rose-500 shrink-0" />
-                      <span className="font-bold text-white">Vídeo Integrado via YouTube</span>
+                      {playerMode === 'youtube' ? (
+                        <Youtube className="w-4 h-4 text-rose-500 shrink-0" />
+                      ) : (
+                        <Film className="w-4 h-4 text-teal-400 shrink-0" />
+                      )}
+                      <span className="font-bold text-white">
+                        {playerMode === 'youtube' ? 'Transmissão Integrada YouTube' : 'Transmissão Direta HD NexaMed'}
+                      </span>
                       <span className="hidden sm:inline text-[10px] text-teal-300 bg-teal-950/80 px-2 py-0.5 rounded border border-teal-800">
-                        HD 1080p • Legendas PT-BR
+                        1080p • Áudio Estéreo
                       </span>
                     </div>
 
-                    {(module.youtubeUrl || module.youtubeId) && (
-                      <a
-                        href={module.youtubeUrl || `https://www.youtube.com/watch?v=${module.youtubeId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1.5 transition-colors bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded-lg border border-zinc-700"
-                      >
-                        <span>Abrir no YouTube</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
+                    <span className="text-[11px] text-zinc-400">
+                      {module.durationMinutes} min de capacitação
+                    </span>
                   </div>
                 </div>
               ) : (

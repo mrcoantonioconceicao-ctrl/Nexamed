@@ -568,12 +568,15 @@ export interface NexaMessage {
 
 export type MicroLearningCategory = 
   | 'Administração MAR'
+  | 'Rotina Residencial Terapêutico'
+  | 'Saúde Mental & Convivência'
   | 'Aferição NEWS2 & Vitais'
   | 'Protocolo SOAP'
   | 'Prevenção de Quedas'
   | 'Lesão por Pressão'
   | 'Manejamento de Crise'
-  | 'Biossegurança & Higiene';
+  | 'Biossegurança & Higiene'
+  | 'Treinamento YouTube';
 
 export interface MicroLearningQuizQuestion {
   id: string;

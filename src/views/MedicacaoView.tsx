@@ -143,8 +143,33 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
       </div>
 
       {/* Medication List Cards */}
-      <div className="space-y-4">
-        {filteredMeds.map((med) => (
+      {filteredMeds.length === 0 ? (
+        <div className="p-12 bg-white rounded-3xl text-center border border-zinc-200 shadow-xs flex flex-col items-center justify-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center">
+            <Pill className="w-8 h-8" />
+          </div>
+          <div className="max-w-md">
+            <h3 className="text-base font-bold text-zinc-900">
+              {medications.length === 0 ? 'Nenhuma medicação aprazada no piloto' : 'Nenhuma medicação encontrada'}
+            </h3>
+            <p className="text-xs text-zinc-500 mt-1">
+              {medications.length === 0
+                ? 'O aprazamento MAR está limpo e sem simulações. Ao cadastrar um residente ou adicionar prescrições, os horários 12/12h e controle de doses aparecerão aqui.'
+                : 'Tente alterar os termos da busca ou os filtros de status.'}
+            </p>
+          </div>
+          {onNavigate && medications.length === 0 && (
+            <button
+              onClick={() => onNavigate('/residentes')}
+              className="py-2.5 px-5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-colors"
+            >
+              Ir para Cadastro de Residentes
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredMeds.map((med) => (
           <div
             key={med.id}
             className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-xs space-y-3 hover:border-teal-300 transition-all"
@@ -262,6 +287,7 @@ export const MedicacaoView: React.FC<MedicacaoViewProps> = ({
           </div>
         ))}
       </div>
+      )}
 
       {/* Medication Label Printer Modal */}
       <MedicationLabelPrinterModal

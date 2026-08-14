@@ -5,6 +5,7 @@ import {
   doc, 
   setDoc, 
   getDoc,
+  getDocs,
   deleteDoc,
   onSnapshot,
   getDocFromServer,
@@ -210,6 +211,76 @@ function sanitizeForFirestore<T>(data: T): Record<string, any> {
   return JSON.parse(JSON.stringify(data));
 }
 
+export async function deleteResidentFromDb(residentId: string) {
+  if (!db) return;
+  try {
+    await deleteDoc(doc(db, RESIDENTS_COL, residentId));
+  } catch (err) {
+    console.error('Error deleting resident from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, `residents/${residentId}`);
+  }
+}
+
+export async function deleteEvolutionFromDb(evolutionId: string) {
+  if (!db) return;
+  try {
+    await deleteDoc(doc(db, EVOLUTIONS_COL, evolutionId));
+  } catch (err) {
+    console.error('Error deleting evolution from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, `evolutions/${evolutionId}`);
+  }
+}
+
+export async function deleteMedicationFromDb(medicationId: string) {
+  if (!db) return;
+  try {
+    await deleteDoc(doc(db, MEDICATIONS_COL, medicationId));
+    await deleteDoc(doc(db, MED_ADMINISTRATIONS_COL, medicationId));
+  } catch (err) {
+    console.error('Error deleting medication from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, `medications/${medicationId}`);
+  }
+}
+
+export async function deleteHandoverFromDb(handoverId: string) {
+  if (!db) return;
+  try {
+    await deleteDoc(doc(db, HANDOVERS_COL, handoverId));
+  } catch (err) {
+    console.error('Error deleting handover from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, `handovers/${handoverId}`);
+  }
+}
+
+/**
+ * Purges all simulated test collections to leave database 100% clean for pilot.
+ */
+export async function purgeAllSimulationData() {
+  if (!db) return;
+  const collectionsToClean = [
+    RESIDENTS_COL,
+    EVOLUTIONS_COL,
+    HANDOVERS_COL,
+    MEDICATIONS_COL,
+    MED_ADMINISTRATIONS_COL,
+    AUDIT_LOGS_COL,
+    PAS_COL,
+    APPOINTMENTS_COL,
+    SCALES_COL
+  ];
+
+  for (const colName of collectionsToClean) {
+    try {
+      const snap = await getDocs(collection(db, colName));
+      for (const docSnap of snap.docs) {
+        await deleteDoc(doc(db, colName, docSnap.id));
+      }
+    } catch (err) {
+      console.warn(`Error purging collection ${colName}:`, err);
+    }
+  }
+}
+
 /**
  * Subscribe to Users / Staff collection
  */
@@ -218,17 +289,13 @@ export function subscribeUsers(
   initialFallback: RegisteredUser[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, USERS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, USERS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: RegisteredUser[] = [];
       snapshot.forEach((d) => list.push(d.data() as RegisteredUser));
       callback(list);
@@ -267,24 +334,19 @@ export const deleteFirestoreUser = deleteUserFromDb;
 
 /**
  * Subscribe to Evolutions collection with real-time updates.
- * If database is empty, seeds initial fallback data.
  */
 export function subscribeEvolutions(
   callback: (data: ClinicalEvolution[]) => void,
   initialFallback: ClinicalEvolution[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, EVOLUTIONS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, EVOLUTIONS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: ClinicalEvolution[] = [];
       snapshot.forEach((d) => list.push(d.data() as ClinicalEvolution));
       list.sort((a, b) => new Date(b.date + ' ' + b.time).getTime() - new Date(a.date + ' ' + a.time).getTime());
@@ -316,17 +378,13 @@ export function subscribeResidents(
   initialFallback: Resident[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, RESIDENTS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, RESIDENTS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: Resident[] = [];
       snapshot.forEach((d) => list.push(d.data() as Resident));
       callback(list);
@@ -357,17 +415,13 @@ export function subscribeHandovers(
   initialFallback: HandoverLog[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, HANDOVERS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, HANDOVERS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: HandoverLog[] = [];
       snapshot.forEach((d) => list.push(d.data() as HandoverLog));
       callback(list);
@@ -398,19 +452,13 @@ export function subscribeMedications(
   initialFallback: MedicationMAR[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, MEDICATIONS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        const sanitized = sanitizeForFirestore(item);
-        await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitized);
-        await setDoc(doc(db, MED_ADMINISTRATIONS_COL, item.id), sanitized);
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: MedicationMAR[] = [];
       snapshot.forEach((d) => list.push(d.data() as MedicationMAR));
       callback(list);
@@ -428,19 +476,13 @@ export function subscribeMedicationAdministrations(
   initialFallback: MedicationMAR[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, MED_ADMINISTRATIONS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        const sanitized = sanitizeForFirestore(item);
-        await setDoc(doc(db, MED_ADMINISTRATIONS_COL, item.id), sanitized);
-        await setDoc(doc(db, MEDICATIONS_COL, item.id), sanitized);
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: MedicationMAR[] = [];
       snapshot.forEach((d) => list.push(d.data() as MedicationMAR));
       callback(list);
@@ -475,17 +517,13 @@ export function subscribeAuditLogs(
   initialFallback: AuditLogEntry[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, AUDIT_LOGS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, AUDIT_LOGS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: AuditLogEntry[] = [];
       snapshot.forEach((d) => list.push(d.data() as AuditLogEntry));
       callback(list);
@@ -516,17 +554,13 @@ export function subscribePASRecords(
   initialFallback: PASRecord[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, PAS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, PAS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: PASRecord[] = [];
       snapshot.forEach((d) => list.push(d.data() as PASRecord));
       callback(list);
@@ -555,17 +589,13 @@ export function subscribeAppointments(
   initialFallback: AppointmentRecord[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, APPOINTMENTS_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, APPOINTMENTS_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: AppointmentRecord[] = [];
       snapshot.forEach((d) => list.push(d.data() as AppointmentRecord));
       callback(list);
@@ -594,17 +624,13 @@ export function subscribeFunctionalScales(
   initialFallback: FunctionalScaleAssessment[] = []
 ) {
   if (!db) {
+    callback(initialFallback);
     return () => {};
   }
   const colRef = collection(db, SCALES_COL);
 
-  return onSnapshot(colRef, async (snapshot) => {
-    if (snapshot.empty && initialFallback.length > 0) {
-      for (const item of initialFallback) {
-        await setDoc(doc(db, SCALES_COL, item.id), sanitizeForFirestore(item));
-      }
-      callback(initialFallback);
-    } else if (!snapshot.empty) {
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
       const list: FunctionalScaleAssessment[] = [];
       snapshot.forEach((d) => list.push(d.data() as FunctionalScaleAssessment));
       callback(list);

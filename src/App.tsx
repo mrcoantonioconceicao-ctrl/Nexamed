@@ -44,6 +44,7 @@ import { useCriticalAlertNotifications } from './hooks/useCriticalAlertNotificat
 import { getCurrentUser, isAuthEnabled, setCurrentUser, UserSession, getUserRoleCategory } from './config/auth-mode';
 import { 
   auth,
+  logoutFirebase,
   syncUserProfile,
   subscribeEvolutions, 
   saveEvolutionToDb, 
@@ -55,13 +56,17 @@ import {
   saveMedicationToDb,
   subscribeAuditLogs,
   saveAuditLogToDb,
-  subscribeMedicationAdministrations
+  subscribeMedicationAdministrations,
+  deleteResidentFromDb,
+  purgeAllSimulationData
 } from './lib/firebase';
+import { clearAllGiterStorage } from './utils/giterStore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import { NavbarHeader } from './components/NavbarHeader';
 import { AppSidebar } from './components/AppSidebar';
 import { NexaAssistantWidget } from './components/NexaAssistantWidget';
+import { useOfflineSync } from './hooks/useOfflineSync';
 import { SOAPEditorModal } from './components/SOAPEditorModal';
 import { ResidentDetailModal } from './components/ResidentDetailModal';
 import { Resident360ViewModal } from './components/Resident360ViewModal';
@@ -131,11 +136,14 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Core Data States with localStorage persistence fallback
+  // Core Data States with localStorage persistence fallback (filtering out any simulated mock residents)
+  const isSimulatedId = (id?: string) => id === 'res-1' || id === 'res-2' || id === 'res-3' || id === 'res-4' || id?.startsWith('mock-');
+
   const [residents, setResidents] = useState<Resident[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_residents');
-      return saved ? JSON.parse(saved) : [];
+      const parsed: Resident[] = saved ? JSON.parse(saved) : [];
+      return parsed.filter(r => !isSimulatedId(r.id));
     } catch {
       return [];
     }
@@ -144,7 +152,8 @@ export default function App() {
   const [evolutions, setEvolutions] = useState<ClinicalEvolution[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_evolutions');
-      return saved ? JSON.parse(saved) : [];
+      const parsed: ClinicalEvolution[] = saved ? JSON.parse(saved) : [];
+      return parsed.filter(e => !isSimulatedId(e.residentId) && !e.id.startsWith('evo-10'));
     } catch {
       return [];
     }
@@ -153,7 +162,8 @@ export default function App() {
   const [medications, setMedications] = useState<MedicationMAR[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_medications');
-      return saved ? JSON.parse(saved) : [];
+      const parsed: MedicationMAR[] = saved ? JSON.parse(saved) : [];
+      return parsed.filter(m => !isSimulatedId(m.residentId) && !m.id.startsWith('mar-'));
     } catch {
       return [];
     }
@@ -164,7 +174,8 @@ export default function App() {
   const [handovers, setHandovers] = useState<HandoverLog[]>(() => {
     try {
       const saved = localStorage.getItem('nexamed_handovers');
-      return saved ? JSON.parse(saved) : [];
+      const parsed: HandoverLog[] = saved ? JSON.parse(saved) : [];
+      return parsed.filter(h => !h.id.startsWith('handover-mock-') && !h.id.startsWith('han-'));
     } catch {
       return [];
     }
@@ -207,12 +218,22 @@ export default function App() {
 
   // Firestore Real-time Persistence Effect
   useEffect(() => {
-    const unsubEvo = subscribeEvolutions(setEvolutions, []);
-    const unsubRes = subscribeResidents(setResidents, []);
-    const unsubHan = subscribeHandovers(setHandovers, []);
-    const unsubMed = subscribeMedications(setMedications, []);
+    const unsubEvo = subscribeEvolutions((data) => {
+      setEvolutions(data.filter(e => !isSimulatedId(e.residentId) && !e.id.startsWith('evo-10')));
+    }, []);
+    const unsubRes = subscribeResidents((data) => {
+      setResidents(data.filter(r => !isSimulatedId(r.id)));
+    }, []);
+    const unsubHan = subscribeHandovers((data) => {
+      setHandovers(data.filter(h => !h.id.startsWith('handover-mock-') && !h.id.startsWith('han-')));
+    }, []);
+    const unsubMed = subscribeMedications((data) => {
+      setMedications(data.filter(m => !isSimulatedId(m.residentId) && !m.id.startsWith('mar-')));
+    }, []);
     const unsubMedAdmin = subscribeMedicationAdministrations((data) => {
-      if (data && data.length > 0) setMedications(data);
+      if (data && data.length > 0) {
+        setMedications(data.filter(m => !isSimulatedId(m.residentId) && !m.id.startsWith('mar-')));
+      }
     }, []);
     const unsubAudit = subscribeAuditLogs(setAuditLogs, []);
 
@@ -225,16 +246,16 @@ export default function App() {
       unsubAudit();
     };
   }, []);
-  const [timelineEvents, setTimelineEvents] = useState<Timeline360Event[]>(INITIAL_TIMELINE_360);
-  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>(INITIAL_FINANCIAL_RECORDS);
-  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(INITIAL_INVENTORY);
-  const [labResults, setLabResults] = useState<LabResult[]>(INITIAL_LAB_RESULTS);
-  const [ocrDocuments, setOcrDocuments] = useState<OCRDocument[]>(INITIAL_OCR_DOCS);
-  const [bpmnWorkflows, setBpmnWorkflows] = useState<BPMNWorkflowInstance[]>(INITIAL_BPMN_WORKFLOWS);
-  const [qualityMetrics, setQualityMetrics] = useState<QualityMetric[]>(INITIAL_QUALITY_METRICS);
-  const [familyNotes, setFamilyNotes] = useState<FamilyNote[]>(INITIAL_FAMILY_NOTES);
-  const [staffTrainings, setStaffTrainings] = useState<StaffTraining[]>(INITIAL_STAFF_TRAININGS);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
+  const [timelineEvents, setTimelineEvents] = useState<Timeline360Event[]>([]);
+  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+  const [labResults, setLabResults] = useState<LabResult[]>([]);
+  const [ocrDocuments, setOcrDocuments] = useState<OCRDocument[]>([]);
+  const [bpmnWorkflows, setBpmnWorkflows] = useState<BPMNWorkflowInstance[]>([]);
+  const [qualityMetrics, setQualityMetrics] = useState<QualityMetric[]>([]);
+  const [familyNotes, setFamilyNotes] = useState<FamilyNote[]>([]);
+  const [staffTrainings, setStaffTrainings] = useState<StaffTraining[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
 
   // Modal & Drawer States
   const [isNexaChatOpen, setIsNexaChatOpen] = useState(false);
@@ -253,6 +274,18 @@ export default function App() {
   // Smart Handover State
   const [isSmartHandoverOpen, setIsSmartHandoverOpen] = useState(false);
   const [smartHandoverMode, setSmartHandoverMode] = useState<'ASSUMIR_PLANTAO' | 'ENCERRAR_PLANTAO'>('ASSUMIR_PLANTAO');
+
+  // Service Worker Offline Synchronization Hook
+  const offlineState = useOfflineSync({
+    residents,
+    evolutions,
+    medications,
+    onRestoreOfflineData: (cached) => {
+      if (cached?.residents && cached.residents.length > 0) setResidents(cached.residents);
+      if (cached?.evolutions && cached.evolutions.length > 0) setEvolutions(cached.evolutions);
+      if (cached?.medications && cached.medications.length > 0) setMedications(cached.medications);
+    }
+  });
 
   const handleOpenInboundHandover = () => {
     setSmartHandoverMode('ASSUMIR_PLANTAO');
@@ -510,6 +543,35 @@ export default function App() {
     }
   };
 
+  // Delete Resident
+  const handleDeleteResident = async (residentId: string) => {
+    setResidents(prev => prev.filter(r => r.id !== residentId));
+    setMedications(prev => prev.filter(m => m.residentId !== residentId));
+    setEvolutions(prev => prev.filter(e => e.residentId !== residentId));
+    await deleteResidentFromDb(residentId);
+  };
+
+  // Purge all simulated data to prepare for clean pilot
+  const handlePurgeAllSimulatedData = async () => {
+    setResidents([]);
+    setEvolutions([]);
+    setMedications([]);
+    setHandovers([]);
+    setAlerts([]);
+    setTimelineEvents([]);
+    setFinancialRecords([]);
+    setInventoryItems([]);
+    setLabResults([]);
+    setOcrDocuments([]);
+    setBpmnWorkflows([]);
+    setQualityMetrics([]);
+    setFamilyNotes([]);
+    setStaffTrainings([]);
+    setAuditLogs([]);
+    clearAllGiterStorage();
+    await purgeAllSimulationData();
+  };
+
   // Add Occurrence
   const handleAddOccurrence = (occ: OccurrenceItem) => {
     setHandovers(prev => {
@@ -573,6 +635,30 @@ export default function App() {
     setIsSOAPModalOpen(true);
   };
 
+  // Explicit Full Logout Handler
+  const handleLogout = async () => {
+    try {
+      await logoutFirebase();
+    } catch (e) {
+      console.warn('Logout error:', e);
+    }
+    setCurrentUser(null);
+    setCurrentUserSession(null);
+    setCurrentPath('/auth');
+    setIsCommandBarOpen(false);
+    setIsNexaChatOpen(false);
+    setIsSmartHandoverOpen(false);
+    setIsSOAPModalOpen(false);
+    setIsTourOpen(false);
+    setIsDeployModalOpen(false);
+    setIsLGPDModalOpen(false);
+    setIsAuditLogModalOpen(false);
+    setSelectedResidentFor360(null);
+    setSelectedResidentForDetail(null);
+    setSelectedResidentForIoT(null);
+    setSelectedResidentForTelehealth(null);
+  };
+
   if (isAuthChecking) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-white font-sans">
@@ -607,6 +693,7 @@ export default function App() {
         onOpenCommandBar={() => setIsCommandBarOpen(true)}
         onOpenAssistant={() => setIsNexaChatOpen(true)}
         onNavigate={setCurrentPath}
+        onLogout={handleLogout}
         activePath={currentPath}
         onMarkAlertsRead={handleMarkAlertsRead}
         onOpenInboundHandover={handleOpenInboundHandover}
@@ -617,6 +704,7 @@ export default function App() {
         criticalResidentsCount={criticalResidentsCount}
         onOpenTour={() => setIsTourOpen(true)}
         onOpenDeploy={() => setIsDeployModalOpen(true)}
+        offlineState={offlineState}
       />
 
       {/* Main Body Shell */}
@@ -626,6 +714,7 @@ export default function App() {
           <AppSidebar
             currentPath={currentPath}
             onNavigate={setCurrentPath}
+            onLogout={handleLogout}
             pendingMedsCount={pendingMedsCount}
             activeAlertsCount={activeAlertsCount}
             openNexaChat={() => setIsNexaChatOpen(true)}
@@ -658,6 +747,8 @@ export default function App() {
               onOpenResident={handleOpenResident}
               onOpenNewEvolution={handleOpenNewEvolution}
               onAddResident={handleAddResident}
+              onDeleteResident={handleDeleteResident}
+              onPurgeSimulatedData={handlePurgeAllSimulatedData}
             />
           )}
 

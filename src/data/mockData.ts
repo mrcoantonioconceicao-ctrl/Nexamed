@@ -894,46 +894,46 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
 export const INITIAL_MICRO_LEARNING_MODULES: MicroLearningModule[] = [
   {
     id: 'ml-101',
-    title: 'Boas Práticas e Checagem Tripla na Aprazamento de Insulina e Anticoagulantes (MAR)',
-    description: 'Vídeo prático de 3 minutos sobre dupla checagem na administração de medicamentos de alto risco e redução de divergências nos horários do Kardex.',
-    durationMinutes: 3,
+    title: 'Vias de Administração de Medicamentos, Aprazamento e os 9 Certos (MAR)',
+    description: 'Vídeo treinamento em Português (PT-BR) sobre os 9 Certos da medicação, checagem dupla de psicofármacos e cumprimento rigoroso de horários no Kardex.',
+    durationMinutes: 4,
     type: 'video',
     category: 'Administração MAR',
     staffName: 'Enf. Bruno Costa',
-    targetRole: 'Enfermeiro / Técnico de Enfermagem',
-    clinicalTrigger: '2 doses de NPH 10UI marcadas como pendentes além do horário limite de 30 minutos no Kardex MAR.',
-    aiReasoning: 'Nexa IA detectou divergências temporais nos aprazamentos de insulina da Sra. Helena Vasconcelos no plantão diurno.',
-    youtubeId: 'E91mK4w4fCg',
-    youtubeUrl: 'https://www.youtube.com/watch?v=E91mK4w4fCg',
+    targetRole: 'Técnico de Enfermagem / Enfermeiro RT',
+    clinicalTrigger: 'Divergência de horário superior a 25 minutos no aprazamento de risperidona e clonazepam no Kardex MAR.',
+    aiReasoning: 'Nexa IA detectou oscilações no horário de administração de psicotrópicos no plantão vespertino, recomendando reciclagem nos 9 Certos.',
+    youtubeId: '9Vj5gTEAxbY',
+    youtubeUrl: 'https://www.youtube.com/watch?v=9Vj5gTEAxbY',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-doctor-checking-a-patients-medical-chart-41551-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
     keyTakeaways: [
-      'Sempre verificar o Nome, Leito e Prontuário antes de aspirar a insulina.',
-      'Efetuar o registro imediato do horário real da checagem no aplicativo NexaMed.',
-      'Justificar atrasos >15 minutos no campo de observação com o motivo clínico (ex: recusa ou exame externo).'
+      'Conferência dos 9 Certos: Morador certo, Medicamento certo, Dose certa, Via certa, Horário certo, Orientação certa, Registro certo, Ação certa e Resposta certa.',
+      'Psicotrópicos e ansiolíticos exigem rigor absoluto nos intervalos de dosagem para evitar picos de sedação ou crises de ansiedade.',
+      'Registrar a checagem no aplicativo imediatamente após a ingestão observada do medicamento.'
     ],
     quiz: [
       {
         id: 'q-101-1',
-        question: 'Qual a conduta recomendada pelo NexaMed quando houver um atraso na administração de dose crítica?',
+        question: 'Qual é o procedimento correto do técnico de enfermagem caso o morador recuse tomar a medicação psicotrópica no horário aprazado?',
         options: [
-          'Ignorar o atraso e marcar como administrado no horário planejado.',
-          'Registrar o horário real da administração e incluir a justificativa do atraso no Kardex.',
-          'Cancelar a dose sem avisar o enfermeiro RT.'
+          'Forçar a ingestão imediatamente misturando sem consentimento na comida.',
+          'Acolher a recusa com calma, registrar o motivo no Kardex MAR, tentar nova abordagem em 15 minutos e comunicar o Enfermeiro RT.',
+          'Marcar como administrado e descartar o comprimido.'
         ],
         correctAnswerIndex: 1,
-        explanation: 'O registro com horário real e justificativa assegura rastreabilidade total no prontuário do residente e conformidade com a Anvisa.'
+        explanation: 'No Residencial Terapêutico, a recusa deve ser acolhida humanizadamente, registrada com horário real no MAR e reportada à coordenação técnica.'
       },
       {
         id: 'q-101-2',
-        question: 'Quantos pontos de checagem obrigatória (regra dos 5 certos) devem ser checados no MAR?',
+        question: 'Por que a conferência de horários é especialmente crítica para medicamentos de ação neurológica/psiquiátrica?',
         options: [
-          'Apenas o nome do remédio.',
-          'Medicamento certo, Dose certa, Via certa, Horário certo e Residente certo.',
-          'Via de administração apenas.'
+          'Apenas por exigência burocrática da farmácia.',
+          'Para manter a concentração plasmática estável, prevenindo descompensação comportamental e sedação excessiva.',
+          'Porque os medicamentos perdem a validade se atrasarem 10 minutos.'
         ],
         correctAnswerIndex: 1,
-        explanation: 'A regra dos 5 certos é fundamental para prevenção de eventos adversos na medicação gerontológica.'
+        explanation: 'A estabilidade dos níveis sanguíneos de antipsicóticos e estabilizadores de humor depende do cumprimento rigoroso dos intervalos prescritos.'
       }
     ],
     status: 'Pendente',
@@ -941,72 +941,35 @@ export const INITIAL_MICRO_LEARNING_MODULES: MicroLearningModule[] = [
   },
   {
     id: 'ml-102',
-    title: 'Guia Rápido POP: Protocolo SOAP Estruturado e Aferição NEWS2',
-    description: 'Guia prático em texto e infográfico explicando a separação correta dos tópicos S (Subjetivo), O (Objetivo), A (Avaliação) e P (Plano) com inclusão do NEWS2.',
-    durationMinutes: 4,
-    type: 'guide',
-    category: 'Protocolo SOAP',
-    staffName: 'Enf. Bruno Costa',
-    targetRole: 'Enfermeiro / Cuidador',
-    clinicalTrigger: 'Evoluções em texto livre sem preenchimento dos campos A (Avaliação) e P (Plano de Cuidado).',
-    aiReasoning: 'Nexa IA identificou que 35% das evoluções do plantão anterior continham relatos informais sem pontuação de risco NEWS2.',
-    guideContent: `### Guia Operacional Padrão (POP) - Evolução SOAP NexaMed
-1. **Subjetivo (S)**: Relato direto do residente ou acompanhante sobre sintomas, sono, dor, humor e aceitação alimentar.
-2. **Objetivo (O)**: Dados aferidos (PA, FC, SpO2, Temp, Glicemia, diurese, aspecto da lesão) e cálculo automático do NEWS2.
-3. **Avaliação (A)**: Impressão clínica diagnóstica e nível de estresse/estabilidade psiquiátrica.
-4. **Plano (P)**: Intervenções imediatas, aprazamentos e metas para o próximo plantão.`,
+    title: 'Organização da Rotina Diária e Reabilitação Psicossocial no Residencial Terapêutico',
+    description: 'Capacitação prática em vídeo sobre estruturação da rotina da casa, horários das refeições, oficinas terapêuticas e estímulo à autonomia nas AVDs.',
+    durationMinutes: 5,
+    type: 'video',
+    category: 'Rotina Residencial Terapêutico',
+    staffName: 'Tec. Carlos Alberto',
+    targetRole: 'Cuidadores de Saúde / Equipe Multidisciplinar',
+    clinicalTrigger: 'Morador com isolamento social no quarto durante os horários das atividades coletivas da manhã.',
+    aiReasoning: 'Nexa IA correlacionou a falta de engajamento matinal com a necessidade de fortalecimento das rotinas dialógicas e inclusivas no SRT.',
+    youtubeId: '3PmVJQUCm4E',
+    youtubeUrl: 'https://www.youtube.com/watch?v=3PmVJQUCm4E',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-senior-man-talking-to-a-nurse-in-a-nursing-home-41549-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1581579438747-108c52309192?auto=format&fit=crop&w=600&q=80',
     keyTakeaways: [
-      'Nunca misturar dados objetivos (ex: PA 120/80) no campo Subjetivo.',
-      'O escore NEWS2 >= 5 exige comunicação imediata ao médico responsável.',
-      'Revisar o rascunho com o corretor IA antes de assinar a evolução.'
+      'Construir a rotina com o morador e não para o morador, respeitando o ritmo biológico e preferências pessoais.',
+      'Incentivar a autonomia nas atividades de vida diária (arrumar a cama, escolher a roupa, escovar os dentes).',
+      'Promover passeios comunitários (padaria, praça, feira) como instrumento de reinserção social e cidadania.'
     ],
     quiz: [
       {
         id: 'q-102-1',
-        question: 'Onde deve ser inserido o relato do residente "Sinto um leve cansaço ao caminhar"?',
+        question: 'Qual é o principal objetivo da rotina diária dentro de um Residencial Terapêutico (SRT)?',
         options: [
-          'No campo Subjetivo (S).',
-          'No campo Objetivo (O).',
-          'No Plano de Cuidado (P).'
-        ],
-        correctAnswerIndex: 0,
-        explanation: 'Queixas verbais e percepções subjetivas do residente pertencem estritamente ao campo Subjetivo (S).'
-      }
-    ],
-    status: 'Pendente',
-    suggestedByNexa: true
-  },
-  {
-    id: 'ml-103',
-    title: 'Manejamento Humanizado de Desorientação e Agitação em Idosos com Demência',
-    description: 'Vídeo demonstrativo de 5 minutos sobre validação emocional, ambiente calmo e técnicas de desescalada verbal na residência terapêutica.',
-    durationMinutes: 5,
-    type: 'video',
-    category: 'Manejamento de Crise',
-    staffName: 'Tec. Carlos Alberto',
-    targetRole: 'Cuidador / Acompanhante',
-    clinicalTrigger: 'Registro de agitação noturna no leito 12B (Sr. Antônio Siqueira) durante o plantão noturno.',
-    aiReasoning: 'Nexa IA correlacionou o aumento de intercorrências noturnas com a necessidade de reciclagem em técnicas de desescalada não farmacológica.',
-    youtubeId: 'P3-b8yZ9A3o',
-    youtubeUrl: 'https://www.youtube.com/watch?v=P3-b8yZ9A3o',
-    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-senior-man-talking-to-a-nurse-in-a-nursing-home-41549-large.mp4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1581579438747-108c52309192?auto=format&fit=crop&w=600&q=80',
-    keyTakeaways: [
-      'Evitar confrontar a realidade contada pelo idoso desorientado; utilizar a técnica da validação.',
-      'Manter tom de voz suave, postura corporal receptiva e contato visual no nível dos olhos.',
-      'Reduzir estímulos sonoros e luminosos excessivos antes da medicação indutora de sono.'
-    ],
-    quiz: [
-      {
-        id: 'q-103-1',
-        question: 'Qual a melhor atitude do cuidador diante de uma fala desconexa do residente com Alzheimer no início da noite?',
-        options: [
-          'Corrigir firmemente o idoso explicando que ele está no residencial.',
-          'Acolher com empatia, validar o sentimento e redirecionar a conversa calmamente.',
-          'Contentar o idoso e isolá-lo no quarto imediatamente.'
+          'Impor horários rígidos e disciplina hospitalar aos moradores.',
+          'Proporcionar um ambiente seguro e acolhedor que resgate a autonomia e a convivência cidadã do morador.',
+          'Manter os moradores no leito pelo maior tempo possível.'
         ],
         correctAnswerIndex: 1,
-        explanation: 'A validação empática reduz o cortisol e a ansiedade sem gerar conflitos e agitação secundária.'
+        explanation: 'O SRT é uma residência e moradia que visa desinstitucionalizar o cuidado, promovendo autonomia e laços comunitários.'
       }
     ],
     status: 'Concluído',
@@ -1015,36 +978,72 @@ export const INITIAL_MICRO_LEARNING_MODULES: MicroLearningModule[] = [
     suggestedByNexa: true
   },
   {
-    id: 'ml-104',
-    title: 'Prevenção e Tratamento de Lesões por Pressão: Mudança de Decúbito 2h/2h',
-    description: 'Guia prático e demonstração em vídeo sobre posicionamento no leito, uso de protetores de calcâneo e escala de Braden.',
+    id: 'ml-103',
+    title: 'Manejo de Crises e Desescalada Verbal em Saúde Mental (Acolhimento Não-Violento)',
+    description: 'Vídeo treinamento sobre condutas em momentos de agitação psicomotora, desorientação e estresse, priorizando a escuta e contenção verbal.',
     durationMinutes: 4,
     type: 'video',
-    category: 'Lesão por Pressão',
-    staffName: 'Tec. Ana Paula Silva',
-    targetRole: 'Técnico de Enfermagem / Cuidador',
-    clinicalTrigger: 'Relatório de feridas apontando vermelhidão incipiente (grau I) na região sacra da Sra. Nair Ribeiro.',
-    aiReasoning: 'Nexa IA sinalizou risco iminente de ulceração e recomendou treinamento focado em técnica correta de mudança de decúbito.',
-    youtubeId: 'L84XyJ8gB9g',
-    youtubeUrl: 'https://www.youtube.com/watch?v=L84XyJ8gB9g',
+    category: 'Manejamento de Crise',
+    staffName: 'Tec. Carlos Alberto',
+    targetRole: 'Cuidadores / Técnicos de Enfermagem',
+    clinicalTrigger: 'Registro de agitação verbal e inquietação no período noturno no alojamento B.',
+    aiReasoning: 'Nexa IA recomendou reciclagem imediata em técnicas de desescalada verbal e manejo ambiental de gatilhos emocionais.',
+    youtubeId: 'cosvbvef2aI',
+    youtubeUrl: 'https://www.youtube.com/watch?v=cosvbvef2aI',
     videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-nurse-measuring-patient-blood-pressure-41552-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Manter distância de segurança respeitosa (1 a 2 metros), postura corporal não ameaçadora e tom de voz tranquilo.',
+      'Diminuir imediatamente os estímulos ambientais (luzes fortes, ruídos de televisão, excesso de pessoas falando).',
+      'Nunca confrontar delírios ou alucinações de forma ríspida; validar o sentimento de medo ou ansiedade do morador.'
+    ],
+    quiz: [
+      {
+        id: 'q-103-1',
+        question: 'Durante um episódio de ansiedade aguda com elevação de tom de voz do morador, qual é a primeira ação recomendada?',
+        options: [
+          'Gritar mais alto para estabelecer autoridade sobre o morador.',
+          'Manter postura calma, oferecer um copo de água, afastar estímulos barulhentos e escutar atenciosamente.',
+          'Trancar o morador no quarto imediatamente.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'A desescalada verbal reduz a adrenalina e restabelece a confiança entre o cuidador e o morador acolhido.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-104',
+    title: 'Manejo Seguro de Psicotrópicos: Efeitos Adversos, Hidratação e Horários',
+    description: 'Vídeo aula em PT-BR sobre monitoramento de antipsicóticos, sintomas extrapiramidais (tremores, rigidez), hidratação e horários de tomada.',
+    durationMinutes: 4,
+    type: 'video',
+    category: 'Administração MAR',
+    staffName: 'Enf. Bruno Costa',
+    targetRole: 'Enfermeiro RT / Técnicos',
+    clinicalTrigger: 'Queixa de boca seca recorrente e constipação intestinal em residente em uso de antipsicótico atípico.',
+    aiReasoning: 'Nexa IA alertou para necessidade de acompanhamento dos efeitos anticolinérgicos e ajuste do plano de hidratação hídrica.',
+    youtubeId: '9Vj5gTEAxbY',
+    youtubeUrl: 'https://www.youtube.com/watch?v=9Vj5gTEAxbY',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-doctor-checking-a-patients-medical-chart-41551-large.mp4',
     thumbnailUrl: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
     keyTakeaways: [
-      'Realizar mudança de decúbito rigorosa a cada 2 horas (Dorsal -> Lateral Esquerdo -> Lateral Direito).',
-      'Manter lençóis da cama secos e sem dobras ou frestas que promovam cisalhamento.',
-      'Aplicar AGE (Ácidos Graxos Essenciais) em proeminências ósseas íntegras.'
+      'Incentivar a ingestão hídrica fracionada durante todo o dia para minimizar a xerostomia (boca seca) e constipação.',
+      'Observar sinais de impregnação neuroléptica: marcha em pequenos passos, rigidez nos braços e sialorréia.',
+      'Garantir que medicamentos indutores de sono sejam ofertados no horário correto do repouso noturno.'
     ],
     quiz: [
       {
         id: 'q-104-1',
-        question: 'De quanto em quanto tempo deve ser realizada a mudança de decúbito do residente restrito ao leito?',
+        question: 'O que o técnico de enfermagem deve fazer ao notar tremores de repouso e lentidão motora em morador com nova prescrição psiquiátrica?',
         options: [
-          'A cada 6 horas.',
-          'A cada 2 horas.',
-          'Apenas uma vez por turno.'
+          'Ignorar, pois é um sintoma esperado sem relevância clínica.',
+          'Registrar detalhadamente na evolução e comunicar o Enfermeiro RT / Médico para avaliação de sintomas extrapiramidais.',
+          'Suspender todos os medicamentos por conta própria.'
         ],
         correctAnswerIndex: 1,
-        explanation: 'A alternância de decúbito a cada 2 horas alivia a isquemia tissular contínua nas proeminências sacras e trocantéricas.'
+        explanation: 'Sintomas extrapiramidais devem ser relatados no prontuário para que o médico assistente avalie o ajuste de dosagem ou introdução de biperideno.'
       }
     ],
     status: 'Pendente',
@@ -1052,34 +1051,35 @@ export const INITIAL_MICRO_LEARNING_MODULES: MicroLearningModule[] = [
   },
   {
     id: 'ml-105',
-    title: 'Protocolo de Prevenção de Quedas em Geriatria (Escala de Morse & ILPI)',
-    description: 'Vídeo aula oficial sobre avaliação de marcha, iluminação de vigília e contenção não física em residências terapêuticas.',
-    durationMinutes: 6,
+    title: 'Higiene Pessoal, Banho Humanizado e Prevenção de Lesões por Pressão (Escala de Braden)',
+    description: 'Protocolo de cuidados diários no banho assistido, respeito à privacidade do morador, hidratação de pele e mudança de decúbito 2h/2h.',
+    durationMinutes: 4,
     type: 'video',
-    category: 'Prevenção de Quedas',
-    staffName: 'Enf. Bruno Costa',
-    targetRole: 'Equipe de Enfermagem e Cuidadores',
-    clinicalTrigger: 'Registro de vertigem postural e marcha vacilante na Sra. Helena Santos ao se levantar de madrugada.',
-    aiReasoning: 'Sinalização automática Nexa IA de risco moderado/alto na Escala de Morse, indicando treinamento obrigatório de prevenção de quedas.',
-    youtubeId: 'v5cT4zC2Gso',
-    youtubeUrl: 'https://www.youtube.com/watch?v=v5cT4zC2Gso',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+    category: 'Lesão por Pressão',
+    staffName: 'Tec. Ana Paula Silva',
+    targetRole: 'Técnico de Enfermagem / Cuidador',
+    clinicalTrigger: 'Hiperemia leve na região sacra de morador com mobilidade reduzida.',
+    aiReasoning: 'Nexa IA sinalizou risco de evolução para úlcera de pressão grau I, indicando capacitação preventiva imediata.',
+    youtubeId: '3PmVJQUCm4E',
+    youtubeUrl: 'https://www.youtube.com/watch?v=3PmVJQUCm4E',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-senior-man-talking-to-a-nurse-in-a-nursing-home-41549-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
     keyTakeaways: [
-      'Garantir iluminação de vigília em corredores e banheiros durante o período noturno.',
-      'Instalar barras de apoio e piso antiderrapante antes do banho.',
-      'Manter grades de proteção elevadas no leito de residentes com mobilidade reduzida.'
+      'Sempre fechar a porta do banheiro e cobrir o morador, preservando sua dignidade e intimidade durante a higiene.',
+      'Aplicar hidratante ou loção com AGE em áreas de proeminências ósseas sem fricção vigorosa.',
+      'Executar alternância de decúbito no leito a cada 2 horas (Dorsal, Lateral Direito, Lateral Esquerdo).'
     ],
     quiz: [
       {
         id: 'q-105-1',
-        question: 'O que deve ser feito imediatamente ao identificar um idoso com marcha vacilante ao tentar caminhar sozinho?',
+        question: 'Qual é a forma correta de aplicar Ácidos Graxos Essenciais (AGE) na pele íntegra do morador com risco de lesão?',
         options: [
-          'Acompanhar o idoso oferecendo apoio físico lateral e registrar na passagem de plantão.',
-          'Deixar o idoso caminhar sozinho sem interferência.',
-          'Solicitar contenção química prescrita.'
+          'Esfregar com força até a pele ficar vermelha.',
+          'Espalhar suavemente em camada fina sobre as áreas de pressão sem massagear proeminências avermelhadas.',
+          'Deixar a pele molhada com sabonete.'
         ],
-        correctAnswerIndex: 0,
-        explanation: 'O acompanhamento ativo previne quedas sem restringir a mobilidade do residente.'
+        correctAnswerIndex: 1,
+        explanation: 'A massagem vigorosa em áreas de hiperemia pode romper capilares e acelerar a formação de lesões por pressão.'
       }
     ],
     status: 'Pendente',
@@ -1087,34 +1087,108 @@ export const INITIAL_MICRO_LEARNING_MODULES: MicroLearningModule[] = [
   },
   {
     id: 'ml-106',
-    title: 'Aferição de Sinais Vitais Padronizada e Cálculo Automático NEWS2',
-    description: 'Treinamento prático no YouTube cobrindo oximetria de pulso, frequência respiratória e identificação precocíssima de sepse/deterioração.',
-    durationMinutes: 4,
+    title: 'Aferição Padronizada de Sinais Vitais, Glicemia e Alerta Precoce NEWS2',
+    description: 'Vídeo prático em PT-BR sobre medição correta da Pressão Arterial, Temperatura, Frequência Respiratória e cálculo de risco clínico.',
+    durationMinutes: 5,
     type: 'video',
     category: 'Aferição NEWS2 & Vitais',
     staffName: 'Tec. Ana Paula Silva',
-    targetRole: 'Técnicos e Cuidadores',
-    clinicalTrigger: 'Alteração nos valores de oximetria de pulso (SpO2 91%) detectada na leitura prévia.',
-    aiReasoning: 'Gatilho de deterioração clínica do NEWS2 exigindo recalibração das técnicas de aferição rápida.',
-    youtubeId: '_S8e8M-pA10',
-    youtubeUrl: 'https://www.youtube.com/watch?v=_S8e8M-pA10',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=600&q=80',
+    targetRole: 'Equipe de Enfermagem e Cuidadores',
+    clinicalTrigger: 'Registro de sonolência excessiva acompanhada de pressão arterial limítrofe no plantão matinal.',
+    aiReasoning: 'Gatilho de escore NEWS2 indicando necessidade de padronização nas aferições e rápida identificação de desidratação ou infecção.',
+    youtubeId: 'M7lc1UVf-VE',
+    youtubeUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-nurse-measuring-patient-blood-pressure-41552-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
     keyTakeaways: [
-      'Contar a frequência respiratória por 60 segundos completos sem avisar previamente o idoso.',
-      'Aguardar a estabilização da curva do oxímetro de pulso antes de anotar a SpO2.',
-      'Valores de NEWS2 >= 5 indicam gatilho imediato para avaliação médica presencial.'
+      'Contar a frequência respiratória por 60 segundos inteiros sem que o morador perceba a contagem.',
+      'Aguardar o morador descansar 5 minutos sentado antes de medir a pressão arterial.',
+      'Escore NEWS2 maior ou igual a 5 exige alerta imediato ao enfermeiro responsável ou médico do residencial.'
     ],
     quiz: [
       {
         id: 'q-106-1',
-        question: 'Qual o tempo mínimo recomendado para contagem precisa da frequência respiratória em idosos fragilizados?',
+        question: 'Ao identificar que um residente apresenta febre (38.2°C) e respiração acelerada (24 irpm), qual a ação prioritária?',
         options: [
-          '10 segundos multiplicados por 6.',
-          '60 segundos completos.',
-          '5 segundos.'
+          'Aguardar o próximo plantão em 12 horas para ver se melhora.',
+          'Calcular o escore NEWS2, registrar no prontuário eletrônico e acionar o Enfermeiro RT para avaliação médica.',
+          'Dar banho gelado no residente imediatamente sem comunicar ninguém.'
         ],
         correctAnswerIndex: 1,
-        explanation: 'Idosos costumam apresentar ritmos respiratórios irregulares, exigindo observação contínua de 60 segundos.'
+        explanation: 'Taquipneia associada a febre é sinal de alerta precoce para infecções respiratórias ou urinárias em idosos e acolhidos.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-107',
+    title: 'Prevenção de Quedas e Adaptação do Ambiente Físico no Residencial Terapêutico',
+    description: 'Guia audiovisual em PT-BR sobre checagem de tapetes, iluminação noturna dos quartos e banheiros, calçados antiderrapantes e Escala de Morse.',
+    durationMinutes: 4,
+    type: 'video',
+    category: 'Prevenção de Quedas',
+    staffName: 'Enf. Bruno Costa',
+    targetRole: 'Equipe de Enfermagem e Cuidadores',
+    clinicalTrigger: 'Morador com histórico de tropeço no tapete do corredor ao se levantar à noite.',
+    aiReasoning: 'Nexa IA sinalizou risco moderado na Escala de Morse, recomendando inspeção ambiental e reforço na segurança da casa.',
+    youtubeId: '3PmVJQUCm4E',
+    youtubeUrl: 'https://www.youtube.com/watch?v=3PmVJQUCm4E',
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-senior-man-talking-to-a-nurse-in-a-nursing-home-41549-large.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+    keyTakeaways: [
+      'Manter corredores e acessos ao banheiro sempre livres de fios, tapetes soltos e obstáculos.',
+      'Garantir iluminação noturna suave (luz guia de vigília) nos quartos e banheiros.',
+      'Verificar o uso de calçados firmes e antiderrapantes durante as caminhadas e atividades.'
+    ],
+    quiz: [
+      {
+        id: 'q-107-1',
+        question: 'Qual é o horário de maior vulnerabilidade para ocorrência de quedas em residenciais terapêuticos?',
+        options: [
+          'No horário do almoço quando todos estão reunidos.',
+          'Durante o período noturno e madrugadas, quando o morador se levanta sonolento para ir ao banheiro.',
+          'No final da tarde durante as oficinas.'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'A sonolência por psicofármacos e a baixa luminosidade noturna são os principais fatores de risco para quedas no SRT.'
+      }
+    ],
+    status: 'Pendente',
+    suggestedByNexa: true
+  },
+  {
+    id: 'ml-108',
+    title: 'Passagem de Plantão Humanizada (Método SBAR) e Registro SOAP no Prontuário',
+    description: 'Guia interativo sobre comunicação sem ruídos entre turnos de cuidadores e enfermagem, garantindo continuidade do cuidado no residencial.',
+    durationMinutes: 4,
+    type: 'guide',
+    category: 'Protocolo SOAP',
+    staffName: 'Enf. Bruno Costa',
+    targetRole: 'Equipe de Enfermagem e Cuidadores',
+    clinicalTrigger: 'Falta de registro sobre recusa alimentar no turno anterior.',
+    aiReasoning: 'Nexa IA detectou lacunas de informação na troca de turno e estruturou o modelo SBAR para padronizar a comunicação da equipe.',
+    guideContent: `### Protocolo SBAR de Passagem de Plantão no Residencial Terapêutico:
+1. **S (Situação)**: Nome do morador, leito/quarto e a queixa ou intercorrência principal do plantão.
+2. **B (Breve Histórico / Background)**: Diagnóstico psiquiátrico/clínico e medicações em uso.
+3. **A (Avaliação)**: Sinais vitais mais recentes, escore NEWS2, humor, alimentação e sono.
+4. **R (Recomendação)**: Cuidados pendentes, medicações de horário da noite a checar e observações especiais.`,
+    keyTakeaways: [
+      'Realizar a passagem de plantão sempre presencialmente e com prontuário aberto.',
+      'Destacar de forma clara medicamentos administrados com atraso ou recusados.',
+      'Relatar o estado emocional, nível de ansiedade e adesão às refeições de cada morador.'
+    ],
+    quiz: [
+      {
+        id: 'q-108-1',
+        question: 'No método SBAR, onde deve ser informado o valor da pressão arterial e o escore NEWS2?',
+        options: [
+          'Na Situação (S).',
+          'Na Avaliação (A).',
+          'Na Recomendação (R).'
+        ],
+        correctAnswerIndex: 1,
+        explanation: 'Dados objetivos como sinais vitais e escores clínicos fazem parte da Avaliação (A).'
       }
     ],
     status: 'Pendente',

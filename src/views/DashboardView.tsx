@@ -56,14 +56,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [alertSeverityFilter, setAlertSeverityFilter] = useState<'Todos' | 'Crítico' | 'Alto' | 'Médio'>('Todos');
   const [chartMode, setChartMode] = useState<'categoria' | 'diario'>('categoria');
 
-  // Calculate occurrence counts by category for last 7 days
+  // Calculate occurrence counts by category for handovers
   const occurrenceDataByCategory = useMemo(() => {
     const counts: Record<string, number> = {
-      'Queda / Incidente': 3,
-      'Sinais Vitais / Pressão': 5,
-      'Incidente Medicamentoso': 2,
-      'Comportamental': 4,
-      'Atividade Terapêutica': 1,
+      'Queda / Incidente': 0,
+      'Sinais Vitais / Pressão': 0,
+      'Incidente Medicamentoso': 0,
+      'Comportamental': 0,
+      'Atividade Terapêutica': 0,
     };
 
     if (handovers && handovers.length > 0) {
@@ -93,18 +93,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }));
   }, [handovers]);
 
-  // Timeline breakdown per day for last 7 days
+  // Dynamic breakdown for recorded handovers
   const occurrenceDataByDay = useMemo(() => {
-    return [
-      { date: '26/Jul (Dom)', Queda: 1, Pressao: 1, Medicacao: 0, Comportamental: 1 },
-      { date: '27/Jul (Seg)', Queda: 0, Pressao: 2, Medicacao: 1, Comportamental: 0 },
-      { date: '28/Jul (Ter)', Queda: 1, Pressao: 0, Medicacao: 0, Comportamental: 2 },
-      { date: '29/Jul (Qua)', Queda: 0, Pressao: 1, Medicacao: 1, Comportamental: 1 },
-      { date: '30/Jul (Qui)', Queda: 1, Pressao: 1, Medicacao: 0, Comportamental: 0 },
-      { date: '31/Jul (Sex)', Queda: 0, Pressao: 1, Medicacao: 1, Comportamental: 1 },
-      { date: '01/Ago (Sáb)', Queda: 1, Pressao: 0, Medicacao: 0, Comportamental: 0 },
-    ];
-  }, []);
+    if (!handovers || handovers.length === 0) {
+      return [];
+    }
+    return handovers.slice(0, 7).map(h => {
+      const queda = h.occurrences.filter(o => o.category === 'Queda/Incidente').length;
+      const pressao = h.occurrences.filter(o => o.category === 'Sinais Vitais').length;
+      const medicacao = h.occurrences.filter(o => o.category === 'Medicação').length;
+      const comportamental = h.occurrences.filter(o => o.category === 'Comportamental').length;
+      return {
+        date: `${h.date.slice(0, 5)} (${h.shift})`,
+        Queda: queda,
+        Pressao: pressao,
+        Medicacao: medicacao,
+        Comportamental: comportamental,
+      };
+    });
+  }, [handovers]);
 
   // Calculate KPIs
   const totalResidents = residents.length;
