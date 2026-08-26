@@ -36,12 +36,14 @@ import {
   QualityMetric,
   FamilyNote,
   StaffTraining,
-  AuditLogEntry
+  AuditLogEntry,
+  ResidentReminder
 } from './types';
 import { calculateNEWS2Risk } from './utils/news2Calculator';
 import { parseBloodPressure, extractFirstKeyword } from './utils/textParser';
 import { useCriticalAlertNotifications } from './hooks/useCriticalAlertNotifications';
-import { getCurrentUser, isAuthEnabled, setCurrentUser, UserSession, getUserRoleCategory } from './config/auth-mode';
+import { useResidentRemindersNotifier } from './hooks/useResidentRemindersNotifier';
+import { getCurrentUser, isAuthEnabled, setCurrentUser, UserSession, getUserRoleCategory, DEFAULT_USER } from './config/auth-mode';
 import { 
   auth,
   logoutFirebase,
@@ -104,11 +106,13 @@ export default function App() {
   const [currentPath, setCurrentPath] = useState<string>('/dashboard');
 
   // Auth State
-  const [currentUser, setCurrentUserSession] = useState<UserSession | null>(() => getCurrentUser());
-  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+  const [currentUser, setCurrentUserSession] = useState<UserSession | null>(() => {
+    return getCurrentUser() || (!isAuthEnabled() ? DEFAULT_USER : null);
+  });
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(() => isAuthEnabled());
 
   useEffect(() => {
-    if (!auth) {
+    if (!isAuthEnabled() || !auth) {
       setIsAuthChecking(false);
       return;
     }
@@ -127,8 +131,10 @@ export default function App() {
           console.error('Error syncing user profile on auth change:', e);
         }
       } else {
-        setCurrentUserSession(null);
-        setCurrentUser(null);
+        if (isAuthEnabled()) {
+          setCurrentUserSession(null);
+          setCurrentUser(null);
+        }
       }
       setIsAuthChecking(false);
     });
@@ -267,6 +273,7 @@ export default function App() {
   const [isAuditLogModalOpen, setIsAuditLogModalOpen] = useState(false);
   const [initialResidentIdForSOAP, setInitialResidentIdForSOAP] = useState<string | undefined>();
   const [selectedResidentForDetail, setSelectedResidentForDetail] = useState<Resident | null>(null);
+  const [detailModalInitialTab, setDetailModalInitialTab] = useState<'overview' | 'soap' | 'meds' | 'reminders' | 'contacts'>('overview');
   const [selectedResidentFor360, setSelectedResidentFor360] = useState<Resident | null>(null);
   const [selectedResidentForIoT, setSelectedResidentForIoT] = useState<Resident | null>(null);
   const [selectedResidentForTelehealth, setSelectedResidentForTelehealth] = useState<Resident | null>(null);
@@ -621,6 +628,69 @@ export default function App() {
     if (found) setSelectedResidentFor360(found);
   };
 
+  const handleOpenResidentDetail = (residentId: string, initialTab: 'overview' | 'soap' | 'meds' | 'reminders' | 'contacts' = 'overview') => {
+    const found = residents.find(r => r.id === residentId);
+    if (found) {
+      setDetailModalInitialTab(initialTab);
+      setSelectedResidentForDetail(found);
+    }
+  };
+
+  // Custom Reminders Management Handlers
+  const handleAddReminder = (reminder: ResidentReminder) => {
+    setResidents(prev => prev.map(r => {
+      if (r.id !== reminder.residentId) return r;
+      const existing = r.customReminders || [];
+      const updated = {
+        ...r,
+        customReminders: [reminder, ...existing]
+      };
+      saveResidentToDb(updated);
+      return updated;
+    }));
+  };
+
+  const handleUpdateReminder = (updatedReminder: ResidentReminder) => {
+    setResidents(prev => prev.map(r => {
+      if (r.id !== updatedReminder.residentId) return r;
+      const existing = r.customReminders || [];
+      const updated = {
+        ...r,
+        customReminders: existing.map(rem => rem.id === updatedReminder.id ? updatedReminder : rem)
+      };
+      saveResidentToDb(updated);
+      return updated;
+    }));
+  };
+
+  const handleToggleReminder = (reminderId: string) => {
+    setResidents(prev => prev.map(r => {
+      const existing = r.customReminders || [];
+      const found = existing.some(rem => rem.id === reminderId);
+      if (!found) return r;
+      const updated = {
+        ...r,
+        customReminders: existing.map(rem => rem.id === reminderId ? { ...rem, completed: !rem.completed } : rem)
+      };
+      saveResidentToDb(updated);
+      return updated;
+    }));
+  };
+
+  const handleDeleteReminder = (reminderId: string) => {
+    setResidents(prev => prev.map(r => {
+      const existing = r.customReminders || [];
+      const found = existing.some(rem => rem.id === reminderId);
+      if (!found) return r;
+      const updated = {
+        ...r,
+        customReminders: existing.filter(rem => rem.id !== reminderId)
+      };
+      saveResidentToDb(updated);
+      return updated;
+    }));
+  };
+
   // Real-time Service Worker & Browser Notifications for Critical Residents
   const {
     permission: notificationPermission,
@@ -628,6 +698,18 @@ export default function App() {
     sendTestAlert: sendTestNotificationAlert,
     criticalResidentsCount
   } = useCriticalAlertNotifications(residents, (res) => setSelectedResidentFor360(res));
+
+  // Team Reminder & Scheduled Activity Notifier
+  const allCustomReminders = React.useMemo(() => {
+    return residents.flatMap(r => r.customReminders || []);
+  }, [residents]);
+
+  useResidentRemindersNotifier({
+    reminders: allCustomReminders,
+    onOpenResident: (residentId) => {
+      handleOpenResidentDetail(residentId, 'reminders');
+    }
+  });
 
   // Open new evolution modal with optional resident preset
   const handleOpenNewEvolution = (residentId?: string) => {
@@ -642,9 +724,15 @@ export default function App() {
     } catch (e) {
       console.warn('Logout error:', e);
     }
-    setCurrentUser(null);
-    setCurrentUserSession(null);
-    setCurrentPath('/auth');
+    if (isAuthEnabled()) {
+      setCurrentUser(null);
+      setCurrentUserSession(null);
+      setCurrentPath('/auth');
+    } else {
+      setCurrentUserSession(DEFAULT_USER);
+      setCurrentUser(DEFAULT_USER);
+      setCurrentPath('/dashboard');
+    }
     setIsCommandBarOpen(false);
     setIsNexaChatOpen(false);
     setIsSmartHandoverOpen(false);
@@ -659,7 +747,7 @@ export default function App() {
     setSelectedResidentForTelehealth(null);
   };
 
-  if (isAuthChecking) {
+  if (isAuthChecking && isAuthEnabled()) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 text-white font-sans">
         <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center mb-4 text-teal-400 animate-pulse">
@@ -671,7 +759,7 @@ export default function App() {
     );
   }
 
-  if (!currentUser) {
+  if (!currentUser && isAuthEnabled()) {
     return (
       <div className="min-h-screen bg-zinc-100/90 flex flex-col justify-center py-6 font-sans">
         <AuthView
@@ -690,6 +778,7 @@ export default function App() {
       {/* Top Navigation Bar */}
       <NavbarHeader
         alerts={alerts}
+        reminders={allCustomReminders}
         onOpenCommandBar={() => setIsCommandBarOpen(true)}
         onOpenAssistant={() => setIsNexaChatOpen(true)}
         onNavigate={setCurrentPath}
@@ -698,6 +787,8 @@ export default function App() {
         onMarkAlertsRead={handleMarkAlertsRead}
         onOpenInboundHandover={handleOpenInboundHandover}
         onOpenOutboundHandover={handleOpenOutboundHandover}
+        onOpenResidentDetail={handleOpenResidentDetail}
+        onToggleReminder={handleToggleReminder}
         notificationPermission={notificationPermission}
         onRequestNotificationPermission={requestNotificationPermission}
         onSendTestNotificationAlert={sendTestNotificationAlert}
@@ -733,7 +824,10 @@ export default function App() {
               medications={medications}
               evolutions={evolutions}
               handovers={handovers}
+              reminders={allCustomReminders}
               onOpenResident={handleOpenResident}
+              onOpenResidentDetail={handleOpenResidentDetail}
+              onToggleReminder={handleToggleReminder}
               onOpenNewEvolution={handleOpenNewEvolution}
               onNavigate={setCurrentPath}
               onMarkAlertsRead={handleMarkAlertsRead}
@@ -745,6 +839,7 @@ export default function App() {
             <ResidentesView
               residents={residents}
               onOpenResident={handleOpenResident}
+              onOpenResidentDetail={handleOpenResidentDetail}
               onOpenNewEvolution={handleOpenNewEvolution}
               onAddResident={handleAddResident}
               onDeleteResident={handleDeleteResident}
@@ -940,14 +1035,20 @@ export default function App() {
       <ResidentDetailModal
         resident={selectedResidentForDetail}
         isOpen={selectedResidentForDetail !== null}
+        initialTab={detailModalInitialTab}
         onClose={() => setSelectedResidentForDetail(null)}
         evolutions={evolutions}
         medications={medications}
+        reminders={allCustomReminders}
         onOpenNewEvolution={(resId) => {
           setSelectedResidentForDetail(null);
           handleOpenNewEvolution(resId);
         }}
         onUpdateDoseStatus={handleUpdateDoseStatus}
+        onAddReminder={handleAddReminder}
+        onUpdateReminder={handleUpdateReminder}
+        onToggleReminder={handleToggleReminder}
+        onDeleteReminder={handleDeleteReminder}
       />
 
       {/* Resident 360 Enterprise Modal */}

@@ -1,7 +1,15 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import config from '../firebase-applet-config.json';
+const config = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForNexaMedLocalFallback",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "nexamed-srt.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "nexamed-srt",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "nexamed-srt.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:abcdef123456",
+  firestoreDatabaseId: "(default)"
+};
 import { RegisteredUser } from './config/auth-mode';
 import { Resident, StaffRoster, ClinicalEvolution } from './types';
 

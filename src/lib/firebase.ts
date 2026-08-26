@@ -31,10 +31,20 @@ import {
   AuditLogEntry, 
   PASRecord, 
   AppointmentRecord, 
-  FunctionalScaleAssessment 
+  FunctionalScaleAssessment,
+  BackupSnapshot
 } from '../types';
 import { RegisteredUser } from '../config/auth-mode';
-import firebaseConfig from '../../firebase-applet-config.json';
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForNexaMedLocalFallback",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "nexamed-srt.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "nexamed-srt",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "nexamed-srt.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:abcdef123456",
+  firestoreDatabaseId: "(default)"
+};
 
 let app: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
@@ -205,6 +215,7 @@ const AUDIT_LOGS_COL = 'audit_logs';
 const PAS_COL = 'pas_records';
 const APPOINTMENTS_COL = 'appointments';
 const SCALES_COL = 'functional_scales';
+const BACKUPS_COL = 'backups';
 
 function sanitizeForFirestore<T>(data: T): Record<string, any> {
   if (data === null || data === undefined) return {};
@@ -650,5 +661,54 @@ export async function saveFunctionalScaleToDb(assessment: FunctionalScaleAssessm
     console.error('Error saving scale assessment to Firestore:', err);
   }
 }
+
+/**
+ * Subscribe to Backups collection in Cloud Firestore (Redundância de Dados).
+ */
+export function subscribeBackups(
+  callback: (data: BackupSnapshot[]) => void,
+  initialFallback: BackupSnapshot[] = []
+) {
+  if (!db) {
+    callback(initialFallback);
+    return () => {};
+  }
+  const colRef = collection(db, BACKUPS_COL);
+
+  return onSnapshot(colRef, (snapshot) => {
+    if (!snapshot.empty) {
+      const list: BackupSnapshot[] = [];
+      snapshot.forEach((d) => list.push(d.data() as BackupSnapshot));
+      list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      callback(list);
+    } else {
+      callback([]);
+    }
+  }, (err) => {
+    console.warn('Firestore backups error:', err);
+    handleFirestoreError(err, OperationType.GET, BACKUPS_COL);
+  });
+}
+
+export async function saveBackupSnapshotToDb(backup: BackupSnapshot) {
+  if (!db) return;
+  try {
+    await setDoc(doc(db, BACKUPS_COL, backup.id), sanitizeForFirestore(backup), { merge: true });
+  } catch (err) {
+    console.error('Error saving backup snapshot to Firestore:', err);
+    handleFirestoreError(err, OperationType.WRITE, `backups/${backup.id}`);
+  }
+}
+
+export async function deleteBackupFromDb(backupId: string) {
+  if (!db) return;
+  try {
+    await deleteDoc(doc(db, BACKUPS_COL, backupId));
+  } catch (err) {
+    console.error('Error deleting backup from Firestore:', err);
+    handleFirestoreError(err, OperationType.DELETE, `backups/${backupId}`);
+  }
+}
+
 
 

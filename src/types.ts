@@ -317,6 +317,40 @@ export interface GiterMigrationReport {
   importedBy: string;
 }
 
+export type ReminderCategory = 
+  | 'Consulta Médica' 
+  | 'Atividade Agendada' 
+  | 'Exame Laboratorial' 
+  | 'Visita Familiar' 
+  | 'Renovação Receita' 
+  | 'Cuidado Específico' 
+  | 'Outro';
+
+export type ReminderPriority = 'Crítica' | 'Alta' | 'Média' | 'Normal';
+
+export interface ResidentReminder {
+  id: string;
+  residentId: string;
+  residentName: string;
+  residentRoom?: string;
+  title: string;
+  category: ReminderCategory;
+  date: string; // YYYY-MM-DD ou DD/MM/YYYY
+  time: string; // HH:mm
+  location?: string; // ex: "CAPS II Blumenau", "Sala de Terapia Ocupacional", "Posto Central"
+  professionalOrOrganizer?: string; // ex: "Dr. Fernando Alencar (Psiquiatra)", "Terapeuta Juliana"
+  responsibleStaff?: string; // ex: "Enf. Mariana Castro", "Cuidador João"
+  priority: ReminderPriority;
+  notifyTeam: boolean; // Se deve alertar a equipe via notificações
+  notificationSent?: boolean;
+  notes?: string;
+  completed: boolean;
+  completedAt?: string;
+  completedBy?: string;
+  createdAt: string;
+  createdBy?: string;
+}
+
 export interface Resident {
   id: string;
   name: string;
@@ -335,6 +369,8 @@ export interface Resident {
   singularTherapeuticPlan?: any;
   medsPendingCount?: number;
   notesCount?: number;
+  customReminders?: ResidentReminder[];
+  remindersCount?: number;
   aiPredictions?: AIPrediction[];
   primaryDiagnosis?: string;
   primaryDiagnostic?: string;
@@ -623,4 +659,39 @@ export interface StaffMicroLearningProfile {
   recentGapsFound: string[];
   assignedModules: MicroLearningModule[];
 }
+
+export interface BackupRecordCounts {
+  residents: number;
+  evolutions: number;
+  medications: number;
+  handovers: number;
+  auditLogs: number;
+  functionalScales: number;
+  pasRecords: number;
+  appointments: number;
+  totalRecords: number;
+}
+
+export interface BackupSnapshot {
+  id: string;
+  timestamp: string; // ISO 8601
+  date: string;      // YYYY-MM-DD
+  time: string;      // HH:mm:ss
+  scheduledTime: string; // '00:00'
+  type: 'AUTOMATIC_DAILY_MIDNIGHT' | 'MANUAL_ON_DEMAND';
+  status: 'Sucesso' | 'Pendente' | 'Erro';
+  storageTarget: 'Firebase Storage / Firestore Redundancy' | 'Local Redundancy' | 'Cloud Redundancy';
+  storagePath?: string;
+  fileName: string;
+  fileSizeBytes: number;
+  fileSizeFormatted: string;
+  checksumSha256: string;
+  recordCounts: BackupRecordCounts;
+  summary: string;
+  executedBy: string;
+  payloadJson?: string;
+  pdfHtmlExport?: string;
+  version?: string;
+}
+
 

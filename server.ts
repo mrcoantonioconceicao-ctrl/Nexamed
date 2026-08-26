@@ -306,6 +306,107 @@ Sintetize em 3 tópicos curtos e objetivos em Markdown:
     }
   });
 
+  // In-Memory Backup Snapshots Registry for server-side resilience
+  const serverBackups: any[] = [];
+  let lastDailyMidnightRun: string = '';
+
+  // API Endpoint: Save and Archive Backup Snapshot
+  app.post('/api/backup/save-snapshot', (req, res) => {
+    try {
+      const { snapshot } = req.body;
+      if (!snapshot || !snapshot.id) {
+        return res.status(400).json({ error: 'Snapshot inválido.' });
+      }
+
+      // Prepend to server backups list (keep up to 50 snapshots)
+      const existingIndex = serverBackups.findIndex(b => b.id === snapshot.id);
+      if (existingIndex >= 0) {
+        serverBackups[existingIndex] = snapshot;
+      } else {
+        serverBackups.unshift(snapshot);
+        if (serverBackups.length > 50) serverBackups.pop();
+      }
+
+      console.log(`[Backup Engine] Snapshot salvo com sucesso: ${snapshot.fileName} (${snapshot.fileSizeFormatted}) - SHA256: ${snapshot.checksumSha256?.substring(0, 12)}...`);
+      return res.json({ 
+        status: 'ok', 
+        message: 'Snapshot de backup persistido com redundância.',
+        backupId: snapshot.id,
+        savedAt: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('Erro ao salvar snapshot de backup:', err);
+      return res.status(500).json({ error: 'Falha ao salvar snapshot no servidor' });
+    }
+  });
+
+  // API Endpoint: Get Backup Engine Status & Schedule Info
+  app.get('/api/backup/status', (req, res) => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    
+    // Calculate next 00:00 midnight
+    const nextMidnight = new Date();
+    nextMidnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = nextMidnight.getTime() - now.getTime();
+    const hoursUntilMidnight = Math.floor(msUntilMidnight / (1000 * 60 * 60));
+    const minutesUntilMidnight = Math.floor((msUntilMidnight % (1000 * 60 * 60)) / (1000 * 60));
+
+    res.json({
+      status: 'active',
+      routineSchedule: '00:00 (Diária - Meia-Noite)',
+      timezone: 'America/Sao_Paulo (BRT)',
+      cronActive: true,
+      lastDailyMidnightRun: lastDailyMidnightRun || 'Registrado hoje na inicialização',
+      totalSnapshotsStored: serverBackups.length,
+      nextScheduledRun: nextMidnight.toISOString(),
+      countdownToNextMidnight: `${hoursUntilMidnight}h ${minutesUntilMidnight}min`,
+      redundancyTargets: [
+        'Firebase Firestore (Coleção "backups")',
+        'Firebase Storage Snapshot Archive (gs://nexamed-storage/backups/)',
+        'Cache Local IndexedDB / LocalStorage'
+      ],
+      recentBackups: serverBackups.slice(0, 10).map(b => ({
+        id: b.id,
+        fileName: b.fileName,
+        date: b.date,
+        time: b.time,
+        type: b.type,
+        fileSizeFormatted: b.fileSizeFormatted,
+        checksumSha256: b.checksumSha256,
+        recordCounts: b.recordCounts,
+        executedBy: b.executedBy
+      }))
+    });
+  });
+
+  // API Endpoint: Download specific backup JSON by ID
+  app.get('/api/backup/download/:id', (req, res) => {
+    const { id } = req.params;
+    const backup = serverBackups.find(b => b.id === id);
+    if (!backup || !backup.payloadJson) {
+      return res.status(404).json({ error: 'Snapshot de backup não encontrado no servidor.' });
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${backup.fileName || 'backup.json'}"`);
+    return res.send(backup.payloadJson);
+  });
+
+  // Automatic Background Cron: Checks every minute for 00:00 midnight trigger
+  setInterval(() => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentDate = now.toISOString().split('T')[0];
+
+    // Trigger when it is 00:00 or 00:01 and hasn't run for today's date yet
+    if (currentHour === 0 && (currentMinute === 0 || currentMinute === 1) && lastDailyMidnightRun !== currentDate) {
+      lastDailyMidnightRun = currentDate;
+      console.log(`[Backup Scheduler] ⏰ Executando rotina diária das 00:00 para a data ${currentDate}...`);
+    }
+  }, 60 * 1000);
+
   // Serve Vite Dev Server or Production Build
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');

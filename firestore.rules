@@ -25,6 +25,9 @@ service cloud.firestore {
     match /roster/{rosterId} {
       allow read, write: if true;
     }
+    match /backups/{backupId} {
+      allow read, write: if true;
+    }
     match /{document=**} {
       allow read, write: if true;
     }

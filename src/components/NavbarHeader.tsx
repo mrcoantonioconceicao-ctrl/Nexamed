@@ -12,15 +12,34 @@ import {
   Activity,
   Layers,
   Compass,
-  Rocket
+  Rocket,
+  Calendar,
+  Clock,
+  CheckCircle2,
+  Volume2,
+  Stethoscope,
+  Palette,
+  FlaskConical,
+  Users2,
+  FileCheck,
+  ExternalLink,
+  Plus,
+  Filter
 } from 'lucide-react';
 import { getCurrentUser, isAuthEnabled, setCurrentUser } from '../config/auth-mode';
 import { logoutFirebase } from '../lib/firebase';
-import { ClinicalAlert } from '../types';
+import { ClinicalAlert, ResidentReminder, ReminderCategory } from '../types';
+import { 
+  playReminderNotificationChime, 
+  sendBrowserReminderNotification,
+  getCategoryBadgeStyle,
+  getPriorityBadgeStyle 
+} from '../utils/reminderService';
 import { OfflineIndicator } from './OfflineIndicator';
 
 interface NavbarHeaderProps {
   alerts: ClinicalAlert[];
+  reminders?: ResidentReminder[];
   onOpenCommandBar: () => void;
   onOpenAssistant?: () => void;
   onNavigate: (path: string) => void;
@@ -29,6 +48,8 @@ interface NavbarHeaderProps {
   onMarkAlertsRead: () => void;
   onOpenOutboundHandover?: () => void;
   onOpenInboundHandover?: () => void;
+  onOpenResidentDetail?: (residentId: string, initialTab?: 'overview' | 'soap' | 'meds' | 'reminders' | 'contacts') => void;
+  onToggleReminder?: (reminderId: string) => void;
   notificationPermission?: NotificationPermission;
   onRequestNotificationPermission?: () => void;
   onSendTestNotificationAlert?: () => void;
@@ -54,6 +75,7 @@ interface NavbarHeaderProps {
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   alerts,
+  reminders = [],
   onOpenCommandBar,
   onOpenAssistant,
   onNavigate,
@@ -61,6 +83,8 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onMarkAlertsRead,
   onOpenOutboundHandover,
   onOpenInboundHandover,
+  onOpenResidentDetail,
+  onToggleReminder,
   notificationPermission,
   onRequestNotificationPermission,
   onSendTestNotificationAlert,
@@ -73,7 +97,37 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   const demoMode = !isAuthEnabled();
   const unreadAlerts = alerts.filter(a => !a.read);
   const [showAlertsDropdown, setShowAlertsDropdown] = useState(false);
+  const [showRemindersDropdown, setShowRemindersDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [reminderFilter, setReminderFilter] = useState<'all' | 'today' | 'pending' | 'completed'>('pending');
+
+  const todayPtBr = new Date().toLocaleDateString('pt-BR');
+  const pendingReminders = reminders.filter(r => !r.completed);
+  const todayReminders = reminders.filter(r => r.date === todayPtBr && !r.completed);
+
+  const filteredReminders = reminders.filter(r => {
+    if (reminderFilter === 'today') return r.date === todayPtBr;
+    if (reminderFilter === 'pending') return !r.completed;
+    if (reminderFilter === 'completed') return r.completed;
+    return true;
+  });
+
+  const getCategoryIcon = (category: ReminderCategory) => {
+    switch (category) {
+      case 'Consulta Médica':
+        return <Stethoscope className="w-3.5 h-3.5 text-sky-600 shrink-0" />;
+      case 'Atividade Agendada':
+        return <Palette className="w-3.5 h-3.5 text-teal-600 shrink-0" />;
+      case 'Exame Laboratorial':
+        return <FlaskConical className="w-3.5 h-3.5 text-purple-600 shrink-0" />;
+      case 'Visita Familiar':
+        return <Users2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />;
+      case 'Renovação Receita':
+        return <FileCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />;
+      default:
+        return <Calendar className="w-3.5 h-3.5 text-zinc-600 shrink-0" />;
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -212,14 +266,260 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           <Search className="w-4 h-4 text-teal-600" />
         </button>
 
+        {/* Lembretes & Atividades Bell Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              setShowRemindersDropdown(!showRemindersDropdown);
+              if (showAlertsDropdown) setShowAlertsDropdown(false);
+            }}
+            className={`relative p-2 rounded-xl border transition-all flex items-center gap-1 ${
+              showRemindersDropdown
+                ? 'bg-teal-600 text-white border-teal-600 shadow-xs'
+                : pendingReminders.length > 0
+                ? 'bg-teal-50 hover:bg-teal-100 text-teal-800 border-teal-200 shadow-2xs'
+                : 'bg-zinc-100/80 hover:bg-zinc-200/80 text-zinc-700 border-zinc-200'
+            }`}
+            title="Lembretes & Atividades Agendadas da Equipe"
+          >
+            <Bell className="w-4 h-4" />
+            <span className="hidden xl:inline text-xs font-bold">Lembretes</span>
+            {pendingReminders.length > 0 && (
+              <span className={`px-1.5 py-0.2 text-[10px] font-extrabold rounded-full ${
+                todayReminders.length > 0
+                  ? 'bg-amber-500 text-white animate-pulse'
+                  : showRemindersDropdown
+                  ? 'bg-white text-teal-900'
+                  : 'bg-teal-700 text-white'
+              }`}>
+                {pendingReminders.length}
+              </span>
+            )}
+          </button>
+
+          {showRemindersDropdown && (
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-zinc-200 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in duration-150">
+              {/* Header */}
+              <div className="p-3.5 bg-gradient-to-r from-teal-50 to-sky-50 border-b border-zinc-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-teal-600 text-white rounded-lg shadow-xs">
+                    <Bell className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black text-zinc-900">
+                      Lembretes & Atividades SRT
+                    </h3>
+                    <p className="text-[10px] text-zinc-500 font-medium">
+                      {pendingReminders.length} pendente(s) • {todayReminders.length} agendado(s) para hoje
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => playReminderNotificationChime()}
+                  title="Testar alarme sonoro do sininho"
+                  className="p-1.5 text-teal-700 hover:text-teal-900 bg-white hover:bg-teal-100/60 rounded-lg transition-colors text-[11px] font-bold flex items-center gap-1 border border-zinc-200 shadow-2xs"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span className="text-[10px]">Tocar Som</span>
+                </button>
+              </div>
+
+              {/* Filter Tabs inside Dropdown */}
+              <div className="flex items-center gap-1 px-3 py-2 bg-zinc-50/80 border-b border-zinc-200 overflow-x-auto no-scrollbar">
+                <button
+                  onClick={() => setReminderFilter('pending')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors whitespace-nowrap ${
+                    reminderFilter === 'pending'
+                      ? 'bg-amber-600 text-white shadow-2xs'
+                      : 'bg-white text-zinc-600 hover:bg-zinc-200/70 border border-zinc-200'
+                  }`}
+                >
+                  Pendentes ({pendingReminders.length})
+                </button>
+                <button
+                  onClick={() => setReminderFilter('today')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors whitespace-nowrap ${
+                    reminderFilter === 'today'
+                      ? 'bg-sky-600 text-white shadow-2xs'
+                      : 'bg-white text-zinc-600 hover:bg-zinc-200/70 border border-zinc-200'
+                  }`}
+                >
+                  Hoje ({todayReminders.length})
+                </button>
+                <button
+                  onClick={() => setReminderFilter('all')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors whitespace-nowrap ${
+                    reminderFilter === 'all'
+                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      : 'bg-white text-zinc-600 hover:bg-zinc-200/70 border border-zinc-200'
+                  }`}
+                >
+                  Todos ({reminders.length})
+                </button>
+                <button
+                  onClick={() => setReminderFilter('completed')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors whitespace-nowrap ${
+                    reminderFilter === 'completed'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'bg-white text-zinc-600 hover:bg-zinc-200/70 border border-zinc-200'
+                  }`}
+                >
+                  Concluídos ({reminders.filter(r => r.completed).length})
+                </button>
+              </div>
+
+              {/* Reminders List */}
+              <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100">
+                {filteredReminders.length === 0 ? (
+                  <div className="p-6 text-center space-y-1">
+                    <Calendar className="w-6 h-6 text-zinc-400 mx-auto" />
+                    <p className="text-xs font-semibold text-zinc-700">Nenhum compromisso encontrado.</p>
+                    <p className="text-[11px] text-zinc-500">Agende consultas e atividades na ficha dos residentes.</p>
+                  </div>
+                ) : (
+                  filteredReminders.map((rem) => {
+                    const isToday = rem.date === todayPtBr;
+                    const catBadge = getCategoryBadgeStyle(rem.category);
+                    const priBadge = getPriorityBadgeStyle(rem.priority);
+
+                    return (
+                      <div
+                        key={rem.id}
+                        className={`p-3 transition-colors space-y-1.5 ${
+                          rem.completed
+                            ? 'bg-zinc-50/60 opacity-70'
+                            : isToday
+                            ? 'bg-amber-50/30 hover:bg-amber-50/60'
+                            : 'hover:bg-zinc-50'
+                        }`}
+                      >
+                        {/* Top info */}
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border flex items-center gap-1 ${catBadge.bg} ${catBadge.text} ${catBadge.border}`}>
+                              {getCategoryIcon(rem.category)}
+                              <span>{rem.category}</span>
+                            </span>
+
+                            {isToday && !rem.completed && (
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500 text-white animate-pulse">
+                                HOJE
+                              </span>
+                            )}
+
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${priBadge.bg} ${priBadge.text} ${priBadge.border}`}>
+                              {rem.priority}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1 text-[11px] font-bold text-zinc-700">
+                            <span className="bg-zinc-100 px-1.5 py-0.5 rounded text-zinc-800 text-[10px]">{rem.date}</span>
+                            <span className="bg-teal-50 px-1.5 py-0.5 rounded text-teal-800 text-[10px]">{rem.time}</span>
+                          </div>
+                        </div>
+
+                        {/* Title and Resident Name */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className={`text-xs font-bold ${rem.completed ? 'line-through text-zinc-500' : 'text-zinc-900'}`}>
+                              {rem.title}
+                            </p>
+                            <p className="text-[11px] text-teal-700 font-bold mt-0.5 flex items-center gap-1">
+                              <span>👤 {rem.residentName}</span>
+                              <span className="text-[10px] text-zinc-500 font-medium">({rem.residentRoom})</span>
+                            </p>
+                          </div>
+
+                          {/* Quick Toggle Done button */}
+                          {onToggleReminder && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleReminder(rem.id);
+                              }}
+                              className={`p-1 rounded-lg border transition-colors shrink-0 ${
+                                rem.completed
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                  : 'bg-white hover:bg-zinc-100 text-zinc-400 hover:text-zinc-800 border-zinc-200'
+                              }`}
+                              title={rem.completed ? 'Reabrir lembrete' : 'Marcar como concluído'}
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Location / Professional Details */}
+                        {(rem.location || rem.professionalOrOrganizer) && (
+                          <p className="text-[10px] text-zinc-500 truncate">
+                            📍 {rem.location || 'Residencial'} {rem.professionalOrOrganizer ? `• 🩺 ${rem.professionalOrOrganizer}` : ''}
+                          </p>
+                        )}
+
+                        {/* Action buttons inside item */}
+                        <div className="flex items-center justify-between pt-1 text-[10px]">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playReminderNotificationChime();
+                              sendBrowserReminderNotification(rem);
+                            }}
+                            className="text-teal-700 hover:text-teal-900 font-bold flex items-center gap-1 hover:underline"
+                          >
+                            <Volume2 className="w-3 h-3 text-teal-600" />
+                            <span>Alertar Equipe</span>
+                          </button>
+
+                          {onOpenResidentDetail && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowRemindersDropdown(false);
+                                onOpenResidentDetail(rem.residentId, 'reminders');
+                              }}
+                              className="text-teal-700 hover:text-teal-900 font-extrabold flex items-center gap-1 hover:underline"
+                            >
+                              <span>Abrir na Ficha</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Bottom Footer */}
+              <div className="p-2.5 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    setShowRemindersDropdown(false);
+                    onNavigate('/residentes');
+                  }}
+                  className="text-xs text-teal-700 font-extrabold hover:underline flex items-center gap-1"
+                >
+                  <span>Ver Todos os Residentes & Agenda</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Alerts Bell Dropdown */}
         <div className="relative">
           <button
-            onClick={() => setShowAlertsDropdown(!showAlertsDropdown)}
+            onClick={() => {
+              setShowAlertsDropdown(!showAlertsDropdown);
+              if (showRemindersDropdown) setShowRemindersDropdown(false);
+            }}
             className="relative p-2 text-zinc-700 hover:text-zinc-900 bg-zinc-100/80 hover:bg-zinc-200/80 rounded-xl border border-zinc-200 transition-colors"
-            title="Alertas Clínicos"
+            title="Alertas Clínicos de Risco"
           >
-            <Bell className="w-4 h-4" />
+            <ShieldAlert className="w-4 h-4 text-rose-600" />
             {unreadAlerts.length > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-xs">
                 {unreadAlerts.length}

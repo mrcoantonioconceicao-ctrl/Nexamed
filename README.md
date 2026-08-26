@@ -1,6 +1,6 @@
 # 🏠 NexaMed — Plataforma de Gestão Especializada em Serviços de Residência Terapêutica (SRT)
 
-> **Plataforma de Gestão Técnica, Clínica e Assistencial Especializada para Serviços de Residência Terapêutica (SRT Tipo I e Tipo II)** com Inteligência Artificial Clínica (Google Gemini API), Sincronização em Tempo Real (Firebase Firestore), Aprazamento e Checagem MAR (Regra dos 9 Certos), Prontuário Eletrônico SOAP com Sugestões Inteligentes de Histórico, Módulo de Micro-Learning com Player YouTube em PT-BR, Daily Huddle Clínico de 5 Minutos, Guia Operacional Normativo (Portaria MS/GM nº 106/2000 & RAPS), Calculadora NEWS2, Service Worker com Alerta Sonoro de Emergência e Conformidade LGPD/ANVISA.
+> **Plataforma de Gestão Técnica, Clínica e Assistencial Especializada para Serviços de Residência Terapêutica (SRT Tipo I e Tipo II)** com Inteligência Artificial Clínica (Google Gemini API), Sincronização em Tempo Real (Firebase Firestore), Exportação e Backup Automático Diário (00:00 BRT em JSON/PDF no Firebase Storage), Aprazamento e Checagem MAR (Regra dos 9 Certos), Prontuário Eletrônico SOAP com Sugestões Inteligentes de Histórico, Módulo de Micro-Learning com Player YouTube em PT-BR, Daily Huddle Clínico de 5 Minutos, Guia Operacional Normativo (Portaria MS/GM nº 106/2000 & RAPS), Calculadora NEWS2, Service Worker com Alerta Sonoro de Emergência e Conformidade LGPD/ANVISA.
 
 ---
 
@@ -9,18 +9,20 @@
 1. [Visão Geral e Foco em Residência Terapêutica](#-visão-geral-e-foco-em-residência-terapêutica)
 2. [Marco Regulatório e Normas Técnicas (SUS / Ministério da Saúde)](#-marco-regulatório-e-normas-técnicas-sus--ministério-da-saúde)
 3. [Módulos Principais & Funcionalidades](#-módulos-principais--funcionalidades)
-   - [1. Prontuário Eletrônico SOAP com Sugestões Inteligentes do Histórico](#1-prontuário-eletrônico-soap-com-sugestões-inteligentes-do-histórico)
+   - [1. Prontuário Eletrônico SOAP com Sugestões Inteligentes do Histórico & Exportação PDF](#1-prontuário-eletrônico-soap-com-sugestões-inteligentes-do-histórico--exportação-pdf)
    - [2. Aprazamento e Checagem de Medicação (MAR - Regra dos 9 Certos)](#2-aprazamento-e-checagem-de-medicação-mar---regra-dos-9-certos)
-   - [3. Micro-Learning & Capacitação Contínua em Vídeo (PT-BR)](#3-micro-learning--capacitação-contínua-em-vídeo-pt-br)
-   - [4. Daily Huddle Clínico & Alinhamento Operacional de 5 Minutos](#4-daily-huddle-clínico--alinhamento-operacional-de-5-minutos)
-   - [5. Passagem de Plantão Inteligente & Auditoria de Pendências (SBAR)](#5-passagem-de-plantão-inteligente--auditoria-de-pendências-sbar)
-   - [6. Gestão de Moradores & Plano Terapêutico Singular (PTS)](#6-gestão-de-moradores--plano-terapêutico-singular-pts)
-   - [7. Assistente Técnica Nexa (Respostas Curtas e Comandos Diretos)](#7-assistente-técnica-nexa-respostas-curtas-e-comandos-diretos)
-   - [8. Guia Residencial Terapêutico & Procedimentos Operacionais Padrão (POP)](#8-guia-residencial-terapêutico--procedimentos-operacionais-padrão-pop)
-   - [9. Triagem NEWS2, Telemetria & Alerta Sonoro em Background](#9-triagem-news2-telemetria--alerta-sonoro-em-background)
-   - [10. Escalas da Equipe Multidisciplinar & Cobertura 24/7](#10-escalas-da-equipe-multidisciplinar--cobertura-247)
-   - [11. Central de Relatórios, Indicadores e Pareceres Técnicos](#11-central-de-relatórios-indicadores-e-pareceres-técnicos)
-   - [12. Segurança da Informação, LGPD e Logs de Auditoria](#12-segurança-da-informação-lgpd-e-logs-de-auditoria)
+   - [3. Sininho de Lembretes, Agenda & Atividades Terapêuticas](#3-sininho-de-lembretes-agenda--atividades-terapêuticas)
+   - [4. Micro-Learning & Capacitação Contínua em Vídeo (PT-BR)](#4-micro-learning--capacitação-contínua-em-vídeo-pt-br)
+   - [5. Daily Huddle Clínico & Alinhamento Operacional de 5 Minutos](#5-daily-huddle-clínico--alinhamento-operacional-de-5-minutos)
+   - [6. Passagem de Plantão Inteligente & Auditoria de Pendências (SBAR)](#6-passagem-de-plantão-inteligente--auditoria-de-pendências-sbar)
+   - [7. Gestão de Moradores & Plano Terapêutico Singular (PTS)](#7-gestão-de-moradores--plano-terapêutico-singular-pts)
+   - [8. Assistente Técnica Nexa (Respostas Curtas e Comandos Diretos)](#8-assistente-técnica-nexa-respostas-curtas-e-comandos-diretos)
+   - [9. Guia Residencial Terapêutico & Procedimentos Operacionais Padrão (POP)](#9-guia-residencial-terapêutico--procedimentos-operacionais-padrão-pop)
+   - [10. Triagem NEWS2, Telemetria & Alerta Sonoro em Background](#10-triagem-news2-telemetria--alerta-sonoro-em-background)
+   - [11. Escalas da Equipe Multidisciplinar & Cobertura 24/7](#11-escalas-da-equipe-multidisciplinar--cobertura-247)
+   - [12. Central de Relatórios, Indicadores e Pareceres Técnicos](#12-central-de-relatórios-indicadores-e-pareceres-técnicos)
+   - [13. Segurança da Informação, LGPD e Logs de Auditoria](#13-segurança-da-informação-lgpd-e-logs-de-auditoria)
+   - [14. Exportação Automática & Redundância de Dados Diária (00:00 - JSON/PDF)](#14-exportação-automática--redundância-de-dados-diária-0000---jsonpdf)
 4. [Tabela de Status dos Módulos](#-tabela-de-status-dos-módulos)
 5. [Arquitetura Tecnológica e Stack](#-arquitetura-tecnológica-e-stack)
 6. [Estrutura de Diretórios e Arquivos](#-estrutura-de-diretórios-e-arquivos)
@@ -55,9 +57,15 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
 
 ## 🚀 Módulos Principais & Funcionalidades
 
-### 1. Prontuário Eletrônico SOAP com Sugestões Inteligentes do Histórico
+### 1. Prontuário Eletrônico SOAP com Sugestões Inteligentes do Histórico & Exportação PDF
 - **Metodologia SOAP:** Campos dedicados para **Subjetivo (S)**, **Objetivo (O)**, **Avaliação (A)** e **Plano (P)**.
 - **Sugestões Inteligentes de Histórico:** O sistema analisa as evoluções anteriores registradas para o morador selecionado e oferece atalhos com 1 clique para reaproveitar condutas frequentes, queixas subjetivas recorrentes e metas pactuadas.
+- **Exportação do Resumo Clínico & Evoluções para PDF / Impressão Física (`ResidentDetailModal`):**
+  - Geração instantânea de relatório em PDF de alta qualidade para encaminhamentos externos (CAPS, emergências, internações hospitalares e auditorias SUS).
+  - Seleção flexível de escopo: histórico completo de evoluções, apenas a última evolução ou uma evolução específica.
+  - Inclusão opcional da Grade Ativa de Medicamentos (MAR) e Agenda de Consultas/Lembretes.
+  - Campos oficiais com timbre do SRT, dados de identificação, alergias, contato de emergência e linhas de assinatura para RT e Direção Técnica.
+  - Visualização prévia de impressão compatível com envio direto para impressoras físicas ou PDF do navegador.
 - **Estruturador Automático por IA (Google Gemini):** Transforma anotações informais em texto livre em uma evolução clínica formal, corrigida e classificada segundo a norma técnica.
 - **Linha do Tempo Clínica:** Histórico completo e auditável de cada intervenção com identificação do profissional e carimbo de data/hora.
 
@@ -70,7 +78,18 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
   - **Recusa Acolhida:** Notificação de recusa com justificativa humanizada, nova tentativa programada e aviso ao Enfermeiro RT.
 - **Destaque Visual para Psicotrópicos (Portaria 344):** Alertas de dupla checagem para antipsicóticos, estabilizadores de humor, antidepressivos e ansiolíticos.
 
-### 3. Micro-Learning & Capacitação Contínua em Vídeo (PT-BR)
+### 3. Sininho de Lembretes, Agenda & Atividades Terapêuticas
+- **Sininho Interativo no Cabeçalho (`NavbarHeader`):**
+  - Badge dinâmico com contagem em tempo real de compromissos pendentes e destaque especial para atividades programadas para hoje.
+  - Menu suspenso com abas de filtro: *Pendentes*, *Hoje*, *Todos* e *Concluídos*.
+  - Alarme sonoro integrado (*Web Audio API*) com melodia harmônica e botão para disparar notificação à equipe.
+  - Ações rápidas no dropdown: marcar como concluído em 1 clique e botão de redirecionamento direto para a ficha do morador.
+- **Agenda nos Cards de Residentes (`ResidentesView`):**
+  - Indicador visual e contagem de lembretes ativos por morador, com acesso imediato à agenda.
+- **Widget de Atividades no Painel Geral (`DashboardView`):**
+  - Painel lateral com resumo das próximas consultas no CAPS, exames laboratoriais, oficinas e passeios comunitários.
+
+### 4. Micro-Learning & Capacitação Contínua em Vídeo (PT-BR)
 - **Player YouTube Embutido e Seguro:** Reprodução contínua de vídeos de treinamento sem redirecionamento externo (`youtube-nocookie.com`).
 - **Catálogo Curado em Português (PT-BR) para SRT:**
   - *Vias de Administração de Medicamentos, Aprazamento e os 9 Certos (MAR)*;
@@ -84,30 +103,30 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
 - **Sintetizador por IA:** Importação de novos links do YouTube com geração automática de pontos-chave, normas da Anvisa/COFEN e quiz de fixação de conhecimento.
 - **Capítulos Interativos:** Marcadores de tempo com salto direto para os trechos mais importantes do vídeo.
 
-### 4. Daily Huddle Clínico & Alinhamento Operacional de 5 Minutos
+### 5. Daily Huddle Clínico & Alinhamento Operacional de 5 Minutos
 - **Modo Apresentador Express com Cronômetro:** Slideshow dinâmico com contagem regressiva de 5 minutos para alinhamentos rápidos de início de turno.
 - **Atribuição de Foco da Liderança:** Definição de prioridades clínicas, comportamentais e rotinas específicas por turno (Manhã, Tarde, Noite).
 - **Painel de Briefings de Prontidão:** Agrupamento automático de alertas NEWS2, alergias do aprazamento MAR e recusas recentes.
 - **Agenda de Capacitações e Certificações:** Controle de presença e inscrições em cursos obrigatórios (BLS, biossegurança NR32, desescalada de crises).
 - **Exportação Instantânea:** Botão para cópia formatada para o grupo de WhatsApp da equipe e impressão da folha de huddle do turno.
 
-### 5. Passagem de Plantão Inteligente & Auditoria de Pendências (SBAR)
+### 6. Passagem de Plantão Inteligente & Auditoria de Pendências (SBAR)
 - **Método SBAR:** Estruturado em **Situação**, **Breve Histórico (Background)**, **Avaliação** e **Recomendação**.
 - **Resumo Automático por IA:** Síntese em linguagem natural dos acontecimentos mais relevantes das últimas 12 horas.
 - **Auditoria Obrigatória de Pendências:** Bloqueio e alerta visual caso existam medicamentos não checados no MAR ou moradores sem evolução diária.
 - **Assinatura Digital de Plantão:** Registro duplo e imutável do profissional que entrega e do que assume o plantão com timestamp e código de validação.
 
-### 6. Gestão de Moradores & Plano Terapêutico Singular (PTS)
+### 7. Gestão de Moradores & Plano Terapêutico Singular (PTS)
 - **Cadastro Completo:** Perfil sociodemográfico, foto, grau de dependência (Grau I, II ou III), quarto/leito, data de acolhimento e contatos da rede de apoio.
 - **Plano Terapêutico Singular (PTS):** Metas de convivência, oficinas terapêuticas, passeios comunitários e acompanhamento conjunto com o CAPS de referência.
 - **Prontuário 360°:** Visão consolidada de sinais vitais, histórico de medicamentos, linha do tempo de ocorrências e evoluções clínicas.
 
-### 7. Assistente Técnica Nexa (Respostas Curtas e Comandos Diretos)
+### 8. Assistente Técnica Nexa (Respostas Curtas e Comandos Diretos)
 - **Engine Especializada:** Assistente baseada na API Google Gemini ajustada para respostas ultra-objetivas (máximo 2 a 3 tópicos práticos).
 - **Ações Executáveis no Chat:** Botões interativos para disparar ações diretamente na tela (abrir editor SOAP, abrir grade de medicação MAR, listar moradores).
 - **Base de Conhecimento SRT:** Treinada nas diretrizes do Ministério da Saúde, desescalada verbal, cuidados de enfermagem e desinstitucionalização.
 
-### 8. Guia Residencial Terapêutico & Procedimentos Operacionais Padrão (POP)
+### 9. Guia Residencial Terapêutico & Procedimentos Operacionais Padrão (POP)
 - **Manual Operacional Integrado:** Consulta rápida de protocolos e condutas para cuidadores e técnicos de enfermagem.
 - **Tópicos Normativos:**
   - Direitos, Convivência e Cidadania dos Acolhidos;
@@ -115,22 +134,33 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
   - Manejo de Descompensação e Crises em Saúde Mental;
   - Articulação com a Rede de Atenção Psicossocial (RAPS, CAPS, UBS e SAMU 192).
 
-### 9. Triagem NEWS2, Telemetria & Alerta Sonoro em Background
+### 10. Triagem NEWS2, Telemetria & Alerta Sonoro em Background
 - **Calculadora Automática NEWS2 (National Early Warning Score):** Pontuação fisiológica instantânea a partir de Pressão Arterial, Frequência Cardíaca, Frequência Respiratória, Temperatura, SpO2 e Nível de Consciência (ACVPU).
 - **Alerta Sonoro em Tempo Real:** Disparo de bipe cirúrgico duplo via Web Audio API e notificação push caso o escore atinja nível de risco médio/alto.
 - **Service Worker Nativo (`/sw.js`):** Monitoramento contínuo de background para manter os alertas ativos mesmo com a aba em segundo plano.
 
-### 10. Escalas da Equipe Multidisciplinar & Cobertura 24/7
+### 11. Escalas da Equipe Multidisciplinar & Cobertura 24/7
 - **Gestão Visual de Turnos:** Escala mensal e diária de cuidadores de saúde mental, técnicos de enfermagem, enfermeiros RT e acompanhantes terapêuticos.
 - **Prevenção de Furos de Escala:** Alertas visuais automáticos caso algum turno fique com número insuficiente de profissionais.
 
-### 11. Central de Relatórios, Indicadores e Pareceres Técnicos
+### 12. Central de Relatórios, Indicadores e Pareceres Técnicos
 - **Indicadores de Gestão:** Gráficos de adesão medicamentosa, distribuição de ocorrências (quedas, agitação, recusa, eventos clínicos) e ocupação da casa.
 - **Gerador de Parecer Executivo:** Emissão simplificada de relatórios gerenciais para prestação de contas à Coordenação de Saúde Mental do município.
 
-### 12. Segurança da Informação, LGPD e Logs de Auditoria
+### 13. Segurança da Informação, LGPD e Logs de Auditoria
 - **Conformidade LGPD:** Painel de consentimento informado, anonimização e exportação de dados do titular.
 - **Logs de Auditoria Imutáveis:** Rastreamento detalhado de acessos, visualizações de prontuário, edições e administrações medicamentosas com registro de usuário, função e IP.
+
+### 14. Exportação Automática & Redundância de Dados Diária (00:00 - JSON/PDF)
+- **Rotina Temporizada Automática:** Execução diária pontualmente às **00:00 (Meia-Noite BRT)** com verificação automatizada via cron no backend e scheduler no cliente.
+- **Formato Legível e Auditável (JSON / PDF):**
+  - **JSON Estruturado:** Exportação integral dos dados de residentes, evoluções SOAP, aprazamento MAR 12/12h, trocas de plantão SBAR, escalas e prontuários com hash de integridade criptográfica **SHA-256**.
+  - **Dossiê Clínico em PDF:** Leiaute formatado para impressão e arquivo físico de salvaguarda com timbre institucional do SRT, assinatura digital do Enfermeiro RT e carimbo de data/hora.
+- **Redundância Multicamada:**
+  - Gravado na coleção `backups` do **Firebase Firestore**;
+  - Armazenado no repositório **Firebase Cloud Storage** (`gs://nexamed-storage/backups/YYYY-MM-DD/`);
+  - Registrado em banco em memória do servidor via endpoints REST (`/api/backup/*`) e mantido no IndexedDB/LocalStorage para resiliência offline do piloto.
+- **Central de Gestão de Redundância (`BackupRedundancyModal`):** Interface para disparo de backups sob demanda, inspeção rápida de código JSON, cópia do hash SHA-256 e download/impressão instantânea.
 
 ---
 
@@ -138,12 +168,15 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
 
 | Módulo / Funcionalidade | Status | Escopo & Aplicação no SRT |
 | :--- | :---: | :--- |
+| **Exportação PDF de Prontuário & SOAP** | ✅ 100% Concluído | Exportação formatada em PDF e impressão de evoluções, MAR e agenda para prontuários externos. |
+| **Sininho de Lembretes & Atividades** | ✅ 100% Concluído | Notificações em tempo real no topo, alarmes sonoros com Web Audio API e filtros rápidos. |
 | **Micro-Learning & Player YouTube (PT-BR)** | ✅ 100% Concluído | Capacitação contínua com player do YouTube embutido, síntese de IA e testes de fixação. |
 | **Daily Huddle Clínico & Briefings Express** | ✅ 100% Concluído | Alinhamento de 5 minutos, cronômetro regressivo, agenda de treinamentos e envio p/ WhatsApp. |
 | **Prontuário SOAP com Sugestões do Histórico** | ✅ 100% Concluído | Evolução rápida com reaproveitamento de histórico do morador e corretor por IA. |
 | **Aprazamento & Checagem MAR (9 Certos)** | ✅ 100% Concluído | Controle de psicotrópicos, dupla checagem, registro de recusa acolhida e saldo de estoque. |
 | **Assistente Nexa (Respostas Curtas e Ações)** | ✅ 100% Concluído | Respostas diretas ao ponto, sem prolixidade, com botões de navegação direta. |
 | **Passagem de Plantão & Auditoria de Pendências** | ✅ 100% Concluído | Método SBAR, resumo de turno por IA e assinatura digital de entrega/recebimento. |
+| **Exportação Diária & Redundância (00:00)** | ✅ 100% Concluído | Backup automático diário às 00h em JSON e PDF no Firebase Storage e Firestore. |
 | **Ficha do Morador & Plano Terapêutico (PTS)** | ✅ 100% Concluído | Cadastro de acolhimento, metas de reabilitação e prontuário 360°. |
 | **Guia Residencial Terapêutico (Manual SRT)** | ✅ 100% Concluído | Procedimentos e normas técnicas baseadas nas Portarias MS 106/2000 e RAPS. |
 | **Escalas da Equipe da Casa (24/7)** | ✅ 100% Concluído | Gestão de plantões de cuidadores e equipe de enfermagem. |
@@ -196,6 +229,7 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
 ├── src/
 │   ├── components/
 │   │   ├── AppSidebar.tsx                # Menu lateral estruturado para SRT
+│   │   ├── BackupRedundancyModal.tsx     # Central de exportação, redundância e inspeção de backups (00:00)
 │   │   ├── CommandPaletteModal.tsx       # Paleta de busca e atalhos rápidos (⌘K / Ctrl+K)
 │   │   ├── IoTVitalsTelemetryModal.tsx   # Telemetria e aferição de sinais vitais
 │   │   ├── LGPDAndCookieManager.tsx      # Gerenciamento de consentimento e LGPD
@@ -211,9 +245,12 @@ O sistema foi modelado em total conformidade com as legislações vigentes de Sa
 │   │   └── TelehealthModal.tsx           # Teleconsulta integrada com CAPS
 │   ├── data/
 │   │   └── mockData.ts                   # Base inicial de moradores, escalas, MAR e módulos
+│   ├── hooks/
+│   │   └── useDailyBackupScheduler.ts    # Hook customizado de agendamento e sincronização de backup diário
 │   ├── lib/
-│   │   └── firebase.ts                   # Conexão Firestore e fallback de dados
+│   │   └── firebase.ts                   # Conexão Firestore, Coleção 'backups' e fallback de dados
 │   ├── utils/
+│   │   ├── backupExportService.ts        # Motor de geração de JSON, PDF/HTML e cálculo SHA-256
 │   │   ├── news2Calculator.ts            # Motor de cálculo de risco NEWS2
 │   │   ├── textParser.ts                 # Formatadores de texto e datas
 │   │   └── youtubeUtils.ts               # Utilitários de extração e validação de vídeos YouTube

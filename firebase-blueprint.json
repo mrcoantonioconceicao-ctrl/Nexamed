@@ -81,6 +81,21 @@
         "role": { "type": "string" }
       },
       "required": ["id", "name", "email"]
+    },
+    "backups": {
+      "title": "Backups e Snapshots Diários de Redundância",
+      "description": "Registros de backups automáticos diários das 00:00 e sob demanda em formato legível",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "date": { "type": "string" },
+        "fileName": { "type": "string" },
+        "checksumSha256": { "type": "string" },
+        "status": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "fileName", "status"]
     }
   },
   "firestore": {
@@ -111,6 +126,10 @@
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/users" },
       "description": "Coleção de perfis de usuários"
+    },
+    "/backups/{backupId}": {
+      "schema": { "$ref": "#/entities/backups" },
+      "description": "Coleção de backups diários e redundâncias de dados"
     }
   }
 }

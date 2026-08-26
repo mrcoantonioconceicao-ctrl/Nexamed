@@ -14,7 +14,9 @@ import {
   Clock,
   Trash2,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Bell,
+  Calendar
 } from 'lucide-react';
 import { Resident, DependenceLevel, ResidentStatus, RiskScore, MedicationMAR, MedRoute, DoseStatus } from '../types';
 import { splitCSVTokens } from '../utils/textParser';
@@ -35,6 +37,7 @@ interface InitialMedItem {
 interface ResidentesViewProps {
   residents: Resident[];
   onOpenResident: (id: string) => void;
+  onOpenResidentDetail?: (id: string, tab?: 'overview' | 'soap' | 'meds' | 'reminders' | 'contacts') => void;
   onOpenNewEvolution: (residentId: string) => void;
   onAddResident: (resident: Resident, medications?: MedicationMAR[]) => void;
   onDeleteResident?: (id: string) => void;
@@ -44,6 +47,7 @@ interface ResidentesViewProps {
 export const ResidentesView: React.FC<ResidentesViewProps> = ({
   residents,
   onOpenResident,
+  onOpenResidentDetail,
   onOpenNewEvolution,
   onAddResident,
   onDeleteResident,
@@ -394,6 +398,21 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
                       ⚠️ Alergias ({res.allergies.length})
                     </span>
                   )}
+                  {res.customReminders && res.customReminders.length > 0 && (
+                    <span 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onOpenResidentDetail) {
+                          onOpenResidentDetail(res.id, 'reminders');
+                        }
+                      }}
+                      className="cursor-pointer font-bold px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 transition-colors flex items-center gap-1"
+                      title="Clique para ver Lembretes & Atividades Agendadas"
+                    >
+                      <Bell className="w-2.5 h-2.5" />
+                      <span>{res.customReminders.filter(r => !r.completed).length} Lembretes</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Emergency Contact snippet */}
@@ -405,16 +424,25 @@ export const ResidentesView: React.FC<ResidentesViewProps> = ({
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-2 border-t border-zinc-100 flex items-center gap-2">
+              <div className="pt-2 border-t border-zinc-100 flex items-center gap-1.5">
                 <button
                   onClick={() => onOpenResident(res.id)}
                   className="flex-1 py-2 bg-zinc-100 hover:bg-zinc-200/80 text-zinc-800 font-bold text-xs rounded-xl border border-zinc-200 transition-colors"
                 >
-                  Ver Ficha Prontuário
+                  Prontuário 360
                 </button>
+                {onOpenResidentDetail && (
+                  <button
+                    onClick={() => onOpenResidentDetail(res.id, 'reminders')}
+                    className="py-2 px-2.5 bg-zinc-50 hover:bg-teal-50 text-teal-800 hover:text-teal-900 border border-zinc-200/80 hover:border-teal-300 font-bold text-xs rounded-xl transition-colors flex items-center gap-1"
+                    title="Lembretes & Consultas"
+                  >
+                    <Bell className="w-3.5 h-3.5 text-teal-600" />
+                  </button>
+                )}
                 <button
                   onClick={() => onOpenNewEvolution(res.id)}
-                  className="py-2 px-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1 shadow-2xs"
+                  className="py-2 px-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1 shadow-2xs"
                   title="Lançar Evolução SOAP"
                 >
                   <FileText className="w-3.5 h-3.5" />

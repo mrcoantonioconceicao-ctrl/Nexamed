@@ -12,7 +12,15 @@ import {
   Clock, 
   ArrowRight,
   Heart,
-  Plus
+  Plus,
+  Bell,
+  Calendar,
+  Volume2,
+  Stethoscope,
+  Palette,
+  FlaskConical,
+  ExternalLink,
+  Check
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -25,8 +33,9 @@ import {
   Cell, 
   Legend 
 } from 'recharts';
-import { Resident, ClinicalAlert, MedicationMAR, ClinicalEvolution, HandoverLog } from '../types';
+import { Resident, ClinicalAlert, MedicationMAR, ClinicalEvolution, HandoverLog, ResidentReminder } from '../types';
 import { ShiftSummaryWidget } from '../components/ShiftSummaryWidget';
+import { playReminderNotificationChime, sendBrowserReminderNotification, getCategoryBadgeStyle, getPriorityBadgeStyle } from '../utils/reminderService';
 
 interface DashboardViewProps {
   residents: Resident[];
@@ -34,7 +43,10 @@ interface DashboardViewProps {
   medications: MedicationMAR[];
   evolutions: ClinicalEvolution[];
   handovers?: HandoverLog[];
+  reminders?: ResidentReminder[];
   onOpenResident: (id: string) => void;
+  onOpenResidentDetail?: (id: string, initialTab?: 'overview' | 'soap' | 'meds' | 'reminders' | 'contacts') => void;
+  onToggleReminder?: (reminderId: string) => void;
   onOpenNewEvolution: (residentId?: string) => void;
   onNavigate: (path: string) => void;
   onMarkAlertsRead: () => void;
@@ -47,7 +59,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   medications,
   evolutions,
   handovers = [],
+  reminders = [],
   onOpenResident,
+  onOpenResidentDetail,
+  onToggleReminder,
   onOpenNewEvolution,
   onNavigate,
   onMarkAlertsRead,
@@ -551,6 +566,122 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Acessar Passagem de Plantão</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
+          </div>
+
+          {/* Reminders & Scheduled Activities Bell Widget */}
+          <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-xs space-y-3">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 bg-teal-50 text-teal-700 rounded-lg border border-teal-200">
+                  <Bell className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                    Lembretes & Atividades
+                  </h3>
+                  <p className="text-[10px] text-zinc-500 font-medium">
+                    {reminders.filter(r => !r.completed).length} pendente(s) da equipe
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => playReminderNotificationChime()}
+                title="Tocar som de teste do sininho"
+                className="p-1 text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 rounded-lg border border-teal-200 text-[10px] font-bold flex items-center gap-1"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Som</span>
+              </button>
+            </div>
+
+            {reminders.length === 0 ? (
+              <div className="p-4 text-center text-xs text-zinc-400 bg-zinc-50 rounded-xl border border-zinc-200/60">
+                <Calendar className="w-5 h-5 mx-auto mb-1 text-zinc-300" />
+                Nenhum compromisso cadastrado.
+              </div>
+            ) : (
+              <div className="space-y-2.5 divide-y divide-zinc-100 max-h-64 overflow-y-auto pr-1">
+                {reminders.slice(0, 4).map((rem) => {
+                  const isToday = rem.date === new Date().toLocaleDateString('pt-BR');
+                  const catBadge = getCategoryBadgeStyle(rem.category);
+
+                  return (
+                    <div key={rem.id} className="pt-2 first:pt-0 space-y-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border truncate ${catBadge.bg} ${catBadge.text} ${catBadge.border}`}>
+                            {rem.category}
+                          </span>
+                          {isToday && !rem.completed && (
+                            <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-500 text-white animate-pulse">
+                              HOJE
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0 text-[10px] font-bold text-zinc-600">
+                          <span className="bg-zinc-100 px-1.5 py-0.5 rounded">{rem.time}</span>
+                          {onToggleReminder && (
+                            <button
+                              onClick={() => onToggleReminder(rem.id)}
+                              className={`p-0.5 rounded border transition-colors ${
+                                rem.completed ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-zinc-400 hover:text-zinc-800 border-zinc-200'
+                              }`}
+                              title={rem.completed ? 'Reabrir' : 'Concluir'}
+                            >
+                              <Check className="w-3 h-3 stroke-[2.5]" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className={`text-xs font-bold leading-tight ${rem.completed ? 'line-through text-zinc-400' : 'text-zinc-900'}`}>
+                            {rem.title}
+                          </p>
+                          <p className="text-[11px] text-teal-700 font-semibold mt-0.5">
+                            👤 {rem.residentName} <span className="text-zinc-400 text-[10px]">({rem.residentRoom})</span>
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => {
+                              playReminderNotificationChime();
+                              sendBrowserReminderNotification(rem);
+                            }}
+                            className="p-1 text-teal-700 hover:text-teal-900 hover:bg-teal-50 rounded border border-transparent hover:border-teal-200 transition-colors"
+                            title="Disparar alerta sonoro para equipe"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                          {onOpenResidentDetail && (
+                            <button
+                              onClick={() => onOpenResidentDetail(rem.residentId, 'reminders')}
+                              className="p-1 text-zinc-600 hover:text-teal-700 hover:bg-zinc-100 rounded border border-zinc-200 transition-colors"
+                              title="Abrir agenda na ficha"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-zinc-100 text-center">
+              <button
+                onClick={() => onNavigate('/residentes')}
+                className="text-xs text-teal-700 font-extrabold hover:underline flex items-center justify-center gap-1 mx-auto"
+              >
+                <span>Ver Todos os Residentes & Agenda</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
 
           {/* Recent Evolutions Feed */}

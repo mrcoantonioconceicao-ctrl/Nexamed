@@ -151,8 +151,18 @@ export function authenticateUser(email: string, password: string): { success: bo
   return { success: true, user, message: 'Autenticado com sucesso!' };
 }
 
+export const DEFAULT_USER: UserSession = {
+  id: 'usr-admin-srt',
+  name: 'Equipe Multiprofissional SRT',
+  email: 'equipe@srt.saude.gov.br',
+  role: 'Coordenação & Direção Técnica',
+  avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&auto=format&fit=crop&q=80',
+  unit: 'Residência Terapêutica Central',
+  roleCategory: 'DIRECAO'
+};
+
 export function isAuthEnabled(): boolean {
-  return true; // Active real authentication and role-based access
+  return false; // Login desativado por enquanto a pedido do usuário
 }
 
 export function getCurrentUser(): UserSession | null {
@@ -169,6 +179,9 @@ export function getCurrentUser(): UserSession | null {
     } catch {
       // ignore
     }
+  }
+  if (!isAuthEnabled()) {
+    return DEFAULT_USER;
   }
   return null;
 }
