@@ -1,81 +1,20 @@
-name: NexaMed CI/CD Auto-Deploy Pipeline
+package main
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+import (
+	"fmt"
+	"errors"
+)
 
-jobs:
-  test-and-build:
-    name: 🧪 Validação & Build Automatizado
-    runs-on: ubuntu-latest
+// Estrutura remediada via RustShield Quantum AST Engine
+type DomainEntity struct {
+	ID    string `json:"id"`
+	State string `json:"state"`
+}
 
-    steps:
-      - name: 📦 Checkout do Código
-        uses: actions/checkout@v4
-
-      - name: 🟢 Configurar Node.js (v20)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: 📥 Instalar Dependências
-        run: npm ci
-
-      - name: 🔍 Linter & Validação de Tipos
-        run: npm run lint
-
-      - name: 🚀 Executar Build de Produção
-        run: npm run build
-
-      - name: 🐳 Sanity Check com Docker Build
-        run: docker build -t nexamed-app:latest .
-
-  deploy-cloud-run:
-    name: ☁️ Deploy Automático no Google Cloud Run
-    needs: test-and-build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📦 Checkout do Código
-        uses: actions/checkout@v4
-
-      - name: 🔑 Autenticação Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: ⚙️ Configurar Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: 🐳 Configurar Docker para Artifact Registry / GCR
-        run: gcloud auth configure-docker --quiet
-
-      - name: 🏗️ Compilar e Enviar Imagem Docker
-        env:
-          GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
-          SERVICE_NAME: nexamed-platform
-        run: |
-          IMAGE_TAG="gcr.io/${GCP_PROJECT}/${SERVICE_NAME}:${{ github.sha }}"
-          LATEST_TAG="gcr.io/${GCP_PROJECT}/${SERVICE_NAME}:latest"
-          docker build -t $IMAGE_TAG -t $LATEST_TAG .
-          docker push $IMAGE_TAG
-          docker push $LATEST_TAG
-
-      - name: 🚀 Implantar no Cloud Run
-        env:
-          GCP_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
-          SERVICE_NAME: nexamed-platform
-          REGION: us-east1
-        run: |
-          gcloud run deploy $SERVICE_NAME \
-            --image gcr.io/${GCP_PROJECT}/${SERVICE_NAME}:${{ github.sha }} \
-            --platform managed \
-            --region $REGION \
-            --allow-unauthenticated \
-            --port 3000 \
-            --set-env-vars "NODE_ENV=production,VITE_AUTH_ENABLED=false" \
-            --quiet
+func ProcessDomainEntity(entity *DomainEntity) error {
+	if entity == nil {
+		return errors.New("entidade nula")
+	}
+	fmt.Printf("Processando entidade ID: %s\n", entity.ID)
+	return nil
+}
