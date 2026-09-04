@@ -14,7 +14,9 @@ import {
   ChevronRight,
   Radio,
   Video,
-  GraduationCap
+  GraduationCap,
+  Apple,
+  Droplet
 } from 'lucide-react';
 
 interface CommandPaletteModalProps {
@@ -142,6 +144,40 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-purple-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onNavigate('/triagem-nutricional');
+                  }}
+                  className="p-3 bg-zinc-800/80 hover:bg-teal-950/60 hover:border-teal-700/60 border border-zinc-700/60 rounded-xl transition-all flex items-center justify-between text-left group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Apple className="w-4 h-4 text-teal-400 group-hover:scale-110 transition-transform" />
+                    <div>
+                      <strong className="block text-white">Triagem Nutricional & Ingestão (Gemini IA)</strong>
+                      <span className="text-[10px] text-zinc-400">Avaliar peso, calorias e ajustes dietéticos</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-teal-400" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onNavigate('/controle-diabetes');
+                  }}
+                  className="p-3 bg-zinc-800/80 hover:bg-emerald-950/60 hover:border-emerald-700/60 border border-zinc-700/60 rounded-xl transition-all flex items-center justify-between text-left group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Droplet className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <div>
+                      <strong className="block text-white">Controle de Diabetes (SRT)</strong>
+                      <span className="text-[10px] text-zinc-400">DDD, BPMN 2.0, GraphRAG, MCP & 2 Residentes</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-emerald-400" />
                 </button>
 
                 <button

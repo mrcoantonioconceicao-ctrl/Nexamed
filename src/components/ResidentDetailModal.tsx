@@ -31,7 +31,9 @@ import {
   Download,
   Printer,
   FileDown,
-  Share2
+  Share2,
+  Apple,
+  Droplet
 } from 'lucide-react';
 import { 
   Resident, 
@@ -63,6 +65,8 @@ interface ResidentDetailModalProps {
   initialTab?: 'overview' | 'soap' | 'meds' | 'reminders' | 'contacts';
   onOpenNewEvolution: (residentId: string) => void;
   onUpdateDoseStatus: (medicationId: string, doseId: string, status: 'Ministrado' | 'Recusado' | 'Suspenso') => void;
+  onOpenNutritionalScreening?: (residentId: string) => void;
+  onOpenDiabetesCare?: (residentId: string) => void;
   onAddReminder?: (reminder: ResidentReminder) => void;
   onToggleReminder?: (reminderId: string) => void;
   onDeleteReminder?: (reminderId: string) => void;
@@ -79,6 +83,8 @@ export const ResidentDetailModal: React.FC<ResidentDetailModalProps> = ({
   initialTab = 'overview',
   onOpenNewEvolution,
   onUpdateDoseStatus,
+  onOpenNutritionalScreening,
+  onOpenDiabetesCare,
   onAddReminder,
   onToggleReminder,
   onDeleteReminder,
@@ -333,6 +339,22 @@ export const ResidentDetailModal: React.FC<ResidentDetailModalProps> = ({
         {/* Header Profile Banner */}
         <div className="p-4 sm:p-5 bg-zinc-50 border-b border-zinc-200 relative">
           <div className="absolute top-4 right-4 flex items-center gap-1.5">
+            {onOpenNutritionalScreening && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenNutritionalScreening(resident.id);
+                }}
+                title="Abrir Triagem Nutricional & Ingestão Calórica (Gemini IA)"
+                className="py-1.5 px-3 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-2xs transition-all"
+              >
+                <Apple className="w-3.5 h-3.5 text-teal-600" />
+                <span className="hidden sm:inline">Triagem Nutricional</span>
+                <span className="sm:hidden">Nutrição</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => {
@@ -470,6 +492,42 @@ export const ResidentDetailModal: React.FC<ResidentDetailModalProps> = ({
                     <p className="text-xs font-bold text-rose-900 uppercase">ALERTAS DE ALERGIA CADASTRADOS</p>
                     <p className="text-xs text-rose-700 font-medium">{resident.allergies.join(', ')}</p>
                   </div>
+                </div>
+              )}
+
+              {/* Diabetes Care Protocol Quick Banner */}
+              {(resident.id === 'res-1' || resident.id === 'res-3' || resident.diagnoses?.some(d => d.toLowerCase().includes('diabetes'))) && (
+                <div className="p-3.5 bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-rose-600 text-white rounded-xl shadow-xs shrink-0">
+                      <Droplet className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-rose-950 flex items-center gap-1.5">
+                        <span>Protocolo Clínico de Diabetes Mellitus (SRT)</span>
+                        <span className="text-[10px] bg-rose-200 text-rose-900 px-1.5 py-0.2 rounded font-extrabold">
+                          DDD • BPMN • GraphRAG • MCP
+                        </span>
+                      </h4>
+                      <p className="text-xs text-rose-800 font-medium mt-0.5">
+                        {resident.id === 'res-3'
+                          ? 'Dra. Tereza: Demência de Alzheimer e alto risco de hipoglicemia silenciosa. Meta SBD flexibilizada.'
+                          : 'Sra. Helena: Síndrome metabólica por Quetiapina, esquema basal-bolus e rodízio de injeções.'}
+                      </p>
+                    </div>
+                  </div>
+                  {onOpenDiabetesCare && (
+                    <button
+                      onClick={() => {
+                        onClose();
+                        onOpenDiabetesCare(resident.id);
+                      }}
+                      className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors shrink-0 shadow-2xs flex items-center gap-1.5"
+                    >
+                      <span>Módulo Diabetes</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               )}
 

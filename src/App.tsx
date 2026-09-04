@@ -80,12 +80,15 @@ import { SmartHandoverModal, PendingAuditItem } from './components/SmartHandover
 import { GuidedTourModal } from './components/GuidedTourModal';
 import { AutoDeployModal } from './components/AutoDeployModal';
 import { AuditLogViewerModal } from './components/AuditLogViewerModal';
+import { NutritionalScreeningModal } from './components/NutritionalScreeningModal';
 
 import { DashboardView } from './views/DashboardView';
 import { ResidentesView } from './views/ResidentesView';
 import { ProntuariosView } from './views/ProntuariosView';
 import { MedicacaoView } from './views/MedicacaoView';
 import { EscalasView } from './views/EscalasView';
+import { TriagemNutricionalView } from './views/TriagemNutricionalView';
+import { DiabetesCareView } from './views/DiabetesCareView';
 import { PlantaoView } from './views/PlantaoView';
 import { RelatoriosView } from './views/RelatoriosView';
 import { EvolucaoMedicacaoView } from './views/EvolucaoMedicacaoView';
@@ -717,6 +720,15 @@ export default function App() {
     setIsSOAPModalOpen(true);
   };
 
+  // Nutritional Screening State & Handler
+  const [isNutritionalModalOpen, setIsNutritionalModalOpen] = useState<boolean>(false);
+  const [nutritionalResidentId, setNutritionalResidentId] = useState<string | undefined>(undefined);
+
+  const handleOpenNutritionalScreening = (residentId?: string) => {
+    setNutritionalResidentId(residentId);
+    setIsNutritionalModalOpen(true);
+  };
+
   // Explicit Full Logout Handler
   const handleLogout = async () => {
     try {
@@ -907,6 +919,28 @@ export default function App() {
             />
           )}
 
+          {currentPath === '/triagem-nutricional' && (
+            <TriagemNutricionalView
+              residents={residents}
+              evolutions={evolutions}
+              onOpenSOAPWithDraft={(residentId, soapDraft) => {
+                setInitialResidentIdForSOAP(residentId);
+                setIsSOAPModalOpen(true);
+              }}
+            />
+          )}
+
+          {(currentPath === '/controle-diabetes' || currentPath === '/diabetes') && (
+            <DiabetesCareView
+              residents={residents}
+              onNavigateToSoap={(residentId) => {
+                setInitialResidentIdForSOAP(residentId);
+                setIsSOAPModalOpen(true);
+              }}
+              onOpenResidentProfile={(res) => setSelectedResidentForDetail(res)}
+            />
+          )}
+
           {currentPath === '/migracao-giter' && (
             <GiterMigrationView />
           )}
@@ -1031,6 +1065,21 @@ export default function App() {
         evolutions={evolutions}
       />
 
+      {/* Nutritional Screening Standalone Modal */}
+      {isNutritionalModalOpen && (
+        <NutritionalScreeningModal
+          isOpen={isNutritionalModalOpen}
+          onClose={() => setIsNutritionalModalOpen(false)}
+          residents={residents}
+          initialResidentId={nutritionalResidentId}
+          evolutions={evolutions}
+          onOpenSOAPWithDraft={(residentId, soapDraft) => {
+            setInitialResidentIdForSOAP(residentId);
+            setIsSOAPModalOpen(true);
+          }}
+        />
+      )}
+
       {/* Resident Detail Slide-Over Modal */}
       <ResidentDetailModal
         resident={selectedResidentForDetail}
@@ -1045,6 +1094,11 @@ export default function App() {
           handleOpenNewEvolution(resId);
         }}
         onUpdateDoseStatus={handleUpdateDoseStatus}
+        onOpenNutritionalScreening={handleOpenNutritionalScreening}
+        onOpenDiabetesCare={(resId) => {
+          setSelectedResidentForDetail(null);
+          setCurrentPath('/controle-diabetes');
+        }}
         onAddReminder={handleAddReminder}
         onUpdateReminder={handleUpdateReminder}
         onToggleReminder={handleToggleReminder}

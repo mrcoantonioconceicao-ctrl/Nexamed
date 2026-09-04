@@ -1,6 +1,6 @@
 {
-  "name": "NexaMed",
-  "description": "Plataforma Inteligente para Gestão de Terapias Residenciais com IA Nexa",
+  "name": "NexaMed - Gestão Clínica e Terapêutica",
+  "description": "Sistema Clínico e de Gestão para Residências Terapêuticas com Suporte a Cuidados Especiais em Diabetes, Nutrição e IA Nexa",
   "requestFramePermissions": [
     "microphone"
   ],

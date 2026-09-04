@@ -694,4 +694,91 @@ export interface BackupSnapshot {
   version?: string;
 }
 
+// --- TRIAGEM NUTRICIONAL (SRT) ---
+export type NutritionalRiskClassification = 
+  | 'Eutrofia / Sem Risco'
+  | 'Risco Nutricional Leve'
+  | 'Risco Nutricional Moderado'
+  | 'Alto Risco / Desnutrição'
+  | 'Risco Metabólico / Obesidade';
+
+export type DietConsistencyType = 
+  | 'Geral / Livre'
+  | 'Branda'
+  | 'Pastosa'
+  | 'Líquida Completa'
+  | 'Enteral / SNE';
+
+export interface MealIntakeRecord {
+  label: string;
+  time: string;
+  targetKcal: number;
+  acceptance: number; // 0, 25, 50, 75, 100 (%)
+  consumedKcal: number;
+  notes?: string;
+}
+
+export interface NutritionalScreening {
+  id: string;
+  residentId: string;
+  residentName: string;
+  room: string;
+  date: string;
+  evaluatorName: string;
+  evaluatorRole: ClinicalRole | string;
+  
+  // Antropometria
+  weight: number; // kg
+  height: number; // cm
+  bmi: number; // kg/m²
+  bmiClassification: string;
+  previousWeight?: number; // kg
+  weightChangeKg?: number; // ex: -2.5 kg
+  weightChangePercent?: number; // ex: -4.1%
+  weightChangePeriodDays?: number; // ex: 30 dias
+  
+  // Ingestão Calórica & Hidratação
+  caloricIntake: {
+    estimatedDailyKcalTarget: number; // ex: 1850 kcal
+    estimatedKcalConsumed: number; // ex: 1420 kcal
+    acceptancePercentage: number; // ex: 76.7%
+    hydrationMl: number; // ex: 1600 ml
+    hydrationTargetMl: number; // ex: 2000 ml
+    meals: {
+      breakfast: MealIntakeRecord;
+      lunch: MealIntakeRecord;
+      afternoonSnack: MealIntakeRecord;
+      dinner: MealIntakeRecord;
+      supper: MealIntakeRecord;
+    };
+  };
+
+  // Perfil Clínico Nutricional
+  clinicalContext: {
+    dietConsistency: DietConsistencyType;
+    appetite: 'Normal / Preservado' | 'Bom' | 'Reduzido / Inapetência' | 'Anorexia Severa' | 'Hiperfagia / Compulsão';
+    swallowingIssues: boolean; // Disfagia / Engasgos
+    chewingIssues: boolean; // Dentição / Dificuldade mastigatória
+    bowelHabit: 'Regular (1x/dia)' | 'Constipação (>2 dias sem evacuar)' | 'Diarreia / Fezes líquidas';
+    dietaryRestrictions: string[]; // ex: ['Hipossódica (HAS)', 'Hipoglicídica (DM)', 'Sem Lactose']
+    physicalActivityLevel: 'Acamado / Restrito' | 'Sedentário / Leve' | 'Ativo em Oficinas';
+  };
+
+  // Parecer Gerado pela IA Nexa / Gemini
+  aiAssessment?: {
+    nutritionalRisk: NutritionalRiskClassification;
+    vetKcal: number; // Valor Energético Total em kcal/dia
+    proteinGramsPerKg: number; // g/kg/dia
+    dietAdjustments: string[]; // Ajustes recomendados no cardápio
+    hydrationPlan: string; // Metas e estratégias de hidratação
+    textureRecommendation: string; // Recomendação de textura/consistência
+    supplementation: string; // Indicação de suplementação ou 'Não indicado no momento'
+    guidanceForCaregivers: string[]; // Orientações para cuidadores e copa do SRT
+    monitoringPlan: string; // Frequência de pesagem e acompanhamento
+    clinicalRationale: string; // Correlação clínica com diagnósticos e histórico
+    generatedAt: string;
+  };
+}
+
+
 

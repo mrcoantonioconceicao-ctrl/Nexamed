@@ -25,6 +25,8 @@ import {
   Compass,
   Rocket,
   GraduationCap,
+  Apple,
+  Droplet,
   LogOut
 } from 'lucide-react';
 import { getCurrentUser } from '../config/auth-mode';
@@ -105,6 +107,20 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       path: '/escalas',
       label: 'Escalas & Avaliações',
       icon: CalendarRange,
+    },
+    {
+      path: '/triagem-nutricional',
+      label: 'Triagem Nutricional',
+      icon: Apple,
+      badge: 'Gemini IA',
+      badgeColor: 'bg-teal-50 text-teal-800 border-teal-200',
+    },
+    {
+      path: '/controle-diabetes',
+      label: 'Controle de Diabetes',
+      icon: Droplet,
+      badge: '2 Residentes',
+      badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     },
     {
       path: '/plantao',

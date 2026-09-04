@@ -36,28 +36,54 @@ import {
 } from '../types';
 import { RegisteredUser } from '../config/auth-mode';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForNexaMedLocalFallback",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "nexamed-srt.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "nexamed-srt",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "nexamed-srt.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:abcdef123456",
-  firestoreDatabaseId: "(default)"
-};
+const envApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+const envProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+
+/**
+ * Indicates whether a real Firebase configuration has been provided via environment variables.
+ * Fallback placeholders or empty keys are treated as unconfigured to prevent offline connection errors.
+ */
+export const isFirebaseConfigured = Boolean(
+  envApiKey && 
+  envApiKey.trim() !== '' && 
+  envApiKey !== 'True' &&
+  envApiKey !== 'true' &&
+  envApiKey !== 'False' &&
+  envApiKey !== 'false' &&
+  envApiKey.length > 15 &&
+  !envApiKey.includes('Dummy') &&
+  !envApiKey.includes('LocalFallback') &&
+  envProjectId && 
+  envProjectId.trim() !== '' && 
+  envProjectId !== 'True' &&
+  envProjectId !== 'true' &&
+  envProjectId !== 'nexamed-srt'
+);
+
+const firebaseConfig = isFirebaseConfigured ? {
+  apiKey: envApiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || `${envProjectId}.firebaseapp.com`,
+  projectId: envProjectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || `${envProjectId}.appspot.com`,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "(default)"
+} : null;
 
 let app: FirebaseApp | null = null;
 let firestoreDb: Firestore | null = null;
 let firebaseAuth: Auth | null = null;
 
-try {
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  firestoreDb = firebaseConfig.firestoreDatabaseId
-    ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
-    : getFirestore(app);
-  firebaseAuth = getAuth(app);
-} catch (e) {
-  console.warn('Firebase initialization failed, falling back to local state:', e);
+if (isFirebaseConfigured && firebaseConfig) {
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    firestoreDb = firebaseConfig.firestoreDatabaseId
+      ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(app);
+    firebaseAuth = getAuth(app);
+  } catch (e) {
+    console.warn('Firebase initialization failed, falling back to local state:', e);
+  }
 }
 
 export const db = firestoreDb;
@@ -103,16 +129,19 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 }
 
 async function testConnection() {
-  if (!db) return;
+  if (!isFirebaseConfigured || !db) return;
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration: client is offline.");
+      console.warn("Firebase Firestore connection offline or unconfigured, maintaining local fallback.");
     }
   }
 }
-testConnection();
+
+if (isFirebaseConfigured && db) {
+  testConnection();
+}
 
 /**
  * Firebase Auth Helper: Login with Email & Password
