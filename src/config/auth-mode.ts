@@ -14,7 +14,7 @@ export interface UserSession {
 }
 
 export interface RegisteredUser extends UserSession {
-  password: string;
+  passwordHash: string;
   documentId: string;
   createdAt: string;
   status: 'Ativo' | 'Inativo';
