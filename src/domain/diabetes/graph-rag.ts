@@ -200,7 +200,31 @@ export const CLINICAL_KNOWLEDGE_GRAPH: { nodes: GraphNode[]; edges: GraphEdge[] 
  * Traverses the knowledge graph to extract context for a specific resident
  */
 export function queryGraphRagContext(residentId: string): GraphRagContext {
-  const targetResidentNodeId = residentId === 'res-1' ? 'res-helena' : 'res-tereza';
+  let targetResidentNodeId: string;
+
+  // Resolve aliases for resident IDs
+  let resolvedInputId = residentId;
+  if (resolvedInputId === 'res-1') {
+    resolvedInputId = 'res-helena';
+  }
+
+  // Find the actual resident node in the graph based on the resolved ID
+  const residentNode = CLINICAL_KNOWLEDGE_GRAPH.nodes.find(
+    (node) => node.id === resolvedInputId && node.type === 'RESIDENT'
+  );
+
+  if (!residentNode) {
+    // Critical: If resident is not found, return an empty context to prevent providing incorrect or default data.
+    // Logging a warning helps in debugging missing resident configurations.
+    console.warn(`Resident with ID '${residentId}' (resolved to '${resolvedInputId}') not found in the knowledge graph. Returning empty context.`);
+    return {
+      nodes: [],
+      edges: [],
+      clinicalInsights: [],
+      retrievedGuidelines: []
+    };
+  }
+  targetResidentNodeId = residentNode.id;
   
   // Find directly and 2-hop connected nodes
   const connectedEdgeIds = new Set<string>();
