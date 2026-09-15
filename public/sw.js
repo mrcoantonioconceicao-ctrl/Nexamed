@@ -195,8 +195,7 @@ self.addEventListener('message', async (event) => {
       requireInteraction: true,
       tag: options?.tag || 'critical-resident-alert',
       renotify: true,
-      data: options?.data || {},
-      ...options
+      data: options?.data || {}
     });
   }
 });
