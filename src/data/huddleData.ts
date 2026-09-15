@@ -87,7 +87,7 @@ export const INITIAL_STAFF_TRAININGS: StaffTrainingEvent[] = [
     title: 'Suporte Básico de Vida (BLS) e Manejo de Engasgo na Terceira Idade',
     instructor: 'Dr. Fernando Alencar (Psiquiatra / Emergencista)',
     category: 'Suporte Básico de Vida (BLS)',
-    date: 'Hoje',
+    date: new Date().toISOString().split('T')[0],
     time: '14:30 - 15:30',
     location: 'Auditório de Treinamento - Bloco Central',
     targetRoles: ['Enfermeiro RT', 'Técnico de Enfermagem', 'Cuidador Residencial'],
