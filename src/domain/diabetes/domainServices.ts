@@ -13,6 +13,16 @@ export class GlycemicDomainService {
    * Classifica a aferição com base em diretrizes clínicas da SBD/ADA
    */
   public static classifyGlycemia(value: number): GlycemicClassification {
+    if (!Number.isFinite(value)) {
+      return {
+        urgentAlert: true,
+        title: 'ERRO: Valor de Glicemia Inválido',
+        actionText: 'Não foi possível interpretar o valor da glicemia. Por favor, verifique se o valor é um número válido e finito.',
+        level: 'emergency',
+        bpmnStepId: 'TASK_ERROR_INVALID_GLYCEMIA_VALUE'
+      };
+    }
+
     if (value < 54) {
       return 'VERY_LOW';
     }
