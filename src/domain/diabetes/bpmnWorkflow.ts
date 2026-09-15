@@ -240,16 +240,40 @@ export class BPMNWorkflowSimulator {
       history.push({
         nodeId: 'TASK_RECHECK_HGT',
         timestamp: '08:19',
-        note: 'Re-teste simulado de HGT: 92 mg/dL (estabilizado).',
+        note: 'Nova aferição de HGT após resgate simulada.',
         status: 'completed'
       });
+
+      // Simulate re-check value based on initial glucose to demonstrate gateway branching.
+      // If initial glucose was very low (e.g., <= 60), simulate that re-check is still low (e.g., 65 mg/dL),
+      // forcing an escalation or second cycle. Otherwise, simulate a successful re-check (e.g., 92 mg/dL).
+      const simulatedRecheckGlucoseValue = (glucoseValue <= 60) ? 65 : 92;
+
       history.push({
-        nodeId: 'TASK_SERVE_COMPLEX_CARB',
+        nodeId: 'GATEWAY_HYPO_RESOLVED',
         timestamp: '08:20',
-        note: 'Ofertada bolacha integral e leite para prevenir hipoglicemia rebote.',
-        status: 'completed'
+        note: `Sistema Nexa avaliou o valor re-checado de ${simulatedRecheckGlucoseValue} mg/dL.`,        status: 'completed'
       });
-      activeNode = 'TASK_SERVE_COMPLEX_CARB';
+
+      if (simulatedRecheckGlucoseValue >= 70) {
+        history.push({
+          nodeId: 'TASK_SERVE_COMPLEX_CARB',
+          timestamp: '08:21',
+          note: 'Glicemia normalizada. Ofertada refeição com carboidrato complexo para prevenir efeito rebote.',
+          status: 'completed'
+        });
+        activeNode = 'TASK_SERVE_COMPLEX_CARB';
+      } else { // simulatedRecheckGlucoseValue < 70
+        // According to GATEWAY_HYPO_RESOLVED logic: "Se <70 (1º ciclo) -> Repetir 15g | Se <70 (2º ciclo) -> SAMU"
+        // For simplicity in this single-pass simulation, if still low after the first rescue attempt, we escalate.
+        history.push({
+          nodeId: 'TASK_CALL_EMERGENCY',
+          timestamp: '08:21',
+          note: 'Glicemia ainda baixa após 1º resgate. Acionado SAMU 192 e médico responsável.',
+          status: 'completed'
+        });
+        activeNode = 'TASK_CALL_EMERGENCY';
+      }
     } else if (glucoseValue > 250) {
       history.push({
         nodeId: 'TASK_MANAGE_SEVERE_HYPER',
