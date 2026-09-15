@@ -778,6 +778,14 @@ Responda ESTRITAMENTE em formato JSON com o seguinte formato:
 
   // API Endpoint: Download specific backup JSON by ID
   app.get('/api/backup/download/:id', (req, res) => {
+    // FALHA GRAVE: Ausência de autenticação e autorização para download de backups.
+    // TODO: Implementar um middleware de autenticação (e.g., JWT token) e validação de permissões de usuário
+    // para garantir que apenas usuários autorizados possam acessar dados sensíveis.
+    // EXEMPLO DE CORREÇÃO SIMPLIFICADA (UMA AUTENTICAÇÃO REAL REQUER MAIS INFRAESTRUTURA): 
+    if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Acesso não autorizado. Token de autenticação é obrigatório.' });
+    }
+
     const { id } = req.params;
     const backup = serverBackups.find(b => b.id === id);
     if (!backup || !backup.payloadJson) {
