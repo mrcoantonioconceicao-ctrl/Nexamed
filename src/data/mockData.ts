@@ -1278,7 +1278,7 @@ export const INITIAL_REMINDERS: ResidentReminder[] = [
     residentRoom: 'Suíte 101 - Leito A',
     title: 'Consulta Psiquiátrica de Acompanhamento (CAPS II)',
     category: 'Consulta Médica',
-    date: new Date().toLocaleDateString('pt-BR'),
+    date: '01/08/2026',
     time: '14:30',
     location: 'CAPS II Blumenau - Setor Ambulatorial',
     professionalOrOrganizer: 'Dr. Fernando Alencar (Médico Psiquiatra)',
