@@ -84,7 +84,7 @@
     },
     "backups": {
       "title": "Backups e Snapshots Diários de Redundância",
-      "description": "Registros de backups automáticos diários das 00:00 e sob demanda em formato legível",
+      "description": "Metadados de backups diários e sob demanda (armazenados de forma segura e criptografada em local externo)",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
