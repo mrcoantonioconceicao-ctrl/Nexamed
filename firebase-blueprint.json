@@ -103,8 +103,8 @@
       "schema": { "$ref": "#/entities/residents" },
       "description": "Coleção de residentes do residencial",
       "securityRules": {
-        "read": "<regra_de_leitura_para_acesso_restrito>",
-        "write": "<regra_de_escrita_para_acesso_restrito>"
+        "read": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'medico', 'enfermeiro', 'cuidador']",
+        "write": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'medico', 'enfermeiro']"
       }
     },
     "/evolutions/{evolutionId}": {
