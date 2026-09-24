@@ -109,7 +109,11 @@
     },
     "/evolutions/{evolutionId}": {
       "schema": { "$ref": "#/entities/evolutions" },
-      "description": "Coleção de evoluções clínicas SOAP"
+      "description": "Coleção de evoluções clínicas SOAP",
+      "securityRules": {
+        "read": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'medico', 'enfermeiro', 'cuidador']",
+        "write": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'medico', 'enfermeiro']"
+      }
     },
     "/medication_administrations/{medicationId}": {
       "schema": { "$ref": "#/entities/medication_administrations" },
