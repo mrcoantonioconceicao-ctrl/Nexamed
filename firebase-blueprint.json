@@ -101,7 +101,11 @@
   "firestore": {
     "/residents/{residentId}": {
       "schema": { "$ref": "#/entities/residents" },
-      "description": "Coleção de residentes do residencial"
+      "description": "Coleção de residentes do residencial",
+      "securityRules": {
+        "read": "<regra_de_leitura_para_acesso_restrito>",
+        "write": "<regra_de_escrita_para_acesso_restrito>"
+      }
     },
     "/evolutions/{evolutionId}": {
       "schema": { "$ref": "#/entities/evolutions" },
